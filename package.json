@@ -1,0 +1,50 @@
+{
+  "name": "picomatch",
+  "description": "Tiny, minimalist glob matching library written in JavaScript.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/jonschlinkert/picomatch",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "repository": "jonschlinkert/picomatch",
+  "bugs": {
+    "url": "https://github.com/jonschlinkert/picomatch/issues"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=4"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "generategenerator",
+    "picomatch"
+  ],
+  "devDependencies": {
+    "gulp-format-md": "^0.1.12",
+    "mocha": "^3.2.0",
+    "nanomatch": "^1.1.1"
+  },
+  "verb": {
+    "toc": false,
+    "layout": "default",
+    "tasks": [
+      "readme"
+    ],
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "lint": {
+      "reflinks": true
+    }
+  },
+  "dependencies": {
+    "arr-diff": "^3.0.0",
+    "array-unique": "^0.3.2",
+    "normalize-path": "^2.1.1",
+    "split-string": "^2.0.0"
+  }
+}
