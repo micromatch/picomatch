@@ -1,9 +1,5 @@
 'use strict';
 
-var normalize = require('normalize-path');
-var unique = require('array-unique');
-var diff = require('arr-diff');
-var pathCache = {};
 var cache = {};
 
 function picomatch(list, patterns, options) {
@@ -49,7 +45,7 @@ function picomatch(list, patterns, options) {
     keep = diff(keep, omit);
   }
 
-  return unique(keep);
+  return keep;
 }
 
 picomatch.match = function(list, pattern, options) {
@@ -57,29 +53,22 @@ picomatch.match = function(list, pattern, options) {
     throw new TypeError('expected pattern to be a string');
   }
 
+  var isMatch = picomatch.matcher(pattern, options);
   var arr = arrayify(list);
   var len = arr.length;
   var idx = -1;
 
-  var regex = picomatch.makeRe(pattern, options);
   var matches = [];
   var negated = [];
 
   while (++idx < len) {
     var ele = arr[idx];
-    var posix = normalize(ele);
-
-    if (pattern === ele || pattern === posix) {
-      matches.push(ele);
-      continue;
-    }
-
-    if (regex.test(ele) || regex.test(posix)) {
+    if (isMatch(ele)) {
       matches.push(ele);
     }
   }
 
-  // if `opts.ignore` was defined, diff ignored list
+  // if `options.ignore` was defined, diff ignored list
   if (options && options.ignore) {
     negated = picomatch(matches, options.ignore, options);
   }
@@ -88,52 +77,67 @@ picomatch.match = function(list, pattern, options) {
     matches = diff(matches, negated);
   }
 
-  return unique(matches);
+  return matches;
 };
 
 picomatch.isMatch = function(str, pattern, options) {
-  return str === pattern || picomatch.makeRe(pattern, options).test(str);
+  return picomatch.matcher(pattern, options)(str);
 };
 
 picomatch.matcher = function(pattern, options) {
-  var regex;
-  return function(str) {
-    if (pattern === str) {
+  return function fn(str) {
+    if (str === pattern) {
       return true;
     }
-    var posix = toPosix(str);
-    if (posix === pattern) {
+
+    var hasSlash = pattern.slice(-1) === '/';
+    var stripped;
+
+    if (!hasSlash) {
+      stripped = stripTrailing(str);
+      if (stripped === pattern) {
+        return true;
+      }
+    }
+
+    if (typeof fn.regex === 'undefined') {
+      fn.regex = picomatch.makeRe(pattern, options);
+    }
+
+    if (fn.regex.test(str)) {
       return true;
     }
-    if (typeof regex === 'undefined') {
-      regex = picomatch.makeRe(pattern, options);
-    }
-    return regex.test(str) || regex.test(posix);
+
+    return stripped ? fn.regex.test(stripped) : false;
   };
 };
 
 picomatch.makeRe = function(pattern, options) {
-  if (cache[pattern]) {
-    return cache[pattern];
+  options = options || {};
+  var flags = options.nocase ? 'i' : '';
+  var key = pattern + flags + options.dot;
+
+  if (cache[key]) {
+    return cache[key];
   }
 
   if (pattern.slice(0, 2) === './') {
     pattern = pattern.slice(2);
   }
 
-  options = options || {};
-  var flags = options.nocase ? 'i' : '';
   var len = pattern.length;
   var idx = -1;
   var str = '';
 
-  var star = '[^\\/]*?';
-  var prefix = '^(?:(\\.\\/)?';
+  var firstChar;
+  var star = '[^\\\\/]*?';
+  var qmark = '[^\\\\/]';
+  var prefix = '^(?:(?:^|\\.\\/)';
   var suffix = ')$';
+  var bracket = 0;
+  var brace = 0;
   var queue = [];
   var stack = [];
-  var bracket = [];
-  var paren = [];
   var prev;
   var char;
 
@@ -158,6 +162,10 @@ picomatch.makeRe = function(pattern, options) {
   while (idx < len) {
     char = advance();
 
+    if (idx === 0) {
+      firstChar = char;
+    }
+
     switch (char) {
       case '!':
         if (idx === 0) {
@@ -170,8 +178,29 @@ picomatch.makeRe = function(pattern, options) {
       case '\\':
         str += char + advance();
         break;
+      case '{':
+        if (bracket > 0) {
+          str += char;
+          break;
+        }
+        str += '(';
+        stack.push(char);
+        brace++;
+        break;
+      case '}':
+        if (bracket > 0) {
+          str += char;
+          break;
+        }
+        if (brace === 0) {
+          str += '\\';
+        }
+        str += ')';
+        stack.pop();
+        brace--;
+        break;
       case '[':
-        bracket.push(char);
+        bracket++;
         stack.push(char);
         var val = char;
         var ch = peek();
@@ -195,9 +224,12 @@ picomatch.makeRe = function(pattern, options) {
         str += val;
         break;
       case ']':
-        bracket.pop();
-        stack.pop();
+        if (bracket === 0) {
+          str += '\\';
+        }
         str += char;
+        stack.pop();
+        bracket--;
         break;
       case '"':
       case '\'':
@@ -207,9 +239,9 @@ picomatch.makeRe = function(pattern, options) {
           break;
         }
 
-        var val = pattern.slice(idx + 1, closeIdx);
-        idx += val.length + 1;
-        str += escapeRegex(val);
+        var rest = pattern.slice(idx + 1, closeIdx);
+        idx += rest.length + 1;
+        str += escapeRegex(rest);
         break;
       case '/':
         str += '\\/';
@@ -217,42 +249,30 @@ picomatch.makeRe = function(pattern, options) {
       case '.':
         str += '\\.';
         break;
-      case '{':
-        if (bracket.length) {
-          str += char;
-          break;
-        }
-        paren.push(char);
-        stack.push(char);
-        str += '(';
-        break;
-      case '}':
-        if (bracket.length) {
-          str += char;
-          break;
-        }
-        paren.pop();
-        stack.pop();
-        str += ')';
-        break;
       case ',':
-        str += paren.length ? '|' : char;
+        str += brace > 0 ? '|' : char;
         break;
       case '*':
-        if (paren.length) {
+        if (brace > 0) {
           str += star;
           break;
         }
 
-        if (bracket.length) {
+        if (bracket > 0) {
           str += char;
           break;
         }
 
-        var ch = prev;
-        var val = (!prev || prev === '/') ? '(?!\\.)(?=.)' : '';
+        var before = str;
+        var prevChar = prev;
+        var lead = (!prev || prev === '/') ? '(?!\\.)(?=.)' : '';
+        var inner = '';
         var stars = char;
         var n;
+
+        if (lead && options.dot) {
+          lead = '(?=.)';
+        }
 
         while ((n = peek()) === '*') {
           stars += advance();
@@ -260,33 +280,38 @@ picomatch.makeRe = function(pattern, options) {
 
         if (stars === '**' && (!n || n === '/')) {
           char = advance();
-          val += '(?:(?!(?:\\/|^)\\.).)*?';
-          if (ch === '/' && idx === len - 1) {
+          inner += '(?:(?!(?:\\/|^)\\.).)*?';
+          if (prevChar === '/' && idx === len - 1) {
             str += '?';
           }
+
+          if (before === '' && char === '/') {
+            lead = '';
+          }
         } else {
-          val += star;
+          inner += star;
         }
 
-        if (ch && ch !== '/' && ch !== '!') {
-          val = star;
+        if (prevChar && prevChar !== '/' && prevChar !== '!') {
+          inner = star;
         }
 
         if (n === '/') {
-          val += n + '?';
+          inner += '\\/' + (pattern[idx + 1] !== '[' ? '?' : '');
+
         } else if (!n && stars === '**') {
-          val = '(?:' + val + '|)';
+          lead = '(?!\\.)';
         }
 
-        str += val;
+        str += lead + inner;
         break;
       case '?':
         if (prev === ']' || prev === ')' || prev === '(') {
           str += char;
         } else if (!prev || prev === '/') {
-          str += '[^\\\\/.]';
+          str += !options.dot ? '[^\\\\/.]' : qmark;
         } else {
-          str += '[^\\\\/]';
+          str += qmark;
         }
         break;
       case '+':
@@ -302,14 +327,20 @@ picomatch.makeRe = function(pattern, options) {
     }
   }
 
-  if (bracket.length) {
+  if (bracket > 0) {
     str = str.split(/\\?\[/).join('\\[');
   }
 
-  // console.log(str);
+  if (str.slice(-2) === '/?') {
+    str = str.slice(0, str.length - 1);
+  }
+
+  if (firstChar === '/' || firstChar === '.') {
+    prefix = '^(?:';
+  }
+
   var regex = new RegExp(prefix + str + suffix, flags);
-  cache[pattern] = regex;
-  return regex;
+  return (cache[key] = regex);
 };
 
 function getClose(str, ch, i) {
@@ -320,12 +351,29 @@ function getClose(str, ch, i) {
   return idx;
 }
 
-function toPosix(str) {
-  return pathCache[str] || (pathCache[str] = normalize(str));
+function stripTrailing(str) {
+  while (str.length > 1 && str.slice(-1) === '/') {
+    str = str.slice(0, str.length - 1);
+  }
+  return str;
 }
 
 function arrayify(val) {
   return val ? (Array.isArray(val) ? val : [val]) : [];
+}
+
+function diff(one, two) {
+  if (!Array.isArray(two)) return one;
+  var len = one.length;
+  var idx = -1;
+  var arr = [];
+  while (++idx < len) {
+    var ele = one[idx];
+    if (two.indexOf(ele) === -1) {
+      arr.push(ele);
+    }
+  }
+  return arr;
 }
 
 /**
@@ -334,20 +382,6 @@ function arrayify(val) {
 
 function escapeRegex(str) {
   return str.replace(/[-[\]{}()^$|*+?.\\\/\s]/g, '\\$&');
-}
-
-/**
- * Combines duplicate characters in the provided string.
- * @param {String} `str`
- * @returns {String}
- */
-
-function combineDuplicates(str, substr) {
-  if (typeof substr === 'string') {
-    var inner = '(' + substr + ')(?=(?:' + substr + ')*\\1)';
-    return str.replace(new RegExp(inner, 'g'), '');
-  }
-  return str.replace(/(.)(?=.*\1)/g, '');
 }
 
 /**

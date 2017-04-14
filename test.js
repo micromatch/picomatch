@@ -47,7 +47,7 @@ describe('picomatch', function() {
 
     it('should support regex logical or', function() {
       assert.deepEqual(pm(['a/a', 'a/b', 'a/c'], ['a/(a|c)']), ['a/a', 'a/c']);
-      assert.deepEqual(pm(['a/a', 'a/b', 'a/c'], ['a/(a|b|c)', 'a/b']), ['a/a', 'a/b', 'a/c']);
+      assert.deepEqual(pm(['a/a', 'a/b', 'a/c'], ['a/(a|b|c)', 'a/b']), ['a/a', 'a/b', 'a/c', 'a/b']);
     });
 
     it('should support regex ranges', function() {
@@ -104,6 +104,26 @@ describe('picomatch', function() {
       assert.deepEqual(pm(fixtures, ['*.txt']), ['a.txt']);
     });
 
+    it('should correctly match slashes', function() {
+      assert(!pm.isMatch('foo/bar', '**/'));
+      assert(!pm.isMatch('foo/bar', '**/*/'));
+      assert(!pm.isMatch('foo/bar', '*/*/'));
+      assert(pm.isMatch('foo/bar', '**/*'));
+      assert(pm.isMatch('foo/bar', '*/*'));
+      assert(pm.isMatch('foo/bar/', '**/'));
+      assert(pm.isMatch('foo/bar/', '**/*'));
+      assert(pm.isMatch('foo/bar/', '**/*/'));
+      assert(pm.isMatch('foo/bar/', '*/*'));
+      assert(pm.isMatch('foo/bar/', '*/*/'));
+    });
+
+    it('should match regex character classes', function() {
+      assert(pm.isMatch('foo/bar', '**/[a-k]*'));
+      assert(pm.isMatch('foo/jar', '**/[a-k]*'));
+      assert(!pm.isMatch('foo/jar', '**/[a-i]*'));
+      assert(!pm.isMatch('foo/jar', '**/[a-i]ar'));
+    });
+
     it('should match literal brackets', function() {
       assert.deepEqual(pm(['a [b]'], 'a \\[b\\]'), ['a [b]']);
       assert.deepEqual(pm(['a [b] c'], 'a [b] c'), ['a [b] c']);
@@ -132,7 +152,7 @@ describe('picomatch', function() {
     });
 
     it('should match dotfiles when a leading dot is in the pattern',function() {
-      assert.deepEqual(pm.match(['foo', '.bar', 'foo/.bar'], '**/.*a*'), ['foo/.bar']);
+      assert.deepEqual(pm.match(['foo', '.bar', 'foo/.bar'], '**/.*a*'), ['.bar', 'foo/.bar']);
       assert.deepEqual(pm.match(['foo', '.bar', 'bar'], '.*a*'), ['.bar']);
       assert.deepEqual(pm.match(['foo', '.bar', 'bar'], '.b*'), ['.bar']);
       assert.deepEqual(pm.match(['foo', '.bar', 'bar'], '.*r'), ['.bar']);
@@ -727,6 +747,12 @@ describe('picomatch', function() {
       assert(pm.isMatch('foo{}baz', 'foo[{a,b}]+baz'));
     });
 
+    it('should expand multiple brace patterns', function() {
+      assert.deepEqual(pm.makeRe('a/{a,b}/{c,d}/e'), /^(?:(?:^|\.\/)a\/(a|b)\/(c|d)\/e)$/);
+      assert.deepEqual(pm.makeRe('a{b,c}d{e,f}g'), /^(?:(?:^|\.\/)a(b|c)d(e|f)g)$/);
+      assert.deepEqual(pm.makeRe('a/{x,y}/c{d,e}f.{md,txt}'), /^(?:(?:^|\.\/)a\/(x|y)\/c(d|e)f\.(md|txt))$/);
+    });
+
     it('should match parens', function() {
       assert(pm.isMatch('foo(bar)baz', 'foo[bar()]+baz'));
     });
@@ -744,7 +770,7 @@ describe('picomatch', function() {
       assert(pm.isMatch('[ab]', '[[]ab]'));
     });
 
-    it('tests with multiple `*\'s:', function() {
+    it('should consolidate extra stars:', function() {
       assert.deepEqual(pm(['bbc', 'abc', 'bbd'], 'a**c'), ['abc']);
       assert.deepEqual(pm(['bbc', 'abc', 'bbd'], 'a***c'), ['abc']);
       assert.deepEqual(pm(['bbc', 'abc', 'bbc'], 'a*****?c'), ['abc']);
@@ -825,6 +851,234 @@ describe('picomatch', function() {
       assert(pm.isMatch('foo/bb/aa/rr', '**/**/**'));
       assert(pm.isMatch('foo/bba/arr', '*/*/*'));
       assert(pm.isMatch('foo/bba/arr', 'foo/**'));
+    });
+  });
+
+  describe('globstars', function() {
+    it('should support globstars (**)', function() {
+      var fixtures = ['../../b', '../a', '../c', '../c/d', '.a/a', '/a', '/a/', 'a', 'a/', 'a/../a', 'a/.a', 'a/a', 'a/b', 'a/c', 'a/x', 'a/x/y', 'a/x/y/z', 'aa/a', 'aaa/a', 'aab/a', 'ab/../ac'];
+
+      assert.deepEqual(pm(fixtures, '/**/*'), ['/a', '/a/']);
+      assert.deepEqual(pm(fixtures, '**'), ['/a', '/a/', 'a', 'a/', 'a/a', 'a/b', 'a/c', 'a/x', 'a/x/y', 'a/x/y/z', 'aa/a', 'aaa/a', 'aab/a']);
+      assert.deepEqual(pm(fixtures, '**/**'), ['/a', '/a/', 'a', 'a/', 'a/a', 'a/b', 'a/c', 'a/x', 'a/x/y', 'a/x/y/z', 'aa/a', 'aaa/a', 'aab/a']);
+      assert.deepEqual(pm(fixtures, '**/'), ['/a/', 'a/']);
+      assert.deepEqual(pm(fixtures, '**/*'), ['/a', '/a/', 'a', 'a/', 'a/a', 'a/b', 'a/c', 'a/x', 'a/x/y', 'a/x/y/z', 'aa/a', 'aaa/a', 'aab/a']);
+      assert.deepEqual(pm(fixtures, '**/**/*'), ['/a', '/a/', 'a', 'a/', 'a/a', 'a/b', 'a/c', 'a/x', 'a/x/y', 'a/x/y/z', 'aa/a', 'aaa/a', 'aab/a']);
+
+      assert.deepEqual(pm(fixtures, '**/**/x'), ['a/x']);
+      assert.deepEqual(pm(fixtures, '**/x'), ['a/x']);
+      assert.deepEqual(pm(fixtures, '**/x/*'), ['a/x/y']);
+      assert.deepEqual(pm(fixtures, '*/x/**'), ['a/x/y', 'a/x/y/z']);
+      assert.deepEqual(pm(fixtures, '**/x/**'), ['a/x/y', 'a/x/y/z']);
+      assert.deepEqual(pm(fixtures, '**/x/*/*'), ['a/x/y/z']);
+      assert.deepEqual(pm(fixtures, 'a/**'), ['a/', 'a/a', 'a/b', 'a/c', 'a/x', 'a/x/y', 'a/x/y/z']);
+      assert.deepEqual(pm(fixtures, 'a/**/*'), ['a/a', 'a/b', 'a/c', 'a/x', 'a/x/y', 'a/x/y/z']);
+      assert.deepEqual(pm(fixtures, 'a/**/**/*'), ['a/a', 'a/b', 'a/c', 'a/x', 'a/x/y', 'a/x/y/z']);
+      assert.deepEqual(pm(fixtures, 'b/**'), []);
+
+      assert(!pm.isMatch('a/b', 'a/**/'));
+      assert(!pm.isMatch('a/b/.js/c.txt', '**/*'));
+      assert(!pm.isMatch('a/b/c/d', 'a/**/'));
+      assert(!pm.isMatch('a/bb', 'a/**/'));
+      assert(!pm.isMatch('a/cb', 'a/**/'));
+      assert(pm.isMatch('/a/b', '/**'));
+      assert(pm.isMatch('a.b', '**/*'));
+      assert(pm.isMatch('a.js', '**/*'));
+      assert(pm.isMatch('a.js', '**/*.js'));
+      assert(pm.isMatch('a.md', '**/*.md'));
+      assert(pm.isMatch('a/', 'a/**/'));
+      assert(pm.isMatch('a/a.js', '**/*.js'));
+      assert(pm.isMatch('a/a/b.js', '**/*.js'));
+      assert(pm.isMatch('a/b', 'a/**/b'));
+      assert(pm.isMatch('a/b', 'a/**b'));
+      assert(pm.isMatch('a/b.md', '**/*.md'));
+      assert(pm.isMatch('a/b/c.js', '**/*'));
+      assert(pm.isMatch('a/b/c.txt', '**/*'));
+      assert(pm.isMatch('a/b/c/d/', 'a/**/'));
+      assert(pm.isMatch('a/b/c/d/a.js', '**/*'));
+      assert(pm.isMatch('a/b/c/z.js', 'a/b/**/*.js'));
+      assert(pm.isMatch('a/b/z.js', 'a/b/**/*.js'));
+      assert(pm.isMatch('ab', '**/*'));
+      assert(pm.isMatch('ab/a/d', '**/*'));
+      assert(pm.isMatch('ab/b', '**/*'));
+      assert(pm.isMatch('za.js', '**/*'));
+    });
+
+    it('should support multiple globstars in one pattern', function() {
+      assert(!pm.isMatch('a/b/c/d/e/z/foo.md', 'a/**/j/**/z/*.md'));
+      assert(!pm.isMatch('a/b/c/j/e/z/foo.txt', 'a/**/j/**/z/*.md'));
+      assert(pm.isMatch('a/b/c/d/e/j/n/p/o/z/foo.md', 'a/**/j/**/z/*.md'));
+      assert(pm.isMatch('a/b/c/d/e/z/foo.md', 'a/**/z/*.md'));
+      assert(pm.isMatch('a/b/c/j/e/z/foo.md', 'a/**/j/**/z/*.md'));
+    });
+
+    it('should match dotfiles', function() {
+      var fixtures = ['.gitignore', 'a/b/z/.dotfile', 'a/b/z/.dotfile.js', 'a/b/z/.dotfile.txt', 'a/b/z/.dotfile.md'];
+      assert(!pm.isMatch('.gitignore', 'a/**/z/*.md'));
+      assert(!pm.isMatch('a/b/z/.dotfile', 'a/**/z/*.md'));
+      assert(!pm.isMatch('a/b/z/.dotfile.md', '**/c/.*.md'));
+      assert(pm.isMatch('a/b/z/.dotfile.md', '**/.*.md'));
+      assert(pm.isMatch('a/b/z/.dotfile.md', 'a/**/z/.*.md'));
+      assert.deepEqual(pm(fixtures, 'a/**/z/.*.md'), [ 'a/b/z/.dotfile.md' ]);
+    });
+
+    it('should match file extensions:', function() {
+      assert.deepEqual(pm(['.md', 'a.md', 'a/b/c.md', '.txt'], '**/*.md'), ['a.md', 'a/b/c.md']);
+      assert.deepEqual(pm(['.md', 'a/b/.md'], '**/.md'), ['.md', 'a/b/.md']);
+    });
+
+
+    it('should respect trailing slashes on paterns', function() {
+      var fixtures = ['a', 'a/', 'b', 'b/', 'a/a', 'a/a/', 'a/b', 'a/b/', 'a/c', 'a/c/', 'a/x', 'a/x/', 'a/a/a', 'a/a/b', 'a/a/b/', 'a/a/a/', 'a/a/a/a', 'a/a/a/a/', 'a/a/a/a/a', 'a/a/a/a/a/', 'x/y', 'z/z', 'x/y/', 'z/z/', 'a/b/c/.d/e/'];
+
+      assert.deepEqual(pm(fixtures, '**/*/a/'), ['a/a/', 'a/a/a/', 'a/a/a/a/', 'a/a/a/a/a/']);
+      assert.deepEqual(pm(fixtures, '**/*/a/*/'), ['a/a/b/', 'a/a/a/', 'a/a/a/a/', 'a/a/a/a/a/']);
+      assert.deepEqual(pm(fixtures, '**/*/x/'), ['a/x/']);
+      assert.deepEqual(pm(fixtures, '**/*/*/*/*/'), ['a/a/a/a/', 'a/a/a/a/a/']);
+      assert.deepEqual(pm(fixtures, '**/*/*/*/*/*/'), ['a/a/a/a/a/']);
+      assert.deepEqual(pm(fixtures, '*a/a/*/'), ['a/a/b/', 'a/a/a/']);
+      assert.deepEqual(pm(fixtures, '**a/a/*/'), ['a/a/b/', 'a/a/a/']);
+      assert.deepEqual(pm(fixtures, '**/a/*/*/'), ['a/a/b/', 'a/a/a/', 'a/a/a/a/', 'a/a/a/a/a/']);
+      assert.deepEqual(pm(fixtures, '**/a/*/*/*/'), ['a/a/a/a/', 'a/a/a/a/a/']);
+      assert.deepEqual(pm(fixtures, '**/a/*/*/*/*/'), ['a/a/a/a/a/']);
+      assert.deepEqual(pm(fixtures, '**/a/*/a/'), ['a/a/a/', 'a/a/a/a/', 'a/a/a/a/a/']);
+      assert.deepEqual(pm(fixtures, '**/a/*/b/'), ['a/a/b/']);
+    });
+
+    it('should match slashes', function() {
+      assert.deepEqual(pm(['/../c'], '/**/*'), []);
+      assert.deepEqual(pm(['/', '.'], '**'), ['/']);
+      assert.deepEqual(pm(['/', '.'], '**/'), ['/']);
+    });
+
+    it('should match literal globstars when escaped', function() {
+      var fixtures = ['.md', '**a.md', '**.md', '.md', '**'];
+      assert.deepEqual(pm(fixtures, '\\*\\**.md'), ['**a.md', '**.md']);
+      assert.deepEqual(pm(fixtures, '\\*\\*.md'), ['**.md']);
+    });
+
+    // related to https://github.com/isaacs/minimatch/issues/67
+    it('should work consistently with `makeRe` and matcher functions', function() {
+      var re = pm.makeRe('node_modules/foobar/**/*.bar');
+      assert(re.test('node_modules/foobar/foo.bar'));
+      assert(pm.isMatch('node_modules/foobar/foo.bar', 'node_modules/foobar/**/*.bar'));
+      assert.deepEqual(pm(['node_modules/foobar/foo.bar'], 'node_modules/foobar/**/*.bar'), ['node_modules/foobar/foo.bar']);
+    });
+  });
+
+  describe('dotfiles', function() {
+    describe('file name matching', function() {
+      it('should not match a dot when the dot is not explicitly defined', function() {
+        assert(!pm.isMatch('.dot', '*dot'));
+        assert(!pm.isMatch('a/.dot', 'a/*dot'));
+      });
+
+      it('should not match leading dots with question marks', function() {
+        assert(!pm.isMatch('.dot', '?dot'));
+        assert(!pm.isMatch('/.dot', '/?dot'));
+        assert(!pm.isMatch('a/.dot', 'a/?dot'));
+      });
+
+      it('should match with double dots', function() {
+        var fixtures = ['a/../a', 'ab/../ac', '../a', 'a', '../../b', '../c', '../c/d'];
+        assert.deepEqual(pm(fixtures, '../*'), ['../a', '../c']);
+        assert.deepEqual(pm(fixtures, '*/../*'), ['a/../a', 'ab/../ac']);
+        assert.deepEqual(pm(fixtures, '**/../*'), ['a/../a', 'ab/../ac', '../a', '../c']);
+      });
+
+      it('should not match a dot when the dot is not explicitly defined', function() {
+        var fixtures = ['a/b/.x', '.x', '.x/', '.x/a', '.x/a/b', '.x/.x', 'a/.x', 'a/b/.x/c', 'a/b/.x/c/d', 'a/b/.x/c/d/e', 'a/b/.x/', 'a/.x/b', 'a/.x/b/.x/c'];
+        assert.deepEqual(pm(fixtures, '**/.x/**'), ['.x/', '.x/a', '.x/a/b', 'a/b/.x/c', 'a/b/.x/c/d', 'a/b/.x/c/d/e', 'a/b/.x/', 'a/.x/b']);
+      });
+
+      it('should match a dot when the dot is explicitly defined', function() {
+        // first one is from minimatch tests
+        var fixtures = ['a/b/.x/c', 'a/b/.x/c/d', 'a/b/.x/c/d/e', 'a/b/.x', 'a/b/.x/', 'a/.x/b', '.x', '.x/', '.x/a', '.x/a/b', 'a/.x/b/.x/c', '.x/.x'];
+        var expected = ['.x/', '.x/a', '.x/a/b', 'a/.x/b', 'a/b/.x/', 'a/b/.x/c', 'a/b/.x/c/d', 'a/b/.x/c/d/e'];
+
+        assert.deepEqual(pm(fixtures, '**/.x/**').sort(), expected.sort());
+        assert.deepEqual(pm('/.dot', '/[.]dot'), ['/.dot']);
+        assert.deepEqual(pm('.dot', '[.]dot'), ['.dot']);
+        assert.deepEqual(pm('.dot', '.[d]ot'), ['.dot']);
+        assert.deepEqual(pm('.dot', '.dot*'), ['.dot']);
+        assert.deepEqual(pm('.dot', '.d?t'), ['.dot']);
+
+        assert(pm.isMatch('.bar.baz', '.*.*'));
+        assert(!pm.isMatch('.bar.baz', '.*.*/'));
+        assert(pm.isMatch('/.dot', '**/.[d]ot'));
+        assert(pm.isMatch('/.dot', '**/.dot*'));
+        assert(pm.isMatch('/.dot', '**/[.]dot'));
+        assert(pm.isMatch('.bar.baz/', '.*.*'));
+        assert(pm.isMatch('.bar.baz', '.*.*'));
+        assert(pm.isMatch('.bar.baz', '.*.baz'));
+        assert(pm.isMatch('.bar.baz/', '.*.*/'));
+        assert(pm.isMatch('.dot', '.*ot'));
+        assert(pm.isMatch('.dot', '.[d]ot'));
+        assert(pm.isMatch('.dot.foo.bar', '.*ot.*.*'));
+        assert(pm.isMatch('.dotfile.js', '.*.js'));
+        assert(pm.isMatch('/.dot', '/.[d]ot'));
+        assert(pm.isMatch('/.dot', '/.dot*'));
+        assert(pm.isMatch('/.dot', '/[.]dot'));
+        assert(pm.isMatch('a/.dot', '**/.[d]ot'));
+        assert(pm.isMatch('a/.dot', '*/.[d]ot'));
+        assert(pm.isMatch('a/.dot', '*/.dot*'));
+        assert(pm.isMatch('a/b/.dot', '**/.[d]ot'));
+        assert(pm.isMatch('a/b/.dot', '**/.dot*'));
+        assert(pm.isMatch('a/b/.dot', '**/[.]dot'));
+      });
+    });
+
+    describe('multiple directories', function() {
+      it('should not match a dot when the dot is not explicitly defined', function() {
+        assert(!pm.isMatch('.dot', '**/*dot'));
+        assert(!pm.isMatch('.dot', '**/?dot'));
+        assert(!pm.isMatch('.dot', '*/*dot'));
+        assert(!pm.isMatch('.dot', '*/?dot'));
+        assert(!pm.isMatch('.dot', '/*dot'));
+        assert(!pm.isMatch('.dot', '/?dot'));
+        assert(!pm.isMatch('/.dot', '**/*dot'));
+        assert(!pm.isMatch('/.dot', '**/?dot'));
+        assert(!pm.isMatch('/.dot', '*/*dot'));
+        assert(!pm.isMatch('/.dot', '*/?dot'));
+        assert(!pm.isMatch('/.dot', '/*dot'));
+        assert(!pm.isMatch('/.dot', '/?dot'));
+        assert(!pm.isMatch('a/.dot', '*/*dot'));
+        assert(!pm.isMatch('a/.dot', '*/?dot'));
+        assert(!pm.isMatch('a/b/.dot', '**/*dot'));
+        assert(!pm.isMatch('a/b/.dot', '**/?dot'));
+
+        // related https://github.com/jonschlinkert/micromatch/issues/63
+        assert(!pm.isMatch('/aaa/bbb/.git', '/aaa/bbb/**'));
+        assert(!pm.isMatch('aaa/bbb/.git', 'aaa/bbb/**'));
+        assert(!pm.isMatch('/aaa/bbb/ccc/.git', '/aaa/bbb/**'));
+      });
+    });
+
+    describe('options.dot', function() {
+      it('should match dotfiles when `options.dot` is true', function() {
+        assert(pm.isMatch('/a/b/.dot', '**/*dot', {dot: true}));
+        assert(pm.isMatch('/a/b/.dot', '**/.[d]ot', {dot: true}));
+        assert(pm.isMatch('/a/b/.dot', '**/?dot', {dot: true}));
+        assert(pm.isMatch('.dotfile.js', '.*.js', {dot: true}));
+        assert(pm.isMatch('.dot', '*dot', {dot: true}));
+        assert(pm.isMatch('.dot', '?dot', {dot: true}));
+        assert(pm.isMatch('/a/b/.dot', '/**/*dot', {dot: true}));
+        assert(pm.isMatch('/a/b/.dot', '/**/.[d]ot', {dot: true}));
+        assert(pm.isMatch('/a/b/.dot', '/**/?dot', {dot: true}));
+        assert(pm.isMatch('a/b/.dot', '**/*dot', {dot: true}));
+        assert(pm.isMatch('a/b/.dot', '**/.[d]ot', {dot: true}));
+        assert(pm.isMatch('a/b/.dot', '**/?dot', {dot: true}));
+      });
+
+      it('should not match dotfiles when `options.dot` is false', function() {
+        assert(!pm.isMatch('a/b/.dot', '**/*dot', {dot: false}));
+        assert(!pm.isMatch('a/b/.dot', '**/?dot', {dot: false}));
+      });
+
+      it('should not match dotfiles when `.dot` is not defined and a dot is not in the glob pattern', function() {
+        assert(!pm.isMatch('a/b/.dot', '**/*dot'));
+        assert(!pm.isMatch('a/b/.dot', '**/?dot'));
+      });
     });
   });
 });
