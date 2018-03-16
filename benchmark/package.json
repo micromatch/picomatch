@@ -1,0 +1,32 @@
+{
+  "name": "picomatch-benchmarks",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "devDependencies": {
+    "benchmarked": "^2.0.0",
+    "micromatch": "^3.1.0",
+    "minimatch": "^3.0.4",
+    "minimist": "^1.2.0",
+    "multimatch": "^2.1.0",
+    "nanomatch": "^1.2.3",
+    "write": "^1.0.3"
+  },
+  "lintDeps": {
+    "dependencies": {
+      "files": {
+        "options": {
+          "ignore": [
+            "index.js"
+          ]
+        }
+      }
+    },
+    "devDependencies": {
+      "files": [
+        "code/**/*.js",
+        "*.js"
+      ]
+    }
+  }
+}
