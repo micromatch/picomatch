@@ -15,18 +15,24 @@ describe('picomatch', function() {
       assert.deepEqual(pm(['foo', 'bar', 'fab'], ['!*a*']), ['foo']);
       assert.deepEqual(pm(['foo', 'bar', 'fab'], ['!f*b']), ['foo', 'bar']);
       assert.deepEqual(pm(['foo', 'bar', 'fab'], ['f*', '!f*b']), ['foo']);
-      assert.deepEqual(pm(fixtures.concat('a'), '!*/*'), ['a']);
-      assert.deepEqual(pm(fixtures.concat('a'), '!*'), ['a/a', 'a/b', 'a/c', 'b/a', 'b/b', 'b/c']);
-      assert.deepEqual(pm(fixtures, ['*/*', '!a/*']), ['b/a', 'b/b', 'b/c']);
-      assert.deepEqual(pm(fixtures, ['!a/*', '*/*']), ['b/a', 'b/b', 'b/c']);
-      assert.deepEqual(pm(fixtures, ['!a/*']), ['b/a', 'b/b', 'b/c']);
-      assert.deepEqual(pm(fixtures, '!*/b'), ['a/a', 'a/c', 'b/a', 'b/c']);
-      assert.deepEqual(pm(fixtures, '!a/*'), ['b/a', 'b/b', 'b/c']);
-      assert.deepEqual(pm(fixtures, '!a/b'), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
-      assert.deepEqual(pm(fixtures, '!a/(b)'), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
-      assert.deepEqual(pm(fixtures, '!a/(*)'), ['b/a', 'b/b', 'b/c']);
       assert.deepEqual(pm(fixtures, '!(*/b)'), ['a/a', 'a/c', 'b/a', 'b/c']);
       assert.deepEqual(pm(fixtures, '!(a/b)'), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, '!*/b'), ['a/a', 'a/c', 'b/a', 'b/c']);
+      assert.deepEqual(pm(fixtures, '!a/(*)'), ['b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, '!a/(b)'), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, '!a/*'), ['b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, '!a/b'), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, ['!(a/b)']), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, ['!a/(b)']), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, ['!a/*', '*/*']), ['b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, ['!a/*']), ['b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, ['!a/b', '!*/c']), ['a/a', 'b/a', 'b/b']);
+      assert.deepEqual(pm(fixtures, ['!a/b', '!a/c']), ['a/a', 'b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, ['!a/b']), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, ['*/*', '!a/*']), ['b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures, ['*/*', '!a/b', '!*/c']), ['a/a', 'b/a', 'b/b']);
+      assert.deepEqual(pm(fixtures.concat('a'), '!*'), ['a/a', 'a/b', 'a/c', 'b/a', 'b/b', 'b/c']);
+      assert.deepEqual(pm(fixtures.concat('a'), '!*/*'), ['a']);
     });
 
     it('should support negation with nested directories',function() {
@@ -84,16 +90,6 @@ describe('picomatch', function() {
       assert.deepEqual(pm(fixtures, ['a/**/**/**/*']), ['a/a', 'a/b', 'a/c', 'a/x', 'a/x/y', 'a/x/y/z']);
       assert.deepEqual(pm(['a/b/foo/bar/baz.qux'], 'a/b/**/bar/**/*.*'), ['a/b/foo/bar/baz.qux']);
       assert.deepEqual(pm(['a/b/bar/baz.qux'], 'a/b/**/bar/**/*.*'), ['a/b/bar/baz.qux']);
-    });
-
-    it('should support negation patterns', function() {
-      var fixtures = ['a/a', 'a/b', 'a/c', 'b/a', 'b/b', 'b/c'];
-      assert.deepEqual(pm(fixtures, ['!a/b']), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
-      assert.deepEqual(pm(fixtures, ['*/*', '!a/b', '!*/c']), ['a/a', 'b/a', 'b/b']);
-      assert.deepEqual(pm(fixtures, ['!a/b', '!*/c']), ['a/a', 'b/a', 'b/b']);
-      assert.deepEqual(pm(fixtures, ['!a/b', '!a/c']), ['a/a', 'b/a', 'b/b', 'b/c']);
-      assert.deepEqual(pm(fixtures, ['!a/(b)']), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
-      assert.deepEqual(pm(fixtures, ['!(a/b)']), ['a/a', 'a/c', 'b/a', 'b/b', 'b/c']);
     });
 
     it('should work with file extensions', function() {
@@ -926,7 +922,6 @@ describe('picomatch', function() {
       assert.deepEqual(pm(['.md', 'a.md', 'a/b/c.md', '.txt'], '**/*.md'), ['a.md', 'a/b/c.md']);
       assert.deepEqual(pm(['.md', 'a/b/.md'], '**/.md'), ['.md', 'a/b/.md']);
     });
-
 
     it('should respect trailing slashes on paterns', function() {
       var fixtures = ['a', 'a/', 'b', 'b/', 'a/a', 'a/a/', 'a/b', 'a/b/', 'a/c', 'a/c/', 'a/x', 'a/x/', 'a/a/a', 'a/a/b', 'a/a/b/', 'a/a/a/', 'a/a/a/a', 'a/a/a/a/', 'a/a/a/a/a', 'a/a/a/a/a/', 'x/y', 'z/z', 'x/y/', 'z/z/', 'a/b/c/.d/e/'];

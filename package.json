@@ -14,19 +14,34 @@
   ],
   "main": "index.js",
   "engines": {
-    "node": ">=4"
+    "node": ">=0.10.0"
   },
   "scripts": {
     "test": "mocha"
   },
+  "devDependencies": {
+    "multimatch": "^2.1.0",
+    "micromatch": "^3.1.9",
+    "minimatch": "^3.0.4",
+    "nanomatch": "^1.2.9",
+    "gulp-format-md": "^1.0.0",
+    "mocha": "^3.5.3"
+  },
   "keywords": [
-    "generategenerator",
+    "glob",
+    "match",
     "picomatch"
   ],
-  "devDependencies": {
-    "gulp-format-md": "^0.1.12",
-    "mocha": "^3.2.0",
-    "nanomatch": "^1.1.1"
+  "lintDeps": {
+    "devDependencies": {
+      "files": {
+        "options": {
+          "ignore": [
+            "benchmark/**"
+          ]
+        }
+      }
+    }
   },
   "verb": {
     "toc": false,
@@ -40,8 +55,5 @@
     "lint": {
       "reflinks": true
     }
-  },
-  "dependencies": {
-    "to-regex": "^3.0.1"
   }
 }
