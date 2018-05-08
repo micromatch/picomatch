@@ -55,5 +55,10 @@
     "lint": {
       "reflinks": true
     }
+  },
+  "dependencies": {
+    "fast-glob": "^2.2.0",
+    "time-require": "github:jonschlinkert/time-require",
+    "tiny-glob": "^0.2.0"
   }
 }
