@@ -1,366 +1,365 @@
 'use strict';
 
-module.exports = (str, options = {}, negated) => {
-  let prefix = '^' + (options.prefix || '');
+const GLOBSTAR_DOT = '(?:(?!(?:\\/|^)(?:\\.{1,2})($|\\/)).)*?';
+const GLOBSTAR_NO_DOT = '(?:(?!(?:\\/|^)\\.).)*?';
+const QMARK_NO_DOT = '[^/.]';
+const QMARK = '[^/]';
+const STAR = `${QMARK}*?`;
+const NO_DOT = '(?!\\.)';
+const MAX_LENGTH = 1024 * 64;
 
-  if (str.slice(0, 2) === './') {
-    str = str.slice(2);
+module.exports = (input, options = {}) => {
+  let max = (options.maxLength) || MAX_LENGTH;
+
+  if (typeof input !== 'string') {
+    throw new TypeError('expected input to be a string');
   }
 
-  let dot = false;
-  let idx = -1;
-  let ch;
-  let lastChar;
-  let qmark = '[^/]';
-  let qmarkNoDot = '[^/.]';
-  let star = () => options.star || `${qmark}*?`;
+  if (input.length > max) {
+    throw new RangeError(`input string must not be longer than ${max} bytes`);
+  }
 
-  let ast = { type: 'root', nodes: [] };
-  let chars = [...str];
+  const ast = { type: 'root', nodes: [], stash: [] };
+  let state = { input, ast, dot: options.dot };
+  let prefix = options.prefix || '';
+  let stack = [ast];
   let extglobs = [];
-  let queue = [];
-  let stack = [];
-  let stacks = {
-    all: [],
-    angles: [],
-    braces: [],
-    brackets: [],
-    parens: [],
-    quotes: [],
-    other: [],
-    length: 0,
-    last() {
-      return this.all[this.all.length - 1];
-    },
-    push(type, value) {
-      this.length++;
-      stack.push({type, value: ''});
-      this.all.push(value);
-      this[type].push(value);
-      return value;
-    },
-    pop(type) {
-      this.length--;
-      stack.pop();
-      this.all.pop();
-      return this[type].pop();
+  let base = '';
+  let glob = '';
+  let i = -1;
+
+  let wrap = str => `^${str}$`;
+  let args, boundary, brace, bracket, charClass, dots, inner, left, match, node, paren, prev, qmark, quoted, star, stars;
+
+  if (input.startsWith('./')) {
+    input = input.slice(2);
+    state.prefix = './';
+  }
+
+  if (input === '**/**' || input === '**/**/**') {
+    input = '**';
+  }
+
+  if (options.nonegate !== true && input[0] === '!' && (input[1] !== '(' || input[2] === '?')) {
+    wrap = str => `^(?!^${str}$).*$`;
+    state.negated = true;
+    input = input.slice(1);
+  }
+
+  const isSpecialChar = ch => /^["`'$()*+-.?\\[\]^{|}]$/.test(ch);
+  const last = () => stack[stack.length - 1];
+  const peek = (n = 1) => input[i + n];
+  const rest = () => input.slice(i + 1);
+  const next = () => input[++i];
+
+  const extglob = value => {
+    let block = last();
+    state.wildcard = true;
+    paren = options.capture === true ? '(' : '(?:';
+    node = { type: 'paren', extglob: true, prefix: value, stash: [], nodes: [] };
+    node.stash = value === '!' ? [`${paren}(?!(?:`] : [paren];
+    if (block.type === 'paren') {
+      Reflect.defineProperty(node, 'parent', { value: block });
+      block.nodes.push(node);
     }
-  };
-
-  const stash = [{ type: 'bos', value: '' }];
-  const seen = [];
-  const state = {
-    negated,
-    prefix,
-    suffix: (options.suffix || '') + '$',
-    hasGlobstar: false,
-    stash,
-    stacks,
-    queue,
-    extglobs,
-    seen
-  };
-
-  const start = dot => {
-    return dot ? '' : (options.dot ? '(?!(?:^|\\/)\\.{1,2}(?:$|\\/))' : '(?!\\.)');
-  };
-
-  const globstar = dot => {
-    if (dot || options.dot === true) {
-      return '(?:(?!(?:\\/|^)(?:\\.{1,2})($|\\/)).)*?';
-    }
-    return '(?:(?!(?:\\/|^)\\.).)*?';
-  };
-
-  const eos = () => idx >= chars.length;
-  const isInside = type => type ? stacks[type].length > 0 : stacks.length > 0;
-  const consume = n => {
-    if (ch) seen.push(ch);
-    return !eos() ? (idx += n) : false;
-  };
-  const advance = () => consume(1) !== false ? chars[idx] : '';
-  const enqueue = val => queue.push(val);
-  const dequeue = () => queue.length && queue.shift();
-  const lookahead = n => {
-    let fetch = n - queue.length;
-    while (fetch-- > 0 && enqueue(advance()));
-    return queue[--n];
-  };
-  const lookbehind = n => stash[stash.length - Math.abs(n)];
-  const rest = () => chars.slice(idx);
-  const prev = () => lookbehind(1);
-  const peek = () => lookahead(1) || '';
-  const next = () => {
-    lastChar = ch;
-    return (ch = dequeue() || advance() || '');
-  };
-  const last = arr => arr[arr.length - 1];
-  const append = val => {
-    let prev = last(stash);
-    let after = rest();
-
-    if (prev.optional === true && !after.includes('*')) {
-      if (prev.value === '' && after.length) {
-      // console.log(prev)
-        // prev.value = '?';
-      } else if (!after.length) {
-        // if (prev.value === '(?=.)/?') prev.value = '';
-        // val += '/?';
-      }
-    }
-
-    if (stack.length) {
-      stack[stack.length - 1].value += (val || '');
-    }
-    stash[stash.length - 1].value += (val || '');
-  };
-
-  function parse() {
-    if (eos()) return;
-    let prior;
-    let extglob;
-    let tok;
+    extglobs.push(node);
+    stack.push(node);
     next();
+  };
 
-    switch (ch) {
-      case '\\':
-        append(ch + next());
+  while (i < input.length - 1) {
+    let value = next();
+    let block = last();
+    let p = peek();
+
+    if (value === '\\') {
+      if (options.bash === true) {
+        block.stash.push(!isSpecialChar(p) ? '\\\\' : '');
+      } else {
+        block.stash.push('\\' + next());
+      }
+      state.prev = value;
+      continue;
+    }
+
+    if (block.type === 'quote' && value !== '"' && value !== "'" && value !== '`') {
+      state.prev = value;
+      block.stash.push(isSpecialChar(value) ? `\\${value}` : value);
+      continue;
+    }
+
+    if (block.type === 'bracket' && value !== ']') {
+      state.prev = value;
+      block.stash.push(value);
+      continue;
+    }
+
+    switch (value) {
+      case '[':
+        state.wildcard = true;
+        node = { type: 'bracket', stash: [value], nodes: [] };
+        if (peek() === ']') node.stash.push(`\\${next()}`);
+        stack.push(node);
+        break;
+      case ']':
+        if (block.type !== 'bracket') {
+          block.stash.push('\\]');
+          break;
+        }
+
+        bracket = stack.pop();
+        block = last();
+        if (bracket.stash[1] === '^' && !bracket.stash.includes('/') && p !== void 0) {
+          bracket.stash.push('/');
+        }
+
+        inner = bracket.stash.slice(1).join('');
+        left = inner.replace(/\W/g, '\\$&');
+        block.stash.push(`(?:\\[${left}\\]|[${inner}])`);
+        break;
+
+      case '(':
+        if (!/\)/.test(rest())) {
+          block.stash.push('\\(');
+          break;
+        }
+
+        node = { type: 'paren', stash: [value], nodes: [] };
+        stack.push(node);
+
+        if (block.type === 'paren') {
+          block.nodes.push(node);
+        }
+        break;
+      case ')':
+        paren = stack.pop();
+        inner = paren.stash.join('');
+        block = last();
+
+        if (paren.prefix) {
+          state.wildcard = true;
+          boundary = /([)}]|^$)/.test(rest()) ? '$' : '';
+          extglobs.pop();
+        }
+
+        switch (paren.prefix) {
+          case '!':
+            star = (options.bash || paren.stash.includes('\\/')) ? '.*?' : STAR;
+            block.stash.push(`${inner})${boundary})${star})`);
+            break;
+          case '*':
+          case '+':
+          case '?':
+            block.stash.push(`${inner})${paren.prefix}`);
+            break;
+          case '@':
+          default: {
+            block.stash.push(`${inner})`);
+            break;
+          }
+        }
+        break;
+      case '{':
+        state.wildcard = true;
+        stack.push({ type: 'brace', stash: [value], nodes: [] });
+        break;
+      case '}':
+        if (block.type !== 'brace') {
+          block.stash.push('\\}');
+          break;
+        }
+
+        brace = stack.pop();
+        block = last();
+
+        if (typeof options.braces === 'function') {
+          brace.stash.push('}');
+          block.stash.push(options.braces(...brace.stash));
+          break;
+        }
+
+        if (brace.stash.includes('..')) {
+          inner = brace.stash.filter(v => v !== '{');
+          dots = inner.indexOf('..');
+          args = [inner.slice(0, dots).join(''), inner.slice(dots + 1).join('')];
+
+          if (typeof options.toRange === 'function') {
+            block.stash.push(options.toRange(...args));
+            break;
+          }
+
+          charClass = `[${args.join('-')}]`;
+          try {
+            /* eslint-disable no-new */
+            new RegExp(charClass);
+          } catch (ex) {
+            charClass = `[${args.map(v => `\\${v}`).join('-')}]`;
+          }
+
+          block.stash.push(charClass);
+          break;
+        }
+
+        block.stash.push('(' + brace.stash.slice(1).join('') + ')');
+        break;
+      case '!':
+        if (p === '(' && peek(2) !== '?') {
+          extglob(value);
+          break;
+        }
+
+        if (i === 0) {
+          state.negated = true;
+          break;
+        }
+
+        block.stash.push(value);
+        break;
+      case '*':
+        if (p === '(' && peek(2) !== '?') {
+          extglob(value);
+          break;
+        }
+
+        prev = state.prev;
+        stars = value;
+
+        while ((p = peek()) === '*') stars += next();
+        if (stars.length > 2 || options.noextglob === true) stars = '*';
+        if (p && p !== '/' && p !== ')' || (prev && prev !== '/')) stars = '*';
+        if (options.dot !== true) {
+          if (!state.dot && ((i === 0 && !state.negated) || prev === '/')) {
+            if (stars.length === 1) {
+              block.stash.push('(?=.)');
+              block.stash.push('(?!^\\/)');
+            }
+
+            block.stash.push(NO_DOT);
+          }
+        }
+
+        state.wildcard = true;
+        if (stars === '**') {
+          state.globstar = true;
+          block.stash.push(options.dot || p === '.' ? GLOBSTAR_DOT : GLOBSTAR_NO_DOT);
+          block.nodes.push({ type: 'globstar' });
+        } else {
+          block.stash.push(options.bash ? '.*?' : STAR);
+        }
+        break;
+      case '?':
+        if (p === '(' && peek(2) !== '?') {
+          extglob(value);
+          break;
+        }
+
+        if (state.prev === '(') {
+          match = /^([!=:]|<[!=])/.exec(input.slice(i + 1));
+          if (match) {
+            if (match[1] === '<!' || match[1] === '<=') {
+              let v = process.version;
+              if (parseInt(v.slice(1), 10) < 10) {
+                throw new Error('Node.js v10 or higher is required for regex lookbehinds');
+              }
+            }
+            block.stash.push(value);
+            break;
+          }
+        }
+
+        qmark = value;
+        while ((p = peek()) === '?') qmark += next();
+
+        if ((i === 0 || state.prev === '/') && options.dot !== true) {
+          block.stash.push(QMARK_NO_DOT);
+        } else {
+          block.stash.push(options.bash ? '.' : QMARK);
+        }
+
+        if (qmark.length > 1) {
+          block.stash.push(`{${qmark.length}}`);
+        }
+        break;
+      case '@':
+        if (p === '(' && peek(2) !== '?') {
+          extglob(value);
+          break;
+        }
+
+        block.stash.push(value);
+        break;
+      case '+':
+        if (p === '(' && peek(2) !== '?') {
+          extglob(value);
+          break;
+        }
+        if (block.type !== 'paren' && state.prev !== ']' && state.prev !== ')') {
+          block.stash.push('\\');
+        }
+        block.stash.push('+');
         break;
       case '/':
-        tok = prev();
-        stash.push({ type: 'slash', value: '', optional: tok.globstar });
+        block.stash.push(`\\${value}`);
+        if (i !== input.length - 1 && (input.slice(i - 2, i) === '**' || rest() === '**') && p !== '[' && p !== '(' && isSpecialChar(state.prev)) {
+          block.stash.push('?');
+        }
+
+        break;
+      case '.':
+        if (block.type === 'brace') {
+          while ((p = peek()) === '.') value += next();
+          block.stash.push(value);
+          break;
+        }
+
+        if ((i === 0 || state.prev === '/' || state.prev === '}' || state.prev === ')')) {
+          state.dot = true;
+        }
+        block.stash.push('\\.');
+        break;
+      case ',':
+        block.stash.push(block.type === 'brace' ? '|' : ',');
+        break;
+      case '|':
+        if (block.type !== 'brace' && block.type !== 'paren') {
+          block.stash.push('\\');
+        }
+        block.stash.push('|');
         break;
       case '"':
       case "'":
       case '`':
-        if (last(stacks.quotes) !== ch) {
-          stacks.push('quotes', ch);
-        } else {
-          stacks.pop('quotes');
-        }
-        append(ch);
-        break;
-      case '“':
-        stacks.push('quotes', ch);
-        append(ch);
-        break;
-      case '”':
-        stacks.pop('quotes');
-        append(ch);
-        break;
-      case '(':
-      case '<':
-      case '{':
-      case '[':
-        if (stacks.length) {
-          append(ch);
-        } else {
-          switch (ch) {
-            case '(':
-              stacks.push('parens', ch);
-              switch (last(extglobs)) {
-                case '!':
-                  ch = '(?:(?!(?:';
-                  break;
-                case '*':
-                case '+':
-                case '?':
-                case '@': {
-                  ch = '(?:';
-                  break;
-                }
-              }
-              break;
-            case '<':
-              stacks.push('angles', ch);
-              break;
-            case '{':
-              stacks.push('braces', ch);
-              break;
-            case '[': {
-              append('(?:');
-              stacks.push('brackets', ch);
-              break;
-            }
-          }
-
-          append(ch);
-        }
-        break;
-      case ')':
-      case '>':
-      case '}':
-      case ']':
-        if (!stacks.length) {
-          throw new Error('missing opening: ' + ch);
-        }
-
-        if (/[[({<]/.test(stacks.last())) {
-          if (ch === ')') {
-            extglob = extglobs.pop();
-            prior = prev();
-
-            if (extglob) {
-              prior.extglob = true;
-            } else {
-              prior.capture = true;
-            }
-
-            switch (extglob) {
-              case '!':
-                append(`)${peek() ? '' : '$'})${star()})`);
-                break;
-              case '*':
-              case '+':
-              case '?':
-                append(ch + extglob);
-                break;
-              case '@':
-              default: {
-                append(ch);
-                break;
-              }
-            }
+        if (block.type === 'quote' && block.stash[0] === value) {
+          quoted = stack.pop();
+          if (options.keepQuotes !== true) {
+            quoted.stash = quoted.stash.slice(1);
           } else {
-            if (ch === ']') {
-              let bracket = stack[stack.length - 1];
-              append(`${ch}|\\${bracket.value}\\])`);
-            } else {
-              append(ch);
-            }
+            quoted.stash.push(value);
           }
-
-          stacks.pop(stackType(ch));
+          block = last();
+          block.stash.push(quoted.stash.join(''));
         } else {
-          append(ch);
+          block = { type: 'quote', stash: [value], nodes: [] };
+          stack.push(block);
         }
         break;
-      case '.':
-        prior = prev();
-
-        if (lastChar === '' || lastChar === '/') {
-          dot = true;
-        }
-
-        append('\\' + ch);
-        prior.dot = true;
-        break;
-      case '!':
-        if (stash.length === 1 && prev().value === '' && peek() !== '(') {
-          state.prefix = '^(?!' + state.prefix;
-          state.suffix += ').*$';
-          state.negated = true;
-          break;
-        }
-        /* fall through */
-      case '@':
-      case '?':
-      case '*':
-      case '+':
-        let nextChar = peek();
-        if (nextChar === '(') {
-          extglobs.push(ch);
-          break;
-        }
-
-        prior = prev();
-
-        if (ch === '+') {
-          append((/(^$|\w$)/.test(prior.value) ? '\\' : '') + ch);
-          break;
-        }
-
-        if (ch === '*') {
-          let isGlobstar = false;
-
-          while (peek() === '*') {
-            isGlobstar = state.hasGlobstar = true;
-            dequeue();
-          }
-
-          if (isGlobstar) {
-            prior.globstar = true;
-            // if (lastChar === '/') append('?');
-            append(globstar(dot));
-            dot = false;
-            break;
-          }
-
-          if (prior.type === 'slash' && !isGlobstar) {
-            let after = rest();
-
-            if (prior.optional === true && prior.value === '' && after.length) {
-              // prior.value = '?';
-            }
-
-            if (lastChar === '/' && after[0] !== '.') {
-              append(start(dot));
-            }
-          }
-
-          append(star());
-          break;
-        }
-
-        if (ch === '?') {
-          if (lastChar === '(') {
-            break;
-          }
-
-          if (lastChar === '/' && !dot) {
-            append('[^./]');
-            break;
-          }
-
-          append(qmark);
-          break;
-        }
-
-        append('\\' + ch);
-        break;
-      case ':':
-        prev().capture = true;
-        break;
-      case '~':
-      case '&':
-        append(ch);
-        break;
-
       default: {
-        append(ch);
+        block.stash.push(isSpecialChar(value) ? `\\${value}` : value);
         break;
       }
     }
-
-    parse();
+    state.prev = value;
   }
 
-  parse();
-
-  const first = state.stash[0];
-  if (!state.negated && !dot && first.globstar !== true) {
-    first.value = '(?!\\.)' + first.value;
+  let output = ast.stash.join('');
+  if (!output.startsWith('(?=.)') && isSpecialChar(input[0])) {
+    output = '(?=.)' + output;
   }
 
+  if (options.strict !== true && input.slice(-1) !== '/' && !input.endsWith('/*')) {
+    output += '\\/?';
+  }
+
+  state.output = wrap(prefix + output);
   return state;
 };
-
-function stackType(ch) {
-  switch (ch) {
-    case '<':
-    case '>':
-      return 'angles';
-    case '{':
-    case '}':
-      return 'braces';
-    case '[':
-    case ']':
-      return 'brackets';
-    case '(':
-    case ')':
-      return 'parens';
-    default: {
-      return 'other';
-    }
-  }
-}

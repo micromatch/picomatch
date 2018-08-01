@@ -1,12 +1,12 @@
 {
-  "name": "picomatch",
+  "name": "@folder/picomatch",
   "description": "Tiny, minimalist glob matching library written in JavaScript.",
-  "version": "0.1.0",
-  "homepage": "https://github.com/jonschlinkert/picomatch",
+  "version": "1.0.0",
+  "homepage": "https://github.com/folder/picomatch",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
-  "repository": "jonschlinkert/picomatch",
+  "repository": "folder/folder",
   "bugs": {
-    "url": "https://github.com/jonschlinkert/picomatch/issues"
+    "url": "https://github.com/folder/picomatch/issues"
   },
   "license": "MIT",
   "files": [
@@ -14,31 +14,30 @@
   ],
   "main": "index.js",
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=8"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "cover": "nyc --reporter=text --reporter=html mocha"
   },
   "devDependencies": {
+    "ansi-colors": "^2.0.5",
+    "bash-match": "file:../bash-match",
+    "benchmark": "^2.1.4",
+    "fill-range": "^6.0.0",
     "gulp-format-md": "^1.0.0",
-    "mocha": "^5.2.0"
+    "micromatch": "^3.1.10",
+    "minimatch": "^3.0.4",
+    "minimist": "^1.2.0",
+    "mocha": "^5.2.0",
+    "multimatch": "^2.1.0",
+    "nyc": "^12.0.2"
   },
   "keywords": [
     "glob",
     "match",
     "picomatch"
   ],
-  "lintDeps": {
-    "devDependencies": {
-      "files": {
-        "options": {
-          "ignore": [
-            "benchmark/**"
-          ]
-        }
-      }
-    }
-  },
   "verb": {
     "toc": false,
     "layout": "default",
