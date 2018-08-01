@@ -1,26 +1,49 @@
 'use strict';
 
-module.exports = (str, options = {}, negated) => {
+module.exports = (input, options = {}, negated) => {
   let prefix = '^' + (options.prefix || '');
 
-  if (str.slice(0, 2) === './') {
-    str = str.slice(2);
+  if (input.slice(0, 2) === './') {
+    input = input.slice(2);
   }
 
-  let dot = false;
+  let segs = input.split('/');
+  let state = {
+    negated,
+    prefix,
+    suffix: (options.suffix || '') + '$',
+    segs,
+    input,
+    parts: [],
+    patterns: {},
+    dot: false,
+    globstar: false
+  };
+
+  for (let seg of segs) {
+    state.parts.push(parse(seg, options, state));
+  }
+
+  console.log(state.parts)
+    // console.log(state.parts)
+  state.pattern = state.parts.join('\\/');
+  return state;
+};
+
+const parse = (str, options, state) => {
+  // const ast = { type: 'root', nodes: [] };
+  const chars = [...str];
+  const extglobs = state.extglobs = [];
+  const queue = state.queue = [];
+  const stack = state.stack = [];
+  const stash = state.stash = [{ type: 'bos', value: '' }];
+  const seen = state.seen = [];
+
+  let lastChar;
   let idx = -1;
   let ch;
-  let lastChar;
-  let qmark = '[^/]';
-  let qmarkNoDot = '[^/.]';
-  let star = () => options.star || `${qmark}*?`;
 
-  let ast = { type: 'root', nodes: [] };
-  let chars = [...str];
-  let extglobs = [];
-  let queue = [];
-  let stack = [];
-  let stacks = {
+  const stacks = {
     all: [],
     angles: [],
     braces: [],
@@ -33,32 +56,18 @@ module.exports = (str, options = {}, negated) => {
       return this.all[this.all.length - 1];
     },
     push(type, value) {
-      this.length++;
       stack.push({type, value: ''});
-      this.all.push(value);
       this[type].push(value);
+      this.all.push(value);
+      this.length++;
       return value;
     },
     pop(type) {
       this.length--;
-      stack.pop();
       this.all.pop();
+      stack.pop();
       return this[type].pop();
     }
-  };
-
-  const stash = [{ type: 'bos', value: '' }];
-  const seen = [];
-  const state = {
-    negated,
-    prefix,
-    suffix: (options.suffix || '') + '$',
-    hasGlobstar: false,
-    stash,
-    stacks,
-    queue,
-    extglobs,
-    seen
   };
 
   const start = dot => {
@@ -73,7 +82,7 @@ module.exports = (str, options = {}, negated) => {
   };
 
   const eos = () => idx >= chars.length;
-  const isInside = type => type ? stacks[type].length > 0 : stacks.length > 0;
+  // const isInside = type => type ? stacks[type].length > 0 : stacks.length > 0;
   const consume = n => {
     if (ch) seen.push(ch);
     return !eos() ? (idx += n) : false;
@@ -101,7 +110,6 @@ module.exports = (str, options = {}, negated) => {
 
     if (prev.optional === true && !after.includes('*')) {
       if (prev.value === '' && after.length) {
-      // console.log(prev)
         // prev.value = '?';
       } else if (!after.length) {
         // if (prev.value === '(?=.)/?') prev.value = '';
@@ -126,10 +134,10 @@ module.exports = (str, options = {}, negated) => {
       case '\\':
         append(ch + next());
         break;
-      case '/':
-        tok = prev();
-        stash.push({ type: 'slash', value: '', optional: tok.globstar });
-        break;
+      // case '/':
+      //   tok = prev();
+      //   stash.push({ type: 'slash', value: '', optional: tok.globstar });
+      //   break;
       case '"':
       case "'":
       case '`':
@@ -208,7 +216,7 @@ module.exports = (str, options = {}, negated) => {
 
             switch (extglob) {
               case '!':
-                append(`)${peek() ? '' : '$'})${star()})`);
+                append(`)${peek() ? '' : '$'})[^/]*?)`);
                 break;
               case '*':
               case '+':
@@ -224,7 +232,8 @@ module.exports = (str, options = {}, negated) => {
           } else {
             if (ch === ']') {
               let bracket = stack[stack.length - 1];
-              append(`${ch}|\\${bracket.value}\\])`);
+              let value = '|\\' + bracket.value + '\\]';
+              append(ch + value + ')');
             } else {
               append(ch);
             }
@@ -239,7 +248,7 @@ module.exports = (str, options = {}, negated) => {
         prior = prev();
 
         if (lastChar === '' || lastChar === '/') {
-          dot = true;
+          state.dot = true;
         }
 
         append('\\' + ch);
@@ -274,15 +283,15 @@ module.exports = (str, options = {}, negated) => {
           let isGlobstar = false;
 
           while (peek() === '*') {
-            isGlobstar = state.hasGlobstar = true;
+            isGlobstar = state.globstar = true;
             dequeue();
           }
 
           if (isGlobstar) {
             prior.globstar = true;
             // if (lastChar === '/') append('?');
-            append(globstar(dot));
-            dot = false;
+            append(globstar(state.dot));
+            state.dot = false;
             break;
           }
 
@@ -294,11 +303,11 @@ module.exports = (str, options = {}, negated) => {
             }
 
             if (lastChar === '/' && after[0] !== '.') {
-              append(start(dot));
+              append(start(state.dot));
             }
           }
 
-          append(star());
+          append('[^/]*?');
           break;
         }
 
@@ -306,17 +315,15 @@ module.exports = (str, options = {}, negated) => {
           if (lastChar === '(') {
             break;
           }
-
-          if (lastChar === '/' && !dot) {
-            append('[^./]');
+          if (lastChar === '/' && !state.dot) {
+            append('[^./\\\\]');
             break;
           }
-
-          append(qmark);
+          append('[^/]');
           break;
         }
 
-        append('\\' + ch);
+        append(`\\${ch}`);
         break;
       case ':':
         prev().capture = true;
@@ -338,11 +345,11 @@ module.exports = (str, options = {}, negated) => {
   parse();
 
   const first = state.stash[0];
-  if (!state.negated && !dot && first.globstar !== true) {
+  if (!state.negated && !state.dot && first.globstar !== true) {
     first.value = '(?!\\.)' + first.value;
   }
 
-  return state;
+  return state.stash[0].value;
 };
 
 function stackType(ch) {

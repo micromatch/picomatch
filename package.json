@@ -20,12 +20,8 @@
     "test": "mocha"
   },
   "devDependencies": {
-    "multimatch": "^2.1.0",
-    "micromatch": "^3.1.9",
-    "minimatch": "^3.0.4",
-    "nanomatch": "^1.2.9",
     "gulp-format-md": "^1.0.0",
-    "mocha": "^3.5.3"
+    "mocha": "^5.2.0"
   },
   "keywords": [
     "glob",
@@ -55,10 +51,5 @@
     "lint": {
       "reflinks": true
     }
-  },
-  "dependencies": {
-    "fast-glob": "^2.2.0",
-    "time-require": "github:jonschlinkert/time-require",
-    "tiny-glob": "^0.2.0"
   }
 }

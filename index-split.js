@@ -1,6 +1,6 @@
 'use strict';
 
-const parse = require('./parse');
+const parse = require('./parse-split');
 
 function picomatch(list, patterns, options = {}) {
   if (typeof list === 'string') {
@@ -63,7 +63,7 @@ picomatch.match = (list, pattern, options = {}) => {
 };
 
 picomatch.matcher = (pattern, options, negated) => {
-  const regex = picomatch.makeRe(pattern, options, negated);
+  const regex = picomatch.toRegex(pattern, options, negated);
   return str => regex.test(str);
 };
 
@@ -72,28 +72,21 @@ picomatch.isMatch = (str, pattern, options, negated) => {
     return str === pattern;
   }
 
-  if (!/[!*+?(){}[\]]/.test(pattern)) {
-    if (str === pattern || unixify(str) === unixify(pattern)) {
-      return true;
-    }
-    if (pattern.slice(0, 2) === './') {
-      return str === pattern.slice(2);
-    }
-    return false;
-  }
+  // if (!/[*+?(){}[\]]/)
 
   return picomatch.matcher(pattern, options, negated)(str);
 };
 
-picomatch.makeRe = (str, options, negated) => {
+picomatch.toRegex = picomatch.makeRe = (str, options, negated) => {
   let regex = !options && picomatch.memo(str);
   if (!regex) {
     const state = picomatch.parse(str, options, negated);
     const source = picomatch.compile(state, options, negated);
-    const flags = options && (options.flags || options.nocase ? 'i' : '');
-    regex = new RegExp(source, flags);
+    regex = new RegExp(source);
+    // console.log(regex)
     regex.pattern = str;
     regex.state = state;
+
     if (typeof negated === 'undefined') {
       picomatch.memo(str, regex);
     }
@@ -107,6 +100,15 @@ picomatch.parse = (str, options, negated) => {
 
 picomatch.compile = (state, options) => {
   if (typeof state === 'string') state = picomatch.parse(state, options);
+  // let str = state.prefix;
+  // for (const ele of state.stash) {
+  //   str += `(?:${ele.value})/`;
+  //   if (ele.optional || ele.globstar) {
+  //     str += '?';
+  //   }
+  // }
+  // return str;
+  // return state.prefix + state.parts.join('\\/') + state.suffix;
   return state.prefix + state.stash.map(tok => tok.value).join('\\/') + state.suffix;
 };
 
@@ -118,15 +120,10 @@ picomatch.memo = (pattern, regex) => {
   picomatch.cache[pattern] = regex;
 };
 
-picomatch.clearCache = () => (picomatch.cache = {});
+picomatch.clearCache = () => (picomatch.cache = null);
 picomatch.set = (pattern, regex) => {
   picomatch.cache[pattern] = regex;
   return picomatch;
-};
-
-picomatch.defaults = () => {
-  picomatch.set('**/**', /./);
-  picomatch.set('**', /./);
 };
 
 function stackType(ch) {
@@ -149,31 +146,8 @@ function stackType(ch) {
   }
 }
 
-function unixify(filepath) {
-  return filepath.replace(/\\+/g, '/');
-}
-
-const memoize = (fn, max = 100) => {
-  const memo = [];
-
-  return input => {
-    for (let i = 0; i < memo.length; i++) {
-      if (memo[i].input === input) {
-        const temp = memo[0];
-        memo[0] = memo[i];
-        memo[i] = temp;
-        return memo[0].result;
-      }
-    }
-
-    const result = fn(input);
-    memo.push({input, result});
-
-    if (memo.length > max) {
-      memo.unshift();
-    }
-    return result;
-  };
+picomatch.defaults = () => {
+  picomatch.set('**/**', /.*/);
 };
 
 module.exports = picomatch;
