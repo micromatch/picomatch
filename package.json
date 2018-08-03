@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "ansi-colors": "^2.0.5",
-    "bash-match": "file:../bash-match",
+    "bash-match": "^1.0.2",
     "fill-range": "^6.0.0",
     "gulp-format-md": "^1.0.0",
     "micromatch": "^3.1.10",
