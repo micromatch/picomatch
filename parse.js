@@ -8,7 +8,6 @@ const STAR = `${QMARK}*?`;
 const NO_DOT = '(?!\\.)';
 const ONE_CHAR = '(?=.)';
 const MAX_LENGTH = 1024 * 64;
-const scan = require('./scanner');
 
 module.exports = (input, options = {}) => {
   let max = (options.maxLength) || MAX_LENGTH;
@@ -22,11 +21,12 @@ module.exports = (input, options = {}) => {
   }
 
   const ast = { type: 'root', nodes: [], stash: [] };
-  let state = { input, ast, wrap: str => `^${str}$` };
+  let state = { input, ast, wrap: str => `^(?:${str})$` };
   let prepend = options.prepend || '';
   let stack = [ast];
   let extglobs = [];
   let orig = input;
+  let slashes = 0;
   let i = -1;
 
   let after, args, block, boundary, brace, bracket, charClass, dots, idx, inner, left, match, next, node, noglobstar, paren, prev, qmark, quoted, star, stars, value;
@@ -48,7 +48,7 @@ module.exports = (input, options = {}) => {
 
   state.dot = options.dot === true || input[0] === '.';
 
-  let { base = [], glob } = scan(input)
+  let { base = [], glob } = scan(input);
 
   if (typeof options.base === 'string') {
     base = options.base.split(/[\\/]+/).concat(base);
@@ -357,10 +357,23 @@ module.exports = (input, options = {}) => {
         break;
       case '/':
         append(`\\${value}`);
-        if (options.strictSlashes !== true && !eos() && (input.slice(i - 2, i) === '**' || rest() === '**') && next !== '[' && next !== '(' && isSpecialChar(state.prev)) {
-          append('?');
+
+        let relaxSlash = options.strictSlashes !== true && !eos()
+          && (input.slice(i - 2, i) === '**' || rest() === '**')
+          && next !== '['
+          && next !== '('
+          && isSpecialChar(state.prev)
+
+        if (relaxSlash === true && next === '.' && !/\*/.test(rest())) {
+          relaxSlash = false;
         }
 
+        if (relaxSlash && block.type === 'root') {
+          block.stash.pop();
+          append('(|\\/)');
+        }
+
+        slashes++;
         break;
       case '.':
         if (block.type === 'brace') {
@@ -412,7 +425,13 @@ module.exports = (input, options = {}) => {
     state.prev = value;
   }
 
-  if (ast.stash[0] !== ONE_CHAR && isSpecialChar(orig[0])) {
+  idx = ast.stash.indexOf('\\/');
+
+  if (idx === -1) {
+    idx === ast.stash.length;
+  }
+
+  if (!ast.stash.slice(0, idx).includes(ONE_CHAR) && isSpecialChar(orig[0])) {
     ast.stash.unshift(ONE_CHAR);
   }
 
@@ -422,7 +441,91 @@ module.exports = (input, options = {}) => {
 
   state.base = base;
   state.glob = glob;
-  state.output = state.wrap(prepend + ast.stash.join(''));
-  // console.log(state);
+  state.source = prepend + ast.stash.join('');
+  state.output = state.wrap(state.source);
   return state;
+};
+
+const scan = (input, options) => {
+  let string = input;
+  let isGlob = false;
+  let base = [];
+  let stash = [''];
+  let stack = [];
+  let prev;
+  let i = 0;
+
+  const append = value => (stash[stash.length - 1] += value);
+  const last = (arr = []) => arr[arr.length - 1];
+
+  for (; i < string.length; i++) {
+    let value = string[i];
+    let next = () => string[++i];
+    let peek = () => string[i + 1];
+
+    switch (value) {
+      case '\\':
+        append(value + next());
+        break;
+      case '[':
+      case '(':
+      case '{':
+      case '<':
+        stack.push({ value });
+        append(value);
+        break;
+      case ']':
+      case ')':
+      case '}':
+      case '>':
+        stack.pop();
+        append(value);
+        break;
+      case '.':
+        append(value);
+        break;
+      case '!':
+        if (i === 0 || peek() === '(') {
+          isGlob = true;
+        }
+        append(value);
+        break;
+      case '*':
+      case '+':
+      case '?':
+        isGlob = true;
+        append(value);
+        break;
+      case '@':
+        if (peek() === '(') {
+          isGlob = true;
+        }
+        append(value);
+        break;
+
+      case '/':
+        if (stack.length === 0) {
+          prev = last(stash);
+          if (prev !== void 0) {
+            if (isGlob === false) {
+              base.push(prev);
+            } else {
+              return { base, glob: prev + string.slice(i) };
+            }
+          }
+          stash.push('');
+        } else {
+          append(value);
+        }
+        break;
+      default: {
+        append(value);
+        break;
+      }
+    }
+
+    prev = value;
+  }
+
+  return { base, glob: stash.pop() };
 };

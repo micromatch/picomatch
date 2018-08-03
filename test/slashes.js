@@ -78,7 +78,7 @@ describe('slashes', () => {
     equal(pm(fixtures, 'a\\**.md'), ['a**a.md']);
   });
 
-  it('should match file paths', function() {
+  it('should match file paths', () => {
     assert(pm.isMatch('a/b/c/xyz.md', 'a/b/c/*.md'));
     assert(pm.isMatch('a/bb/c/xyz.md', 'a/*/c/*.md'));
     assert(pm.isMatch('a/bbbb/c/xyz.md', 'a/*/c/*.md'));
@@ -87,7 +87,7 @@ describe('slashes', () => {
     assert(pm.isMatch('a/bb.bb/aa/b.b/aa/c/xyz.md', 'a/**/c/*.md'));
   });
 
-  it('should match full file paths', function() {
+  it('should match full file paths', () => {
     assert(!pm.isMatch('a/.b', 'a/**/z/*.md'));
     assert(pm.isMatch('a/.b', 'a/.*'));
     assert(!pm.isMatch('a/b/z/.a', 'a/**/z/*.a'));
@@ -98,12 +98,64 @@ describe('slashes', () => {
     assert(!pm.isMatch('a/b/c/j/e/z/c.txt', 'a/**/j/**/z/*.md'));
   });
 
-  it('should match paths with leading `./` when pattern has `./`', function() {
+  it('should match paths with leading `./` when pattern has `./`', () => {
     assert(!pm.isMatch('./a/b/c/d/e/z/c.md', './a/**/j/**/z/*.md'));
     assert(!pm.isMatch('./a/b/c/j/e/z/c.txt', './a/**/j/**/z/*.md'));
     assert(pm.isMatch('./a/b/c/d/e/j/n/p/o/z/c.md', './a/**/j/**/z/*.md'));
     assert(pm.isMatch('./a/b/c/d/e/z/c.md', './a/**/z/*.md'));
     assert(pm.isMatch('./a/b/c/j/e/z/c.md', './a/**/j/**/z/*.md'));
     assert(pm.isMatch('./a/b/z/.a', './a/**/z/.a'));
+  });
+
+  it('should ', () => {
+
+    assert(pm.isMatch('/foo/bar.txt', '/foo/*'));
+    assert(pm.isMatch('/foo/bar.txt', '/foo/**'));
+    assert(pm.isMatch('/foo/bar.txt', '/foo/**/**/*.txt'));
+    assert(pm.isMatch('/foo/bar.txt', '/foo/**/**/bar.txt'));
+    assert(pm.isMatch('/foo/bar.txt', '/foo/**/*.txt'));
+    assert(pm.isMatch('/foo/bar.txt', '/foo/**/bar.txt'));
+    assert(!pm.isMatch('/foo/bar.txt', '/foo/*/bar.txt'));
+    assert(!pm.isMatch('/foo/bar/baz.txt', '/foo/*'));
+    assert(pm.isMatch('/foo/bar/baz.txt', '/foo/**'));
+    assert(pm.isMatch('/foo/bar/baz.txt', '/foo/**'));
+    assert(pm.isMatch('/foo/bar/baz.txt', '/foo/**/*.txt'));
+    assert(pm.isMatch('/foo/bar/baz.txt', '/foo/**/*/*.txt'));
+    assert(pm.isMatch('/foo/bar/baz.txt', '/foo/**/*/baz.txt'));
+    assert(!pm.isMatch('/foo/bar/baz.txt', '/foo/*.txt'));
+    assert(pm.isMatch('/foo/bar/baz.txt', '/foo/*/*.txt'));
+    assert(!pm.isMatch('/foo/bar/baz.txt', '/foo/*/*/baz.txt'));
+    assert(!pm.isMatch('/foo/bar/baz.txt', '/foo/bar**'));
+    assert(pm.isMatch('/foo/bar/baz/qux.txt', '**/*.txt'));
+    assert(!pm.isMatch('/foo/bar/baz/qux.txt', '**/.txt'));
+    assert(!pm.isMatch('/foo/bar/baz/qux.txt', '*/*.txt'));
+    assert(!pm.isMatch('/foo/bar/baz/qux.txt', '/foo/**.txt'));
+    assert(pm.isMatch('/foo/bar/baz/qux.txt', '/foo/**/*.txt'));
+    assert(!pm.isMatch('/foo/bar/baz/qux.txt', '/foo/*/*.txt'));
+    assert(!pm.isMatch('/foo/bar/baz/qux.txt', '/foo/bar**/*.txt'));
+    assert(!pm.isMatch('/.txt', '*.txt'));
+    assert(!pm.isMatch('/.txt', '/*.txt'));
+    assert(!pm.isMatch('/.txt', '*/*.txt'));
+    assert(!pm.isMatch('/.txt', '**/*.txt'));
+    assert(!pm.isMatch('/.txt', '*.txt', { dot: true }));
+    assert(pm.isMatch('/.txt', '/*.txt', { dot: true }));
+    assert(pm.isMatch('/.txt', '*/*.txt', { dot: true }));
+    assert(pm.isMatch('/.txt', '**/*.txt', { dot: true }));
+    assert(pm.isMatch('foo/bar.txt', '**/*.txt'));
+    assert(pm.isMatch('foo/bar/baz.txt', '**/*.txt'));
+    assert(pm.isMatch('foo.txt', '**/foo.txt'));
+    assert(!pm.isMatch('foo.txt', '*/*.txt'));
+    assert(!pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*'));
+    assert(!pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*'));
+    assert(pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**'));
+    assert(!pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**', { noglobstar: true }));
+    assert(pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**'));
+    assert(pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**/app.min.js'));
+    assert(pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*/*/app.min.js'));
+    assert(pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*/*/app.min.js', { noglobstar: true }));
+    assert(!pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*/app.min.js'));
+    assert(!pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*/app.min.js'));
+    assert(pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**/app.min.js'));
+    assert(!pm.isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**/app.min.js', { noglobstar: true }));
   });
 });

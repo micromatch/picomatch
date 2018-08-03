@@ -714,7 +714,7 @@ describe('negation', () => {
 
   it('should support basic brace patterns', () => {
     assert(isMatch('a.txt', ['a{,/**/}*.txt']));
-    assert(isMatch('a/b.txt', ['a{,/**/}*.txt']));
+    assert(isMatch('a/b.txt', ['a{,/**/,/}*.txt']));
     assert(isMatch('a/x/y.txt', ['a{,/**/}*.txt']));
     assert(!isMatch('a/x/y/z', ['a{,/**/}*.txt']));
   });

@@ -284,7 +284,7 @@ describe('picomatch', () => {
       assert.throws(() => pm.makeRe('*('), /Missing closing: "\)"/);
     });
 
-    it('should support regex lookbehinds', function() {
+    it('should support regex lookbehinds', () => {
       let v = process.version;
       Reflect.defineProperty(process, 'version', { value: 'v6.0.0' });
       assert.throws(() => pm.isMatch('foo/cbaz', 'foo/*(?<!c)baz'), /Node\.js v10 or higher/);
@@ -739,8 +739,8 @@ describe('picomatch', () => {
     });
   });
 
-  describe('error handling:', function() {
-    it('should throw on bad args', function() {
+  describe('error handling:', () => {
+    it('should throw on bad args', () => {
       assert.throws(() => pm.isMatch({}), /expected a string/);
     });
   });
@@ -1151,8 +1151,8 @@ describe('picomatch', () => {
     });
   });
 
-  describe('options.ignore:', function() {
-    it('should not match ignored patterns', function() {
+  describe('options.ignore:', () => {
+    it('should not match ignored patterns', () => {
       assert(pm.isMatch('a+b/src/glimini.js', 'a+b/src/*.js', { ignore: ['**/f*'] }));
       assert(!pm.isMatch('a+b/src/glimini.js', 'a+b/src/*.js', { ignore: ['**/g*'] }));
       assert(pm.isMatch('+b/src/glimini.md', '+b/src/*', { ignore: ['**/*.js'] }));
@@ -1160,15 +1160,15 @@ describe('picomatch', () => {
     });
   });
 
-  describe('matching:', function() {
-    it('should escape plus signs to match string literals', function() {
+  describe('matching:', () => {
+    it('should escape plus signs to match string literals', () => {
       assert(pm.isMatch('a+b/src/glimini.js', 'a+b/src/*.js'));
       assert(pm.isMatch('+b/src/glimini.js', '+b/src/*.js'));
       assert(pm.isMatch('coffee+/src/glimini.js', 'coffee+/src/*.js'));
       assert(pm.isMatch('coffee+/src/glimini.js', 'coffee+/src/*'));
     });
 
-    it('should not escape plus signs that follow brackets', function() {
+    it('should not escape plus signs that follow brackets', () => {
       assert(pm.isMatch('a', '[a]+'));
       assert(pm.isMatch('aa', '[a]+'));
       assert(pm.isMatch('aaa', '[a]+'));
@@ -1176,7 +1176,7 @@ describe('picomatch', () => {
       assert(pm.isMatch('zzz', '[a-z]+'));
     });
 
-    it('should support stars following brackets', function() {
+    it('should support stars following brackets', () => {
       assert(pm.isMatch('a', '[a]*'));
       assert(pm.isMatch('aa', '[a]*'));
       assert(pm.isMatch('aaa', '[a]*'));
@@ -1184,7 +1184,7 @@ describe('picomatch', () => {
       assert(pm.isMatch('zzz', '[a-z]*'));
     });
 
-    it('should not escape plus signs that follow parens', function() {
+    it('should not escape plus signs that follow parens', () => {
       assert(pm.isMatch('a', '(a)+'));
       assert(pm.isMatch('ab', '(a|b)+'));
       assert(pm.isMatch('aa', '(a)+'));
@@ -1192,7 +1192,7 @@ describe('picomatch', () => {
       assert(pm.isMatch('aaabbb', '(a|b)+'));
     });
 
-    it('should support stars following parens', function() {
+    it('should support stars following parens', () => {
       assert(pm.isMatch('a', '(a)*'));
       assert(pm.isMatch('ab', '(a|b)*'));
       assert(pm.isMatch('aa', '(a)*'));
@@ -1200,14 +1200,14 @@ describe('picomatch', () => {
       assert(pm.isMatch('aaabbb', '(a|b)*'));
     });
 
-    it('should not match slashes with single stars', function() {
+    it('should not match slashes with single stars', () => {
       assert(!pm.isMatch('a/b', '(a)*'));
       assert(!pm.isMatch('a/b', '[a]*'));
       assert(!pm.isMatch('a/b', 'a*'));
       assert(!pm.isMatch('a/b', '(a|b)*'));
     });
 
-    it('should not match dots with stars by default', function() {
+    it('should not match dots with stars by default', () => {
       assert(!pm.isMatch('.a', '(a)*'));
       assert(!pm.isMatch('.a', '*[a]*'));
       assert(!pm.isMatch('.a', '*[a]'));
@@ -1216,13 +1216,13 @@ describe('picomatch', () => {
       assert(!pm.isMatch('.a', '*(a|b)'));
     });
 
-    it('should correctly deal with empty globs', function() {
+    it('should correctly deal with empty globs', () => {
       assert(!pm.isMatch('ab', ''));
       assert(!pm.isMatch('a', ''));
       assert(!pm.isMatch('.', ''));
     });
 
-    it('should match with non-glob patterns', function() {
+    it('should match with non-glob patterns', () => {
       assert(pm.isMatch('.', '.'));
       assert(pm.isMatch('/a', '/a'));
       assert(!pm.isMatch('/ab', '/a'));
@@ -1235,7 +1235,7 @@ describe('picomatch', () => {
       assert(!pm.isMatch('abcd', 'ab'));
     });
 
-    it('should match file names', function() {
+    it('should match file names', () => {
       assert(pm.isMatch('a.b', 'a.b'));
       assert(pm.isMatch('a.b', '*.b'));
       assert(pm.isMatch('a.b', 'a.*'));
@@ -1255,7 +1255,7 @@ describe('picomatch', () => {
       assert(!pm.isMatch('a-b.c-d', '*-bc-*'));
     });
 
-    it('should match with copmon glob patterns', function() {
+    it('should match with copmon glob patterns', () => {
       assert(!pm.isMatch('/ab', './*/'));
       assert(!pm.isMatch('/ef', '*'));
       assert(!pm.isMatch('ab', './*/'));
@@ -1268,12 +1268,12 @@ describe('picomatch', () => {
       assert(pm.isMatch('ab/', './*/'));
     });
 
-    it('should exactly match leading slash', function() {
+    it('should exactly match leading slash', () => {
       assert(!pm.isMatch('ef', '/*'));
       assert(pm.isMatch('/ef', '/*'));
     });
 
-    it('should match files with the given extension', function() {
+    it('should match files with the given extension', () => {
       assert(!pm.isMatch('.md', '*.md'));
       assert(pm.isMatch('.md', '.md'));
       assert(!pm.isMatch('.c.md', '*.md'));
@@ -1287,7 +1287,7 @@ describe('picomatch', () => {
       assert(pm.isMatch('a/b/c.js', 'a/**/*.*'));
     });
 
-    it('should match wildcards', function() {
+    it('should match wildcards', () => {
       assert(!pm.isMatch('a/b/c/z.js', '*.js'));
       assert(!pm.isMatch('a/b/z.js', '*.js'));
       assert(!pm.isMatch('a/z.js', '*.js'));
@@ -1298,7 +1298,7 @@ describe('picomatch', () => {
       assert(pm.isMatch('a/z.js', '*/z*.js'));
     });
 
-    it('should match globstars', function() {
+    it('should match globstars', () => {
       assert(pm.isMatch('a/b/c/z.js', '**/*.js'));
       assert(pm.isMatch('a/b/z.js', '**/*.js'));
       assert(pm.isMatch('a/z.js', '**/*.js'));
@@ -1320,12 +1320,12 @@ describe('picomatch', () => {
       assert(pm.isMatch('foo', '**/foo'));
     });
 
-    it('issue #23', function() {
+    it('issue #23', () => {
       assert(!pm.isMatch('zzjs', 'z*.js'));
       assert(!pm.isMatch('zzjs', '*z.js'));
     });
 
-    it('issue #24', function() {
+    it('issue #24', () => {
       assert(pm.isMatch('a', '**'));
       assert(!pm.isMatch('a', 'a/**'));
       assert(pm.isMatch('a/', '**'));
@@ -1348,7 +1348,7 @@ describe('picomatch', () => {
       assert(pm.isMatch('a/b-c/d/e/z.js', 'a/b-*/**/z.js'));
     });
 
-    it('should match slashes', function() {
+    it('should match slashes', () => {
       assert(!pm.isMatch('bar/baz/foo', '*/foo'));
       assert(!pm.isMatch('deep/foo/bar', '**/bar/*'));
       assert(!pm.isMatch('deep/foo/bar/baz/x', '*/bar/**'));
@@ -1390,11 +1390,11 @@ describe('picomatch', () => {
       assert(!pm.isMatch('foo/baz.md', 'foo//baz.md'));
     });
 
-    it('question marks should not match slashes', function() {
+    it('question marks should not match slashes', () => {
       assert(!pm.isMatch('aaa/bbb', 'aaa?bbb'));
     });
 
-    it('should not match dotfiles when `dot` or `dotfiles` are not set', function() {
+    it('should not match dotfiles when `dot` or `dotfiles` are not set', () => {
       assert(!pm.isMatch('.c.md', '*.md'));
       assert(!pm.isMatch('a/.c.md', '*.md'));
       assert(pm.isMatch('a/.c.md', 'a/.c.md'));
@@ -1415,7 +1415,7 @@ describe('picomatch', () => {
       assert(!pm.isMatch('a/b/d/.md', 'a/b/c/*.md'));
     });
 
-    it('should match dotfiles when `dot` or `dotfiles` is set', function() {
+    it('should match dotfiles when `dot` or `dotfiles` is set', () => {
       assert(pm.isMatch('.c.md', '*.md', { dot: true }));
       assert(pm.isMatch('.c.md', '.*', { dot: true }));
       assert(pm.isMatch('a/b/c/.xyz.md', 'a/b/c/*.md', { dot: true }));

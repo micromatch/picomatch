@@ -8,6 +8,6 @@ describe('parsing', () => {
   beforeEach(() => pm.clearCache());
 
   it('should parse a glob pattern', () => {
-    console.log(pm.parse('*', { base: 'foo\\bar\\baz' }))
+    // console.log(pm.parse('*', { base: 'foo\\bar\\baz' }))
   });
 });
