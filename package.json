@@ -50,5 +50,8 @@
     "lint": {
       "reflinks": true
     }
+  },
+  "dependencies": {
+    "safe-regex": "^1.1.0"
   }
 }

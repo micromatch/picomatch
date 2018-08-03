@@ -107,7 +107,7 @@ picomatch.match = (list = [], pattern, options) => {
     unix.push(res);
 
     if (isMatch(ele, true)) {
-      if (opts.normalize && res.length > 2 && res.startsWith('./') || res.startsWith('.\\')) {
+      if (opts.normalize === true && res.length > 2 && res.startsWith('./') || res.startsWith('.\\')) {
         res = res.slice(2);
       }
 
@@ -212,6 +212,18 @@ picomatch.matcher = (input, options) => {
   };
 };
 
+picomatch.join = (...args) => {
+  let glob = args.pop();
+  let base = unixify(path.posix.join(...args));
+  return path.posix.join(base, glob);
+};
+
+picomatch.resolve = (...args) => {
+  let glob = args.pop();
+  let base = unixify(path.posix.resolve(...args));
+  return path.posix.join(base, glob);
+};
+
 /**
  * Create a regular expression from the given glob `pattern`.
  *
@@ -230,7 +242,7 @@ picomatch.matcher = (input, options) => {
 
 picomatch.makeRe = (pattern, options) => {
   const makeRe = (input, opts = {}) => {
-    let flags = opts.nocase ? 'i' : '';
+    let flags = opts.flags || opts.nocase ? 'i' : '';
     let state = picomatch.parse(input, options);
     let regex = new RegExp(state.output, flags);
     if (state.prefix) {
@@ -255,8 +267,13 @@ picomatch.makeRe = (pattern, options) => {
  * @api public
  */
 
-picomatch.parse = (pattern, options) => {
-  return memoize('parse', pattern, options, parse);
+picomatch.parse = (input, options) => {
+  return memoize('parse', input, options, parse);
+};
+
+picomatch.compile = (input, options) => {
+  const state = memoize('compile', input, options, picomatch.parse);
+
 };
 
 picomatch.clearCache = () => (picomatch.cache = {});
@@ -300,3 +317,7 @@ function isWindows(options = {}) {
 }
 
 module.exports = picomatch;
+
+
+// console.log(picomatch.join('foo\\..\\baz\\', '*.js'));
+// console.log(picomatch.resolve('test\\', '*.js'));

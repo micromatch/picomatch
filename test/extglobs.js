@@ -13,7 +13,7 @@ let sep = path.sep;
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.
  */
 
-describe('extglob - minimatch tests', () => {
+describe('extglob', () => {
   let setup = { before: () => (path.sep = '\\'), after: () => (path.sep = sep) };
   beforeEach(() => picomatch.clearCache());
 
@@ -605,7 +605,6 @@ describe('extglob - minimatch tests', () => {
     [['fz', '?(z)'], false],
     [['moo.cow', '!(moo).!(cow)'], false],
     [['moo.cow', '!(*).!(*)'], false],
-    [['moo.cow', '!(*.*).!(*.*)'], false], // bash 4.3 disagrees
     [['mad.moo.cow', '!(*.*).!(*.*)'], false],
     [['mad.moo.cow', '.!(*.*)'], false],
     [['Makefile', '!(*.c|*.h|Makefile.in|config*|README)'], true],

@@ -4,7 +4,8 @@ const mm = require('minimatch');
 const pm = require('./');
 const pm2 = require('../picomatch-simple');
 
-console.log(pm.isMatch('.', ''))
+console.log(pm.makeRe('*{1,2}'))
+// console.log(pm.isMatch('.', ''))
 // console.log(mm.makeRe('!c*3.txt'))
 // console.log(pm.makeRe('!c*3.txt'))
 // console.log(pm2.makeRe('!c*3.txt'))

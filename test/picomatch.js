@@ -266,9 +266,9 @@ describe('picomatch', () => {
     it('should match parens', () => {
        const fixtures = ['foo/bar - 1', 'foo/bar - copy (1)', 'foo/bar (1)', 'foo/bar (4)', 'foo/bar (7)', 'foo/bar (42)', 'foo/bar - copy [1]', 'foo/bar - foo + bar - copy [1]'];
 
-      const toRange = (a, b) => `(${fill(a, b, { toRegex: true })})`;
+      const expandRange = (a, b) => `(${fill(a, b, { toRegex: true })})`;
 
-      assert.deepEqual(pm(fixtures, '*/* \\({4..10}\\)', { toRange }), ['foo/bar (4)', 'foo/bar (7)']);
+      assert.deepEqual(pm(fixtures, '*/* \\({4..10}\\)', { expandRange }), ['foo/bar (4)', 'foo/bar (7)']);
       assert(!pm.isMatch('my/folder (Work, Accts)', '/*'));
       assert(pm.isMatch('my/folder (Work, Accts)', '*/*'));
       assert(pm.isMatch('my/folder (Work, Accts)', '*/*,*'));
@@ -277,6 +277,11 @@ describe('picomatch', () => {
       assert(!pm.isMatch('my/folder/(Work, Accts)', '*/*(W*, *)*'));
       assert(pm.isMatch('foo(bar)baz', 'foo*baz'));
       assert(pm.isMatch('foo(bar)baz', 'foo[bar()]+baz'));
+    });
+
+    it.skip('should throw an error on imbalanced, unescaped parens', () => {
+      assert.throws(() => pm.makeRe('*)'), /Missing opening: "\("/);
+      assert.throws(() => pm.makeRe('*('), /Missing closing: "\)"/);
     });
 
     it('should support regex lookbehinds', function() {
@@ -450,10 +455,10 @@ describe('picomatch', () => {
       assert(pm.isMatch('a/a', 'a/{a..c}'));
       assert(pm.isMatch('a/b', 'a/{a..c}'));
       assert(pm.isMatch('a/c', 'a/{a..c}'));
-      assert(pm.isMatch('a/c', 'a/{a..c}', { toRange: (a, b) => `([${a}-${b}])` }));
-      assert(!pm.isMatch('a/z', 'a/{a..c}', { toRange: (a, b) => `([${a}-${b}])` }));
+      assert(pm.isMatch('a/c', 'a/{a..c}', { expandRange: (a, b) => `([${a}-${b}])` }));
+      assert(!pm.isMatch('a/z', 'a/{a..c}', { expandRange: (a, b) => `([${a}-${b}])` }));
       assert(pm.isMatch('a/99', 'a/{1..100}', {
-        toRange(a, b) {
+        expandRange(a, b) {
           return `(${fill(a, b, { toRegex: true })})`;
         }
       }));
@@ -892,12 +897,9 @@ describe('picomatch', () => {
     });
 
     it('should return true when one of the given patterns matches the string', () => {
-      assert.deepEqual(pm('a/.b', 'a/'), []);
-      assert.deepEqual(pm('a/b/c/d/e/z/c.md', 'b/c/d/e'), []);
-      assert.deepEqual(pm('a/b/z/.a', 'b/z'), []);
-      assert.deepEqual(pm('/ab', '*/*'), []);
-      assert(!pm.isMatch('/ab', '*/*'));
+      assert(pm.isMatch('/ab', '*/*'));
       assert(pm.isMatch('.', '.'));
+      assert(!pm.isMatch('a/.b', 'a/'));
       assert(pm.isMatch('/ab', '/*'));
       assert(pm.isMatch('/ab', '/??'));
       assert(pm.isMatch('/ab', '/?b'));
@@ -910,6 +912,7 @@ describe('picomatch', () => {
       assert(pm.isMatch('a/b/c/xyz.md', 'a/b/c/*.md'));
       assert(pm.isMatch('a/b/c/xyz.md', ['foo', 'a/b/c/*.md']));
       assert(pm.isMatch('a/b/z/.a', 'a/*/z/.a'));
+      assert(!pm.isMatch('a/b/z/.a', 'bz'));
       assert(pm.isMatch('a/bb.bb/aa/b.b/aa/c/xyz.md', 'a/**/c/*.md'));
       assert(pm.isMatch('a/bb.bb/aa/bb/aa/c/xyz.md', 'a/**/c/*.md'));
       assert(pm.isMatch('a/bb.bb/c/xyz.md', 'a/*/c/*.md'));
@@ -1417,61 +1420,6 @@ describe('picomatch', () => {
       assert(pm.isMatch('.c.md', '.*', { dot: true }));
       assert(pm.isMatch('a/b/c/.xyz.md', 'a/b/c/*.md', { dot: true }));
       assert(pm.isMatch('a/b/c/.xyz.md', 'a/b/c/.*.md', { dot: true }));
-    });
-
-    it('should match file paths', function() {
-      assert(pm.isMatch('a/b/c/xyz.md', 'a/b/c/*.md'));
-      assert(pm.isMatch('a/bb/c/xyz.md', 'a/*/c/*.md'));
-      assert(pm.isMatch('a/bbbb/c/xyz.md', 'a/*/c/*.md'));
-      assert(pm.isMatch('a/bb.bb/c/xyz.md', 'a/*/c/*.md'));
-      assert(pm.isMatch('a/bb.bb/aa/bb/aa/c/xyz.md', 'a/**/c/*.md'));
-      assert(pm.isMatch('a/bb.bb/aa/b.b/aa/c/xyz.md', 'a/**/c/*.md'));
-    });
-
-    it('should match full file paths', function() {
-      assert(!pm.isMatch('a/.b', 'a/**/z/*.md'));
-      assert(pm.isMatch('a/.b', 'a/.*'));
-      assert(!pm.isMatch('a/b/z/.a', 'a/**/z/*.a'));
-      assert(!pm.isMatch('a/b/z/.a', 'a/*/z/*.a'));
-      assert(pm.isMatch('a/b/z/.a', 'a/*/z/.a'));
-      assert(pm.isMatch('a/b/c/d/e/z/c.md', 'a/**/z/*.md'));
-      assert(pm.isMatch('a/b/c/d/e/j/n/p/o/z/c.md', 'a/**/j/**/z/*.md'));
-      assert(!pm.isMatch('a/b/c/j/e/z/c.txt', 'a/**/j/**/z/*.md'));
-    });
-
-    it('should match paths with leading `./` when pattern has `./`', function() {
-      assert(pm.isMatch('./a/b/c/d/e/j/n/p/o/z/c.md', './a/**/j/**/z/*.md'));
-      assert(pm.isMatch('./a/b/c/d/e/z/c.md', './a/**/z/*.md'));
-      assert(pm.isMatch('./a/b/c/j/e/z/c.md', './a/**/j/**/z/*.md'));
-      assert(pm.isMatch('./a/b/z/.a', './a/**/z/.a'));
-      // sanity checks
-      assert(!pm.isMatch('./a/b/c/d/e/z/c.md', './a/**/j/**/z/*.md'));
-      assert(!pm.isMatch('./a/b/c/j/e/z/c.txt', './a/**/j/**/z/*.md'));
-    });
-
-    it('should match paths with leading `./` when options.prefix is defined', function() {
-      let opts = { prefix: '(?:\\.\\/)?' };
-      assert(!pm.isMatch('./.a', '*.a', opts));
-      assert(!pm.isMatch('./.a', './*.a', opts));
-      assert(!pm.isMatch('./.a', 'a/**/z/*.md', opts));
-      assert(!pm.isMatch('./a/b/c/d/e/z/c.md', './a/**/j/**/z/*.md', opts));
-      assert(!pm.isMatch('./a/b/c/j/e/z/c.txt', './a/**/j/**/z/*.md', opts));
-      assert(!pm.isMatch('a/b/c/d/e/z/c.md', './a/**/j/**/z/*.md', opts));
-      assert(pm.isMatch('./.a', './.a', opts));
-      assert(pm.isMatch('./a/b/c.md', 'a/**/*.md', opts));
-      assert(pm.isMatch('./a/b/c/d/e/j/n/p/o/z/c.md', './a/**/j/**/z/*.md', opts));
-      assert(pm.isMatch('./a/b/c/d/e/z/c.md', '**/*.md', opts));
-      assert(pm.isMatch('./a/b/c/d/e/z/c.md', './a/**/z/*.md', opts));
-      assert(pm.isMatch('./a/b/c/d/e/z/c.md', 'a/**/z/*.md', opts));
-      assert(pm.isMatch('./a/b/c/j/e/z/c.md', './a/**/j/**/z/*.md', opts));
-      assert(pm.isMatch('./a/b/c/j/e/z/c.md', 'a/**/j/**/z/*.md', opts));
-      assert(pm.isMatch('./a/b/z/.a', './a/**/z/.a', opts));
-      assert(pm.isMatch('./a/b/z/.a', 'a/**/z/.a', opts));
-      assert(pm.isMatch('.a', './.a', opts));
-      assert(pm.isMatch('a/b/c.md', './a/**/*.md', opts));
-      assert(pm.isMatch('a/b/c.md', 'a/**/*.md', opts));
-      assert(pm.isMatch('a/b/c/d/e/z/c.md', 'a/**/z/*.md', opts));
-      assert(pm.isMatch('a/b/c/j/e/z/c.md', 'a/**/j/**/z/*.md', opts));
     });
   });
 });

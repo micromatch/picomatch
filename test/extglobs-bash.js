@@ -13,7 +13,7 @@ let sep = path.sep;
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.
  */
 
-describe('extglob - minimatch tests', () => {
+describe('extglob', () => {
   beforeEach(() => picomatch.clearCache());
   beforeEach(() => (path.sep = '\\'));
   afterEach(() => (path.sep = sep));

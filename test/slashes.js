@@ -21,7 +21,7 @@ describe('slashes', () => {
     equal(pm(fixtures, '*/'), ['a/']);
     equal(pm(fixtures, '**/*'), fixtures.filter(v => v.slice(-1) !== '/'));
     equal(pm(fixtures, '/*/'), ['/a/']);
-    equal(pm(fixtures, '*/*'), ['a/a', 'a/b', 'a/c', 'a/x', 'x/y', 'z/z']);
+    equal(pm(fixtures, '*/*'), ['/a', '/b', 'a/a', 'a/b', 'a/c', 'a/x', 'x/y', 'z/z']);
     equal(pm(fixtures, '*/*/*'), ['a/a/a', 'a/a/b']);
     equal(pm(fixtures, '*/*/*/*'), ['a/a/a/a']);
     equal(pm(fixtures, '*/*/*/*/*'), ['a/a/a/a/a']);
@@ -78,22 +78,32 @@ describe('slashes', () => {
     equal(pm(fixtures, 'a\\**.md'), ['a**a.md']);
   });
 
-  it('should match leading `./`', () => {
-    const opts = { prefix: '(\\.\\/(?=.))?', normalize: true };
-    const fixtures = ['a', './a', 'b', 'a/a', './a/b', 'a/c', './a/x', './a/a/a', 'a/a/b', './a/a/a/a', './a/a/a/a/a', 'x/y', './z/z'];
-    equal(pm(fixtures, '*', opts), ['a', 'b']);
-    equal(pm(fixtures, '**/a/**', opts), ['a/a', 'a/c', 'a/b', 'a/x', 'a/a/a', 'a/a/b', 'a/a/a/a', 'a/a/a/a/a']);
-    equal(pm(fixtures, '*/*', opts), ['a/a', 'a/b', 'a/c', 'a/x', 'x/y', 'z/z']);
-    equal(pm(fixtures, '*/*/*', opts), ['a/a/a', 'a/a/b']);
-    equal(pm(fixtures, '*/*/*/*', opts), ['a/a/a/a']);
-    equal(pm(fixtures, '*/*/*/*/*', opts), ['a/a/a/a/a']);
-    equal(pm(fixtures, './*', opts), ['a', 'b']);
-    equal(pm(fixtures, './**/a/**', opts), ['a/a', 'a/b', 'a/c', 'a/x', 'a/a/a', 'a/a/b', 'a/a/a/a', 'a/a/a/a/a']);
-    equal(pm(fixtures, './a/*/a', opts), ['a/a/a']);
-    equal(pm(fixtures, 'a/*', opts), ['a/a', 'a/b', 'a/c', 'a/x']);
-    equal(pm(fixtures, 'a/*/*', opts), ['a/a/a', 'a/a/b']);
-    equal(pm(fixtures, 'a/*/*/*', opts), ['a/a/a/a']);
-    equal(pm(fixtures, 'a/*/*/*/*', opts), ['a/a/a/a/a']);
-    equal(pm(fixtures, 'a/*/a', opts), ['a/a/a']);
+  it('should match file paths', function() {
+    assert(pm.isMatch('a/b/c/xyz.md', 'a/b/c/*.md'));
+    assert(pm.isMatch('a/bb/c/xyz.md', 'a/*/c/*.md'));
+    assert(pm.isMatch('a/bbbb/c/xyz.md', 'a/*/c/*.md'));
+    assert(pm.isMatch('a/bb.bb/c/xyz.md', 'a/*/c/*.md'));
+    assert(pm.isMatch('a/bb.bb/aa/bb/aa/c/xyz.md', 'a/**/c/*.md'));
+    assert(pm.isMatch('a/bb.bb/aa/b.b/aa/c/xyz.md', 'a/**/c/*.md'));
+  });
+
+  it('should match full file paths', function() {
+    assert(!pm.isMatch('a/.b', 'a/**/z/*.md'));
+    assert(pm.isMatch('a/.b', 'a/.*'));
+    assert(!pm.isMatch('a/b/z/.a', 'a/**/z/*.a'));
+    assert(!pm.isMatch('a/b/z/.a', 'a/*/z/*.a'));
+    assert(pm.isMatch('a/b/z/.a', 'a/*/z/.a'));
+    assert(pm.isMatch('a/b/c/d/e/z/c.md', 'a/**/z/*.md'));
+    assert(pm.isMatch('a/b/c/d/e/j/n/p/o/z/c.md', 'a/**/j/**/z/*.md'));
+    assert(!pm.isMatch('a/b/c/j/e/z/c.txt', 'a/**/j/**/z/*.md'));
+  });
+
+  it('should match paths with leading `./` when pattern has `./`', function() {
+    assert(!pm.isMatch('./a/b/c/d/e/z/c.md', './a/**/j/**/z/*.md'));
+    assert(!pm.isMatch('./a/b/c/j/e/z/c.txt', './a/**/j/**/z/*.md'));
+    assert(pm.isMatch('./a/b/c/d/e/j/n/p/o/z/c.md', './a/**/j/**/z/*.md'));
+    assert(pm.isMatch('./a/b/c/d/e/z/c.md', './a/**/z/*.md'));
+    assert(pm.isMatch('./a/b/c/j/e/z/c.md', './a/**/j/**/z/*.md'));
+    assert(pm.isMatch('./a/b/z/.a', './a/**/z/.a'));
   });
 });
