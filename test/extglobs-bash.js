@@ -20,7 +20,7 @@ describe('extglob - minimatch tests', () => {
 
   let offset = 23;
   let fixtures = [
-    [['', '', { bash: true }], false],
+    [['', '', { bash: true }], true],
     [['', '*(0|1|3|5|7|9)', { bash: true }], false],
     [['*(a|b[)', '*(a|b\\[)', { bash: true }], false],
     [['*(a|b[)', '\\*\\(a|b\\[\\)', { bash: true }], true],
@@ -673,12 +673,12 @@ describe('extglob - minimatch tests', () => {
   fixtures.forEach((unit, i) => {
     let n = i + offset; // add offset so line no. is correct in error messages
     if (argv.n !== void 0 && n !== argv.n) return;
-    const args = unit[0]
-    const expected = unit[1];
-    const prefix = `${colors.cyan('Line ' + n)}) `;
-    const message = `${colors.yellow(args[0])} should ${colors.red(expected ? '' : 'not ')}match ${colors.yellow(args[1])}`;
+    let args = unit[0]
+    let expected = unit[1];
+    let prefix = `${colors.cyan('Line ' + n)}) `;
+    let errMessage = `${colors.cyan('Line ' + n)}) ${colors.yellow(args[0])} should ${colors.red(expected ? '' : 'not ')}match ${colors.yellow(args[1])}`;
 
-    it(prefix + message, () => {
+    it(`should ${expected ? '' : 'not '}match "${args[1]}"`, () => {
       assert.equal(pm.isMatch(...args), expected, unit[2]);
     });
   });

@@ -1,7 +1,6 @@
 'use strict';
 
 const path = require('path');
-const assert = require('assert');
 const windows = () => process.platform === 'windows' || path.sep === '\\';
 const unixify = str => str.replace(/\\+/g, '/');
 const parse = require('./parse');
@@ -157,8 +156,7 @@ picomatch.match = (list = [], pattern, options) => {
  */
 
 picomatch.isMatch = (str, pattern, options, unixified) => {
-  assert.equal(typeof str, 'string', 'expected a string');
-  return pattern && memoize('isMatch', pattern, options, picomatch.matcher)(str, unixified);
+  return memoize('isMatch', pattern, options, picomatch.matcher)(str, unixified);
 };
 
 /**
@@ -181,8 +179,6 @@ picomatch.isMatch = (str, pattern, options, unixified) => {
  */
 
 picomatch.matcher = (input, options) => {
-  if (!input) return str => typeof str === 'string';
-
   if (Array.isArray(input)) {
     if (input.length > 1) {
       const fns = input.map(pat => picomatch.matcher(pat, options));
@@ -191,7 +187,16 @@ picomatch.matcher = (input, options) => {
     input = input[0];
   }
 
-  let ignored = options && options.ignore
+  if (typeof input !== 'string') {
+    throw new TypeError('expected a string');
+  }
+
+  let opts = options || {};
+  if (input === '') {
+    return str => opts.bash ? str === input : false;
+  }
+
+  let ignore = opts.ignore
     ? picomatch.matcher(options.ignore, { ...options, ignore: null })
     : void 0;
 
@@ -200,10 +205,10 @@ picomatch.matcher = (input, options) => {
 
   return (str, unixified) => {
     let ele = unixified === void 0 && isWin ? unixify(str) : str;
-    // if (regex.prefix === './' && ele.startsWith('./')) {
-    //   ele = ele.slice(2);
-    // }
-    return (ignored === void 0 || ignored(ele, true) === false) && regex.test(ele);
+    if (regex.prefix === './' && ele.startsWith('./')) {
+      ele = ele.slice(2);
+    }
+    return (ignore === void 0 || ignore(ele, true) === false) && regex.test(ele);
   };
 };
 
@@ -269,8 +274,10 @@ picomatch.clearCache = () => (picomatch.cache = {});
 //   }
 //   return res;
 // }
+
 function memoize(method, pattern, options, fn) {
   if (options && options.nocache === true) {
+    picomatch.clearCache();
     return fn(pattern, options);
   }
 
@@ -278,7 +285,6 @@ function memoize(method, pattern, options, fn) {
   if (!picomatch.cache) picomatch.cache = {};
   return picomatch.cache[key] || (picomatch.cache[key] = fn(pattern, options));
 }
-
 
 function createKey(method, pattern, options) {
   let id = `method="${method}";pattern="${pattern}"`;

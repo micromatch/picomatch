@@ -14,11 +14,10 @@ let sep = path.sep;
  */
 
 describe('extglob - minimatch tests', () => {
+  let setup = { before: () => (path.sep = '\\'), after: () => (path.sep = sep) };
   beforeEach(() => picomatch.clearCache());
-  beforeEach(() => (path.sep = '\\'));
-  afterEach(() => (path.sep = sep));
 
-  let offset = 23;
+  let offset = 22;
   let fixtures = [
     [['', ''], false],
     [['', '*(0|1|3|5|7|9)'], false],
@@ -177,7 +176,7 @@ describe('extglob - minimatch tests', () => {
     [['a\\\\z', 'a\\\\z'], false],
     [['a\\b', 'a/b', { unixify: true }], true],
     [['a\\z', 'a\\\\z', { unixify: false }], true],
-    [['a\\z', 'a\\\\z'], false],
+    [['a\\z', 'a\\\\z'], false, setup],
     [['aa', '!(a!(b))'], false],
     [['aa', '!(a)'], true],
     [['aa', '!(a)*'], false],
@@ -671,13 +670,15 @@ describe('extglob - minimatch tests', () => {
   fixtures.forEach((unit, i) => {
     let n = i + offset; // add offset so line no. is correct in error messages
     if (argv.n !== void 0 && n !== argv.n) return;
-    const args = unit[0]
-    const expected = unit[1];
-    const prefix = `${colors.cyan('Line ' + n)}) `;
-    const message = `${colors.yellow(args[0])} should ${colors.red(expected ? '' : 'not ')}match ${colors.yellow(args[1])}`;
+    let args = unit[0]
+    let expected = unit[1];
+    let setup = unit[2];
+    let errMessage = `${colors.cyan('Line ' + n)}) ${colors.yellow(args[0])} should ${colors.red(expected ? '' : 'not ')}match ${colors.yellow(args[1])}`;
 
-    it(prefix + message, () => {
-      assert.equal(pm.isMatch(...args), expected, unit[2]);
+    it(`should ${expected ? '' : 'not '}match "${args[1]}"`, () => {
+      if (setup && setup.before) setup.before();
+      assert.equal(pm.isMatch(...args), expected, errMessage);
+      if (setup && setup.after) setup.after();
     });
   });
 });
