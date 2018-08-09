@@ -1,5 +1,5 @@
 {
-  "name": "@folder/picomatch",
+  "name": "picomatch",
   "description": "Tiny, minimalist glob matching library written in JavaScript.",
   "version": "1.0.0",
   "homepage": "https://github.com/folder/picomatch",
@@ -51,7 +51,5 @@
       "reflinks": true
     }
   },
-  "dependencies": {
-    "safe-regex": "^1.1.0"
-  }
+  "dependencies": {}
 }

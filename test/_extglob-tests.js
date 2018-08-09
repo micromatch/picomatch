@@ -6,8 +6,7 @@ const pm = require('./support');
 const { isMatch } = pm;
 
 /**
- * Most of these tests were converted directly from
- * bash 4.3 and 4.4 unit tests.
+ * Most of these tests were converted directly from bash 4.3 and 4.4 unit tests.
  */
 
 describe('extglobs', () => {
@@ -281,14 +280,21 @@ describe('extglobs', () => {
     assert(isMatch('c/z/v', 'c/?(z)/v'));
   });
 
-  it.skip('should support @(...) extglobs', () => {
-    assert(isMatch(['c/z/v', 'c/a/v'], 'c/@(z)/v', ['c/z/v']));
-    assert(isMatch(['cz', 'abz', 'az'], 'a*@(z)', ['az', 'abz']));
-    assert(isMatch(['cz', 'abz', 'az'], 'a@(z)', ['az']));
+  it('should support @(...) extglobs', () => {
+    assert(isMatch('c/z/v', 'c/@(z)/v'));
+    assert(!isMatch('c/a/v', 'c/@(z)/v'));
     assert(isMatch('moo.cow', '@(*.*)'));
+
+    assert(!isMatch('cz', 'a*@(z)'));
+    assert(isMatch('abz', 'a*@(z)'));
+    assert(isMatch('az', 'a*@(z)'));
+
+    assert(!isMatch('cz', 'a@(z)'));
+    assert(!isMatch('abz', 'a@(z)'));
+    assert(isMatch('az', 'a@(z)'));
   });
 
-  it.skip('should support multiple @(...) extglobs in one expression', () => {
+  it('should support multiple @(...) extglobs in one expression', () => {
     assert(isMatch('moo.cow', '@(*).@(*)'));
   });
 

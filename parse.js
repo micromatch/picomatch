@@ -350,7 +350,7 @@ module.exports = (input, options = {}) => {
           extglob(value);
           break;
         }
-        if (block.type !== 'paren' && state.prev !== ']' && state.prev !== ')') {
+        if (block.type !== 'paren' && state.prev !== ']' && state.prev !== '}' && state.prev !== ')') {
           append('\\');
         }
         append('+');
@@ -363,14 +363,10 @@ module.exports = (input, options = {}) => {
           && next !== '['
           && next !== '('
           && isSpecialChar(state.prev)
-
-        if (relaxSlash === true && next === '.' && !/\*/.test(rest())) {
-          relaxSlash = false;
-        }
+          && (next !== '.' || /\*/.test(rest()))
 
         if (relaxSlash && block.type === 'root') {
-          block.stash.pop();
-          append('(|\\/)');
+          append('?');
         }
 
         slashes++;
