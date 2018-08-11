@@ -2,7 +2,6 @@
 
 require('mocha');
 const path = require('path');
-const colors = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2));
 const assert = require('assert');
 const picomatch = require('..');
@@ -23,7 +22,7 @@ describe('extglob', () => {
     [['', '', { bash: true }], true],
     [['', '*(0|1|3|5|7|9)', { bash: true }], false],
     [['*(a|b[)', '*(a|b\\[)', { bash: true }], false],
-    [['*(a|b[)', '\\*\\(a|b\\[\\)', { bash: true }], true],
+    [['*(a|b[)', '\\*\\(a|b\\[\\)', { bash: true }], false],
     [['***', '\\*\\*\\*', { bash: true }], true],
     [['-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*', { bash: true }], false],
     [['-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*', { bash: true }], true],
@@ -33,8 +32,8 @@ describe('extglob', () => {
     [['0377', '+([0-7])', { bash: true }], true, 'Should match octal numbers'],
     [['07', '+([0-7])', { bash: true }], true, 'Should match octal numbers'],
     [['09', '+([0-7])', { bash: true }], false, 'Should match octal numbers'],
-    [['1', '0|[1-9]*([0-9])', { bash: true }], false, 'Should match valid numbers'],
-    [['12', '0|[1-9]*([0-9])', { bash: true }], false, 'Should match valid numbers'],
+    [['1', '0|[1-9]*([0-9])', { bash: true }], true, 'Should match valid numbers'],
+    [['12', '0|[1-9]*([0-9])', { bash: true }], true, 'Should match valid numbers'],
     [['123abc', '(a+|b)*', { bash: true }], false],
     [['123abc', '(a+|b)+', { bash: true }], false],
     [['123abc', '*?(a)bc', { bash: true }], true],
@@ -222,7 +221,7 @@ describe('extglob', () => {
     [['ab', 'a\\(b', { bash: true }], false],
     [['ab', 'ab*(e|f)', { bash: true }], true],
     [['ab', 'ab**', { bash: true }], true],
-    [['ab', 'ab**(e|f)', { bash: true }], false],
+    [['ab', 'ab**(e|f)', { bash: true }], true],
     [['ab', 'ab**(e|f)g', { bash: true }], false],
     [['ab', 'ab***ef', { bash: true }], false],
     [['ab', 'ab*+(e|f)', { bash: true }], false],
@@ -239,7 +238,7 @@ describe('extglob', () => {
     [['abab', 'a(b*(foo|bar))d', { bash: true }], false],
     [['abab', 'ab*(e|f)', { bash: true }], false],
     [['abab', 'ab**', { bash: true }], true],
-    [['abab', 'ab**(e|f)', { bash: true }], false],
+    [['abab', 'ab**(e|f)', { bash: true }], true],
     [['abab', 'ab**(e|f)g', { bash: true }], false],
     [['abab', 'ab***ef', { bash: true }], false],
     [['abab', 'ab*+(e|f)', { bash: true }], false],
@@ -285,18 +284,18 @@ describe('extglob', () => {
     [['abcfefg', 'a(b*(foo|bar))d', { bash: true }], false],
     [['abcfefg', 'ab*(e|f)', { bash: true }], false],
     [['abcfefg', 'ab**', { bash: true }], true],
-    [['abcfefg', 'ab**(e|f)', { bash: true }], false],
+    [['abcfefg', 'ab**(e|f)', { bash: true }], true],
     [['abcfefg', 'ab**(e|f)g', { bash: true }], true],
     [['abcfefg', 'ab***ef', { bash: true }], false],
     [['abcfefg', 'ab*+(e|f)', { bash: true }], false],
     [['abcfefg', 'ab*d+(e|f)', { bash: true }], false],
     [['abcfefg', 'ab?*(e|f)', { bash: true }], false],
     [['abcx', '!([[*])*', { bash: true }], true],
-    [['abcx', '+(a|b\\[)*', { bash: true }], false],
+    [['abcx', '+(a|b\\[)*', { bash: true }], true],
     [['abcx', '[a*(]*z', { bash: true }], false],
     [['abcXdefXghi', '*X*i', { bash: true }], true],
     [['abcz', '!([[*])*', { bash: true }], true],
-    [['abcz', '+(a|b\\[)*', { bash: true }], false],
+    [['abcz', '+(a|b\\[)*', { bash: true }], true],
     [['abcz', '[a*(]*z', { bash: true }], true],
     [['abd', '(a+|b)*', { bash: true }], true],
     [['abd', '(a+|b)+', { bash: true }], false],
@@ -309,7 +308,7 @@ describe('extglob', () => {
     [['abd', 'a[b*(foo|bar)]d', { bash: true }], true],
     [['abd', 'ab*(e|f)', { bash: true }], false],
     [['abd', 'ab**', { bash: true }], true],
-    [['abd', 'ab**(e|f)', { bash: true }], false],
+    [['abd', 'ab**(e|f)', { bash: true }], true],
     [['abd', 'ab**(e|f)g', { bash: true }], false],
     [['abd', 'ab***ef', { bash: true }], false],
     [['abd', 'ab*+(e|f)', { bash: true }], false],
@@ -539,8 +538,8 @@ describe('extglob', () => {
     [['foo', '*(@(a))a@(c)', { bash: true }], false],
     [['foo', '*(@(foo))', { bash: true }], true],
     [['foo', '*(a|b\\[)', { bash: true }], false],
-    [['foo', '*(a|b\\[)|f*', { bash: true }], false],
-    [['foo', '@(*(a|b\\[)|f*)', { bash: true }], false],
+    [['foo', '*(a|b\\[)|f*', { bash: true }], true],
+    [['foo', '@(*(a|b\\[)|f*)', { bash: true }], true],
     [['foo', '*/*/*', { bash: true }], false],
     [['foo', '*f', { bash: true }], false],
     [['foo', '*foo*', { bash: true }], true],
@@ -551,7 +550,7 @@ describe('extglob', () => {
     [['foo', 'f*', { bash: true }], true],
     [['foo', 'fo', { bash: true }], false],
     [['foo', 'foo', { bash: true }], true],
-    [['foo', '{*(a|b\\[),f*}', { bash: true }], false],
+    [['foo', '{*(a|b\\[),f*}', { bash: true }], true],
     [['foo*', 'foo\\*', { unixify: false }], true],
     [['foo*bar', 'foo\\*bar', { bash: true }], true],
     [['foo.js', '!(foo).js', { bash: true }], false],
@@ -667,18 +666,16 @@ describe('extglob', () => {
     [['zf', '?(z)', { bash: true }], false],
     [['zoot', '@(!(z*)|*x)', { bash: true }], false],
     [['zoox', '@(!(z*)|*x)', { bash: true }], true],
-    [['zz', '(a+|b)*', { bash: true }], false],
+    [['zz', '(a+|b)*', { bash: true }], false]
   ];
 
   fixtures.forEach((unit, i) => {
     let n = i + offset; // add offset so line no. is correct in error messages
     if (argv.n !== void 0 && n !== argv.n) return;
-    let args = unit[0]
+    let args = unit[0];
     let expected = unit[1];
-    let prefix = `${colors.cyan('Line ' + n)}) `;
-    let errMessage = `${colors.cyan('Line ' + n)}) ${colors.yellow(args[0])} should ${colors.red(expected ? '' : 'not ')}match ${colors.yellow(args[1])}`;
 
-    it(`should ${expected ? '' : 'not '}match "${args[1]}"`, () => {
+    it(`"${args[0]}" should ${expected ? '' : 'not '}match "${args[1]}"`, () => {
       assert.equal(pm.isMatch(...args), expected, unit[2]);
     });
   });

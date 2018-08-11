@@ -1,7 +1,6 @@
 'use strict';
 
 require('mocha');
-const fill = require('fill-range');
 const assert = require('assert');
 const picomatch = require('..');
 const pm = require('./support');
@@ -56,8 +55,8 @@ describe('qmarks and stars', () => {
     assert(pm.isMatch('cb', '{a,b,c}+'));
     assert(pm.isMatch('cc', '{a,b,c}+'));
     assert(pm.isMatch('aaa', '{a,b,c}+'));
-    assert(pm.isMatch('aab','{a,b,c}+'));
-    assert(pm.isMatch('abc','{a,b,c}+'));
+    assert(pm.isMatch('aab', '{a,b,c}+'));
+    assert(pm.isMatch('abc', '{a,b,c}+'));
   });
 
   it('should support braces', () => {

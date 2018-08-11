@@ -22,7 +22,7 @@ describe('extglob', () => {
     [['', ''], false],
     [['', '*(0|1|3|5|7|9)'], false],
     [['*(a|b[)', '*(a|b\\[)'], false],
-    [['*(a|b[)', '\\*\\(a|b\\[\\)'], true],
+    [['*(a|b[)', '\\*\\(a\\|b\\[\\)'], true],
     [['***', '\\*\\*\\*'], true],
     [['-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*'], false],
     [['-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*'], true],
@@ -32,8 +32,8 @@ describe('extglob', () => {
     [['0377', '+([0-7])'], true, 'Should match octal numbers'],
     [['07', '+([0-7])'], true, 'Should match octal numbers'],
     [['09', '+([0-7])'], false, 'Should match octal numbers'],
-    [['1', '0|[1-9]*([0-9])'], false, 'Should match valid numbers'],
-    [['12', '0|[1-9]*([0-9])'], false, 'Should match valid numbers'],
+    [['1', '0|[1-9]*([0-9])'], true, 'Should match valid numbers'],
+    [['12', '0|[1-9]*([0-9])'], true, 'Should match valid numbers'],
     [['123abc', '(a+|b)*'], false],
     [['123abc', '(a+|b)+'], false],
     [['123abc', '*?(a)bc'], true],
@@ -220,7 +220,7 @@ describe('extglob', () => {
     [['ab', 'a\\(b'], false],
     [['ab', 'ab*(e|f)'], true],
     [['ab', 'ab**'], true],
-    [['ab', 'ab**(e|f)'], false],
+    [['ab', 'ab**(e|f)'], true],
     [['ab', 'ab**(e|f)g'], false],
     [['ab', 'ab***ef'], false],
     [['ab', 'ab*+(e|f)'], false],
@@ -237,7 +237,7 @@ describe('extglob', () => {
     [['abab', 'a(b*(foo|bar))d'], false],
     [['abab', 'ab*(e|f)'], false],
     [['abab', 'ab**'], true],
-    [['abab', 'ab**(e|f)'], false],
+    [['abab', 'ab**(e|f)'], true],
     [['abab', 'ab**(e|f)g'], false],
     [['abab', 'ab***ef'], false],
     [['abab', 'ab*+(e|f)'], false],
@@ -283,7 +283,7 @@ describe('extglob', () => {
     [['abcfefg', 'a(b*(foo|bar))d'], false],
     [['abcfefg', 'ab*(e|f)'], false],
     [['abcfefg', 'ab**'], true],
-    [['abcfefg', 'ab**(e|f)'], false],
+    [['abcfefg', 'ab**(e|f)'], true],
     [['abcfefg', 'ab**(e|f)g'], true],
     [['abcfefg', 'ab***ef'], false],
     [['abcfefg', 'ab*+(e|f)'], false],
@@ -307,7 +307,7 @@ describe('extglob', () => {
     [['abd', 'a[b*(foo|bar)]d'], true],
     [['abd', 'ab*(e|f)'], false],
     [['abd', 'ab**'], true],
-    [['abd', 'ab**(e|f)'], false],
+    [['abd', 'ab**(e|f)'], true],
     [['abd', 'ab**(e|f)g'], false],
     [['abd', 'ab***ef'], false],
     [['abd', 'ab*+(e|f)'], false],
@@ -537,7 +537,7 @@ describe('extglob', () => {
     [['foo', '*(@(a))a@(c)'], false],
     [['foo', '*(@(foo))'], true],
     [['foo', '*(a|b\\[)'], false],
-    [['foo', '*(a|b\\[)|f*'], false],
+    [['foo', '*(a|b\\[)|f*'], true],
     [['foo', '@(*(a|b\\[)|f*)'], true],
     [['foo', '*/*/*'], false],
     [['foo', '*f'], false],
@@ -569,25 +569,26 @@ describe('extglob', () => {
     [['foo/bb/aa/rr', '**/**/**'], true],
     [['foo/bb/aa/rr', '*/*/*'], false],
     [['foo/bba/arr', '*/*/*'], true],
-    [['foo/bba/arr', 'foo*'], false],
-    [['foo/bba/arr', 'foo**'], false],
-    [['foo/bba/arr', 'foo/*'], false],
+    [['foo/bba/arr', 'foo*'], false], // bash disagrees when "globstar" is disabled
+    [['foo/bba/arr', 'foo**'], false], // bash disagrees when "globstar" is disabled
+    [['foo/bba/arr', 'foo/*'], false], // bash disagrees when "globstar" is disabled
     [['foo/bba/arr', 'foo/**'], true],
-    [['foo/bba/arr', 'foo/**arr'], false],
+    [['foo/bba/arr', 'foo/**arr'], false], // bash disagrees when "globstar" is disabled
     [['foo/bba/arr', 'foo/**z'], false],
-    [['foo/bba/arr', 'foo/*arr'], false],
+    [['foo/bba/arr', 'foo/*arr'], false], // bash disagrees when "globstar" is disabled
     [['foo/bba/arr', 'foo/*z'], false],
     [['foob', '!(foo)b*'], false],
     [['foob', '(foo)bb'], false],
     [['foobar', '!(foo)'], true],
-    [['foobar', '!(foo)*'], false],
     [['foobar', '!(foo)*'], false], // bash 4.3 disagrees
+    // [['foobar', '!(foo)*'], false], // bash 4.3 disagrees
     [['foobar', '!(foo)b*'], false],
     [['foobar', '*(!(foo))'], true],
     [['foobar', '*ob*a*r*'], true],
-    [['foobar', 'foo\\*bar'], false],
-    [['foobb', '!(foo)b*'], false], // bash 4.3 disagrees
-    [['foobb', '(foo)bb'], true],
+    [['foobar', 'foo\\*bar'], false], // bash 4.3 disagrees since bash does not respect the escaped star
+    [['foobb', '!(foo)b*'], false], // bash 4.3 disagrees, since (in bash) the last star greedily captures everything. IMHO, this is a bug in bash.
+    [['foobb', '(foo)bb'], true], // bash 4.3 disagrees, since non-extglob parens have significance in bash
+    [['(foo)bb', '\\(foo\\)bb'], true], // bash 4.3 disagrees, since the escaping is not respected
     [['foofoofo', '@(foo|f|fo)*(f|of+(o))'], true, 'Should match as fo+ofo+ofo'],
     [['foofoofo', '@(foo|f|fo)*(f|of+(o))'], true],
     [['fooofoofofooo', '*(f*(o))'], true],
@@ -648,9 +649,9 @@ describe('extglob', () => {
     [['shell.c', '!(*.c|*.h|Makefile.in|config*|README)'], false],
     [['VMS.FILE;', '*\\;[1-9]*([0-9])'], false],
     [['VMS.FILE;0', '*\\;[1-9]*([0-9])'], false],
-    [['VMS.FILE;1', '*\\;[1-9]*([0-9])'], true],
-    [['VMS.FILE;1', '*;[1-9]*([0-9])'], true],
-    [['VMS.FILE;139', '*\\;[1-9]*([0-9])'], true],
+    [['VMS.FILE;1', '*\\;[1-9]*([0-9])'], true], // bash 4.3 disagrees b/c of ";" in terminal usage
+    [['VMS.FILE;1', '*;[1-9]*([0-9])'], true], // bash 4.3 disagrees b/c of ";" in terminal usage
+    [['VMS.FILE;139', '*\\;[1-9]*([0-9])'], true], // bash 4.3 disagrees b/c of ";" in terminal usage
     [['VMS.FILE;1N', '*\\;[1-9]*([0-9])'], false],
     [['xfoooofof', '*(f*(o))'], false],
     [['XXX/adobe/courier/bold/o/normal//12/120/75/75/m/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*', { unixify: false } ], true ],
@@ -663,18 +664,19 @@ describe('extglob', () => {
     [['zf', '?(z)'], false],
     [['zoot', '@(!(z*)|*x)'], false],
     [['zoox', '@(!(z*)|*x)'], true],
-    [['zz', '(a+|b)*'], false],
+    [['zz', '(a+|b)*'], false]
   ];
 
   fixtures.forEach((unit, i) => {
     let n = i + offset; // add offset so line no. is correct in error messages
     if (argv.n !== void 0 && n !== argv.n) return;
-    let args = unit[0]
+    let args = unit[0];
     let expected = unit[1];
     let setup = unit[2];
     let errMessage = `${colors.cyan('Line ' + n)}) ${colors.yellow(args[0])} should ${colors.red(expected ? '' : 'not ')}match ${colors.yellow(args[1])}`;
 
-    it(`should ${expected ? '' : 'not '}match "${args[1]}"`, () => {
+    it(`"${args[0]}" should ${expected ? '' : 'not '}match "${args[1]}"`, () => {
+      // console.log(bash.isMatch(...args))
       if (setup && setup.before) setup.before();
       assert.equal(pm.isMatch(...args), expected, errMessage);
       if (setup && setup.after) setup.after();

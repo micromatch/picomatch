@@ -243,10 +243,17 @@ picomatch.resolve = (...args) => {
 picomatch.makeRe = (pattern, options) => {
   const makeRe = (input, opts = {}) => {
     let flags = opts.flags || opts.nocase ? 'i' : '';
+    let prefix;
+
+    if (input.startsWith('./')) {
+      input = input.slice(2);
+      prefix = './';
+    }
+
     let state = picomatch.parse(input, options);
     let regex = new RegExp(state.output, flags);
-    if (state.prefix) {
-      Reflect.defineProperty(regex, 'prefix', { value: state.prefix });
+    if (prefix) {
+      Reflect.defineProperty(regex, 'prefix', { value: prefix });
     }
     return regex;
   };
@@ -278,30 +285,30 @@ picomatch.compile = (input, options) => {
 
 picomatch.clearCache = () => (picomatch.cache = {});
 
-// function memoize(method, pattern, options, fn) {
-//   if (options && options.nocache === true) {
-//     return fn(pattern, options);
-//   }
-
-//   if (!picomatch.cache) picomatch.cache = {};
-//   let key = createKey(method, pattern, options);
-//   let res = picomatch.cache[key];
-//   if (res === void 0) {
-//     res = picomatch.cache[key] = fn(pattern, options);
-//   }
-//   return res;
-// }
-
 function memoize(method, pattern, options, fn) {
   if (options && options.nocache === true) {
-    picomatch.clearCache();
     return fn(pattern, options);
   }
 
-  let key = createKey(method, pattern, options);
   if (!picomatch.cache) picomatch.cache = {};
-  return picomatch.cache[key] || (picomatch.cache[key] = fn(pattern, options));
+  let key = createKey(method, pattern, options);
+  let res = picomatch.cache[key];
+  if (res === void 0) {
+    res = picomatch.cache[key] = fn(pattern, options);
+  }
+  return res;
 }
+
+// function memoize(method, pattern, options, fn) {
+//   if (options && options.nocache === true) {
+//     picomatch.clearCache();
+//     return fn(pattern, options);
+//   }
+
+//   let key = createKey(method, pattern, options);
+//   if (!picomatch.cache) picomatch.cache = {};
+//   return picomatch.cache[key] || (picomatch.cache[key] = fn(pattern, options));
+// }
 
 function createKey(method, pattern, options) {
   let id = `method="${method}";pattern="${pattern}"`;
@@ -317,7 +324,3 @@ function isWindows(options = {}) {
 }
 
 module.exports = picomatch;
-
-
-// console.log(picomatch.join('foo\\..\\baz\\', '*.js'));
-// console.log(picomatch.resolve('test\\', '*.js'));

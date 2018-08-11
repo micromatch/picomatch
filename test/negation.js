@@ -685,7 +685,6 @@ describe('negation', () => {
     assert(isMatch('a/x/y', 'a/**/**/**/*'));
     assert(isMatch('a/x/y/z', 'a/**/**/**/*'));
 
-
     assert(isMatch('a/b/foo/bar/baz.qux', 'a/b/**/bar/**/*.*'));
     assert(isMatch('a/b/bar/baz.qux', 'a/b/**/bar/**/*.*'));
   });

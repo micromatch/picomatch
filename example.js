@@ -1,13 +1,29 @@
-// const fill = require('fill-range');
+'use strict';
+
+const fill = require('fill-range');
 const mm = require('minimatch');
-// const nm = require('nanomatch');
+const bash = require('bash-match');
 const pm = require('./');
-const pm2 = require('../picomatch-simple');
 
 // console.log(pm.isMatch('.', ''))
+// console.log(mm.makeRe('c*3.txt'))
+// console.log(pm.makeRe('c*3.txt', { strictSlashes: true }))
+
+// console.log(mm.makeRe('!**/a.js'))
+// console.log(pm.makeRe('!**/a.js'))
+// console.log(pm.makeRe('ab**(e|f)'))
+// console.log(pm.isMatch('ab', 'ab**(e|f)'))
+console.log(pm.makeRe('@(foo|f|fo)*(f|of+(o))'))
+console.log(pm.isMatch('.foofoofo', '@(foo|f|fo)*(f|of+(o))'))
+
 // console.log(mm.makeRe('!c*3.txt'))
 // console.log(pm.makeRe('!c*3.txt'))
-// console.log(pm2.makeRe('!c*3.txt'))
+
+// console.log(mm.makeRe('foo.txt'));
+// console.log(pm.makeRe('foo.txt'));
+// console.log(pm.makeRe('*.js'));
+// console.log(mm.makeRe('*(foo)'));
+// console.log(pm.makeRe('*(foo)', { noextglob: true }));
 
 // console.log(pm.makeRe('**', { strict: true }));
 // console.log(mm.makeRe('**', { strict: true }));

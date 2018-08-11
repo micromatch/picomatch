@@ -5,7 +5,7 @@ const assert = require('assert');
 const picomatch = require('..');
 const { isMatch } = require('./support');
 
-describe('slashes', () => {
+describe('filepaths', () => {
   beforeEach(() => picomatch.clearCache());
 
   it('should match one directory level with a single star (*)', () => {

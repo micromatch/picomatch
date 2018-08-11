@@ -10,8 +10,8 @@ const { isMatch } = require('./support');
 describe('picomatch', () => {
   beforeEach(() => picomatch.clearCache());
 
-  describe('non-globs', () => {
-    it('should match literal strings', () => {
+  describe('non-glob support', () => {
+    it('should match literal strings (non-glob patterns)', () => {
       assert(!isMatch('aaa\\bbb', 'aaa/bbb', { nocache: true }));
       assert(isMatch('aaa/bbb', 'aaa/bbb', { nocache: true }));
 
@@ -20,25 +20,8 @@ describe('picomatch', () => {
       assert(isMatch('aaa/bbb', 'aaa/bbb', { nocache: true }));
       path.sep = '/';
 
-      assert(isMatch('foo', 'foo'));
-      assert(!isMatch('bar', 'foo'));
-      assert(!isMatch('aaa', 'aa'));
-      assert(isMatch('aaa', 'aaa'));
-      assert(isMatch('aaa', ['aa', 'aaa']));
-      assert(isMatch('aaa/bbb', 'aaa/bbb'));
-      assert(isMatch('aaa/bbb', 'aaa[/]bbb'));
-      assert(isMatch('aaa\\bbb', ['aaa\\bbb', 'aaa/bbb'], { unixify: true }));
-      assert(isMatch('aaa/bbb', ['aaa\\bbb', 'aaa/bbb']));
-    });
-
-    it('should correctly deal with empty globs', () => {
-      assert(!isMatch('ab', ''));
-      assert(!isMatch('a', ''));
-      assert(!isMatch('.', ''));
-    });
-
-    it('should handle literal strings (non-glob patterns)', () => {
       assert(!isMatch('/ab', '/a'));
+      assert(!isMatch('aaa', 'aa'));
       assert(!isMatch('ab', '/a'));
       assert(!isMatch('ab', 'a'));
       assert(!isMatch('abc', ''));
@@ -46,366 +29,25 @@ describe('picomatch', () => {
       assert(!isMatch('abcd', 'abc'));
       assert(!isMatch('abcd', 'bc'));
       assert(!isMatch('abcd', 'cd'));
+      assert(!isMatch('bar', 'foo'));
       assert(isMatch('.', '.'));
       assert(isMatch('/a', '/a'));
       assert(isMatch('a', 'a'));
+      assert(isMatch('aaa', 'aaa'));
+      assert(isMatch('aaa', ['aa', 'aaa']));
+      assert(isMatch('aaa/bbb', 'aaa/bbb'));
+      assert(isMatch('aaa/bbb', 'aaa[/]bbb'));
+      assert(isMatch('aaa/bbb', ['aaa\\bbb', 'aaa/bbb']));
+      assert(isMatch('aaa\\bbb', ['aaa\\bbb', 'aaa/bbb'], { unixify: true }));
       assert(isMatch('ab', 'ab'));
       assert(isMatch('abcd', 'abcd'));
-    });
-  });
-
-  describe('character matching', () => {
-    it('should match windows drives with globstars', () => {
-      assert(isMatch('bar/', '**'));
-      assert(isMatch('A://', '**'));
-      assert(isMatch('B:foo/a/b/c/d', '**'));
-      assert(isMatch('C:/Users/', '**'));
-      assert(isMatch('c:\\', '**'));
-      assert(isMatch('C:\\Users\\', '**'));
-      assert(isMatch('C:cwd/another', '**'));
-      assert(isMatch('C:cwd\\another', '**'));
+      assert(isMatch('foo', 'foo'));
     });
 
-    it('should not match multiple windows directories with a single star', () => {
-      path.sep = '\\';
-      assert(isMatch('c:\\', '*', { nocache: true }));
-      assert(!isMatch('C:\\Users\\', '*', { nocache: true }));
-      assert(!isMatch('C:cwd\\another', '*', { nocache: true }));
-      path.sep = '/';
-    });
-
-    it('should match mixed slashes on windows', () => {
-      path.sep = '\\';
-      assert(isMatch('//C://user\\docs\\Letter.txt', '**', { nocache: true }));
-      assert(isMatch('//C:\\\\user/docs/Letter.txt', '**', { nocache: true }));
-      assert(isMatch(':\\', '*', { nocache: true }));
-      assert(isMatch(':\\', ':*', { nocache: true }));
-      assert(isMatch('\\\\foo/bar', '**', { nocache: true }));
-      assert(isMatch('\\\\foo/bar', '/*/*', { nocache: true }));
-      assert(isMatch('\\\\unc\\admin$', '**', { nocache: true }));
-      assert(isMatch('\\\\unc\\admin$', '/*/*$', { nocache: true }));
-      assert(isMatch('\\\\unc\\admin$\\system32', '/*/*$/*32', { nocache: true }));
-      assert(isMatch('\\\\unc\\share\\foo', '/u*/s*/f*', { nocache: true }));
-      assert(isMatch('foo\\bar\\baz', 'f*/*/*', { nocache: true }));
-      path.sep = '/';
-    });
-
-    it('should match mixed slashes when options.unixify is true', () => {
-      assert(isMatch('//C://user\\docs\\Letter.txt', '**', { nocache: true, unixify: true }));
-      assert(isMatch('//C:\\\\user/docs/Letter.txt', '**', { nocache: true, unixify: true }));
-      assert(isMatch(':\\', '*', { nocache: true, unixify: true }));
-      assert(isMatch(':\\', ':*', { nocache: true, unixify: true }));
-      assert(isMatch('\\\\foo/bar', '**', { nocache: true, unixify: true }));
-      assert(isMatch('\\\\foo/bar', '/*/*', { nocache: true, unixify: true }));
-      assert(isMatch('\\\\unc\\admin$', '**', { nocache: true, unixify: true }));
-      assert(isMatch('\\\\unc\\admin$', '/*/*$', { nocache: true, unixify: true }));
-      assert(isMatch('\\\\unc\\admin$\\system32', '/*/*$/*32', { nocache: true, unixify: true }));
-      assert(isMatch('\\\\unc\\share\\foo', '/u*/s*/f*', { nocache: true, unixify: true }));
-      assert(isMatch('foo\\bar\\baz', 'f*/*/*', { nocache: true, unixify: true }));
-      assert(isMatch('//*:/**', '**'));
-      assert(!isMatch('//server/file', '//*'));
-      assert(isMatch('//server/file', '/**'));
-      assert(isMatch('//server/file', '//**'));
-      assert(isMatch('//server/file', '**'));
-      assert(isMatch('//UNC//Server01//user//docs//Letter.txt', '**'));
-      assert(isMatch('/foo', '**'));
-      assert(isMatch('/foo/a/b/c/d', '**'));
-      assert(isMatch('/foo/bar', '**'));
-      assert(isMatch('/home/foo', '**'));
-      assert(isMatch('/home/foo/..', '**/..'));
-      assert(isMatch('/user/docs/Letter.txt', '**'));
-      assert(isMatch('directory\\directory', '**'));
-      assert(isMatch('a/b/c.js', '**'));
-      assert(isMatch('directory/directory', '**'));
-      assert(isMatch('foo/bar', '**'));
-    });
-
-    it('should match any character zero or more times, except for /', () => {
-      assert(!isMatch('foo', '*a*'));
-      assert(!isMatch('foo', '*r'));
-      assert(!isMatch('foo', 'b*'));
-      assert(!isMatch('foo/bar', '*'));
-      assert(isMatch('foo/bar', '*/*'));
-      assert(!isMatch('foo/bar/baz', '*/*'));
-      assert(isMatch('bar', '*a*'));
-      assert(isMatch('bar', '*r'));
-      assert(isMatch('bar', 'b*'));
-      assert(isMatch('foo/bar/baz', '*/*/*'));
-    });
-
-    it('should match dashes surrounded by spasces', () => {
-      assert(isMatch('my/folder - 1', '*/*'));
-      assert(isMatch('my/folder - copy (1)', '*/*'));
-      assert(isMatch('my/folder - copy [1]', '*/*'));
-      assert(isMatch('my/folder - foo + bar - copy [1]', '*/*'));
-      assert(!isMatch('my/folder - foo + bar - copy [1]', '*'));
-
-      assert(isMatch('my/folder - 1', '*/*-*'));
-      assert(isMatch('my/folder - copy (1)', '*/*-*'));
-      assert(isMatch('my/folder - copy [1]', '*/*-*'));
-      assert(isMatch('my/folder - foo + bar - copy [1]', '*/*-*'));
-
-      assert(isMatch('my/folder - 1', '*/*1'));
-      assert(!isMatch('my/folder - copy (1)', '*/*1'));
-    });
-
-    it('should match dollary signs', () => {
-      assert(!isMatch('$', '!($)'));
-      assert(!isMatch('$', '!$'));
-      assert(isMatch('$$', '!$'));
-      assert(isMatch('$$', '!($)'));
-      assert(isMatch('$$$', '!($)'));
-      assert(isMatch('^', '!($)'));
-
-      assert(isMatch('$', '!($$)'));
-      assert(!isMatch('$$', '!($$)'));
-      assert(isMatch('$$$', '!($$)'));
-      assert(isMatch('^', '!($$)'));
-
-      assert(!isMatch('$', '!($*)'));
-      assert(!isMatch('$$', '!($*)'));
-      assert(!isMatch('$$$', '!($*)'));
-      assert(isMatch('^', '!($*)'));
-
-      assert(isMatch('$', '*'));
-      assert(isMatch('$$', '*'));
-      assert(isMatch('$$$', '*'));
-      assert(isMatch('^', '*'));
-
-      assert(isMatch('$', '$*'));
-      assert(isMatch('$$', '$*'));
-      assert(isMatch('$$$', '$*'));
-      assert(!isMatch('^', '$*'));
-
-      assert(isMatch('$', '*$*'));
-      assert(isMatch('$$', '*$*'));
-      assert(isMatch('$$$', '*$*'));
-      assert(!isMatch('^', '*$*'));
-
-      assert(isMatch('$', '*$'));
-      assert(isMatch('$$', '*$'));
-      assert(isMatch('$$$', '*$'));
-      assert(!isMatch('^', '*$'));
-
-      assert(!isMatch('$', '?$'));
-      assert(isMatch('$$', '?$'));
-      assert(!isMatch('$$$', '?$'));
-      assert(!isMatch('^', '?$'));
-    });
-
-    it('should match carets', () => {
-      assert(!isMatch('^', '!(^)'));
-      assert(isMatch('^^', '!(^)'));
-      assert(isMatch('^^^', '!(^)'));
-      assert(isMatch('&', '!(^)'));
-
-      assert(isMatch('^', '!(^^)'));
-      assert(!isMatch('^^', '!(^^)'));
-      assert(isMatch('^^^', '!(^^)'));
-      assert(isMatch('&', '!(^^)'));
-
-      assert(!isMatch('^', '!(^*)'));
-      assert(!isMatch('^^', '!(^*)'));
-      assert(!isMatch('^^^', '!(^*)'));
-      assert(isMatch('&', '!(^*)'));
-
-      assert(isMatch('^', '*'));
-      assert(isMatch('^^', '*'));
-      assert(isMatch('^^^', '*'));
-      assert(isMatch('&', '*'));
-
-      assert(isMatch('^', '^*'));
-      assert(isMatch('^^', '^*'));
-      assert(isMatch('^^^', '^*'));
-      assert(!isMatch('&', '^*'));
-
-      assert(isMatch('^', '*^*'));
-      assert(isMatch('^^', '*^*'));
-      assert(isMatch('^^^', '*^*'));
-      assert(!isMatch('&', '*^*'));
-
-      assert(isMatch('^', '*^'));
-      assert(isMatch('^^', '*^'));
-      assert(isMatch('^^^', '*^'));
-      assert(!isMatch('&', '*^'));
-
-      assert(!isMatch('^', '?^'));
-      assert(isMatch('^^', '?^'));
-      assert(!isMatch('^^^', '?^'));
-      assert(!isMatch('&', '?^'));
-    });
-
-    it('should...', () => {
-      assert(isMatch('my/folder +1', '*/*'));
-      assert(isMatch('my/folder -1', '*/*'));
-      assert(isMatch('my/folder *1', '*/*'));
-      assert(isMatch('my/folder', '*/*'));
-      assert(isMatch('my/folder+foo+bar&baz', '*/*'));
-      assert(isMatch('my/folder - $1.00', '*/*'));
-      assert(isMatch('my/folder - ^1.00', '*/*'));
-      assert(isMatch('my/folder - %1.00', '*/*'));
-
-      assert(isMatch('my/folder +1', '*/!(*%)*'));
-      assert(isMatch('my/folder -1', '*/!(*%)*'));
-      assert(isMatch('my/folder *1', '*/!(*%)*'));
-      assert(isMatch('my/folder', '*/!(*%)*'));
-      assert(isMatch('my/folder+foo+bar&baz', '*/!(*%)*'));
-      assert(isMatch('my/folder - $1.00', '*/!(*%)*'));
-      assert(isMatch('my/folder - ^1.00', '*/!(*%)*'));
-      assert(!isMatch('my/folder - %1.00', '*/!(*%)*'));
-
-      assert(!isMatch('my/folder +1', '*/*$*'));
-      assert(!isMatch('my/folder -1', '*/*$*'));
-      assert(!isMatch('my/folder *1', '*/*$*'));
-      assert(!isMatch('my/folder', '*/*$*'));
-      assert(!isMatch('my/folder+foo+bar&baz', '*/*$*'));
-      assert(isMatch('my/folder - $1.00', '*/*$*'));
-      assert(!isMatch('my/folder - ^1.00', '*/*$*'));
-      assert(!isMatch('my/folder - %1.00', '*/*$*'));
-
-      assert(!isMatch('my/folder +1', '*/*^*'));
-      assert(!isMatch('my/folder -1', '*/*^*'));
-      assert(!isMatch('my/folder *1', '*/*^*'));
-      assert(!isMatch('my/folder', '*/*^*'));
-      assert(!isMatch('my/folder+foo+bar&baz', '*/*^*'));
-      assert(!isMatch('my/folder - $1.00', '*/*^*'));
-      assert(isMatch('my/folder - ^1.00', '*/*^*'));
-      assert(!isMatch('my/folder - %1.00', '*/*^*'));
-
-      assert(!isMatch('my/folder +1', '*/*&*'));
-      assert(!isMatch('my/folder -1', '*/*&*'));
-      assert(!isMatch('my/folder *1', '*/*&*'));
-      assert(!isMatch('my/folder', '*/*&*'));
-      assert(isMatch('my/folder+foo+bar&baz', '*/*&*'));
-      assert(!isMatch('my/folder - $1.00', '*/*&*'));
-      assert(!isMatch('my/folder - ^1.00', '*/*&*'));
-      assert(!isMatch('my/folder - %1.00', '*/*&*'));
-
-      assert(isMatch('my/folder +1', '*/*+*'));
-      assert(!isMatch('my/folder -1', '*/*+*'));
-      assert(!isMatch('my/folder *1', '*/*+*'));
-      assert(!isMatch('my/folder', '*/*+*'));
-      assert(isMatch('my/folder+foo+bar&baz', '*/*+*'));
-      assert(!isMatch('my/folder - $1.00', '*/*+*'));
-      assert(!isMatch('my/folder - ^1.00', '*/*+*'));
-      assert(!isMatch('my/folder - %1.00', '*/*+*'));
-
-      assert(!isMatch('my/folder +1', '*/*-*'));
-      assert(isMatch('my/folder -1', '*/*-*'));
-      assert(!isMatch('my/folder *1', '*/*-*'));
-      assert(!isMatch('my/folder', '*/*-*'));
-      assert(!isMatch('my/folder+foo+bar&baz', '*/*-*'));
-      assert(isMatch('my/folder - $1.00', '*/*-*'));
-      assert(isMatch('my/folder - ^1.00', '*/*-*'));
-      assert(isMatch('my/folder - %1.00', '*/*-*'));
-
-      assert(!isMatch('my/folder +1', '*/*\\**'));
-      assert(!isMatch('my/folder -1', '*/*\\**'));
-      assert(isMatch('my/folder *1', '*/*\\**'));
-      assert(!isMatch('my/folder', '*/*\\**'));
-      assert(!isMatch('my/folder+foo+bar&baz', '*/*\\**'));
-      assert(!isMatch('my/folder - $1.00', '*/*\\**'));
-      assert(!isMatch('my/folder - ^1.00', '*/*\\**'));
-      assert(!isMatch('my/folder - %1.00', '*/*\\**'));
-    });
-
-    it('should match numbers', () => {
-      assert(!isMatch('1', '*/*'));
-      assert(isMatch('1/1', '*/*'));
-      assert(isMatch('1/2', '*/*'));
-      assert(!isMatch('1/1/1', '*/*'));
-      assert(!isMatch('1/1/2', '*/*'));
-
-      assert(!isMatch('1', '*/*/1'));
-      assert(!isMatch('1/1', '*/*/1'));
-      assert(!isMatch('1/2', '*/*/1'));
-      assert(isMatch('1/1/1', '*/*/1'));
-      assert(!isMatch('1/1/2', '*/*/1'));
-
-      assert(!isMatch('1', '*/*/2'));
-      assert(!isMatch('1/1', '*/*/2'));
-      assert(!isMatch('1/2', '*/*/2'));
-      assert(!isMatch('1/1/1', '*/*/2'));
-      assert(isMatch('1/1/2', '*/*/2'));
-    });
-
-    it('should match square brackets', () => {
-      assert(!isMatch('foo/bar - 1', '**/*\\[*\\]'));
-      assert(!isMatch('foo/bar - copy (1)', '**/*\\[*\\]'));
-      assert(!isMatch('foo/bar (1)', '**/*\\[*\\]'));
-      assert(!isMatch('foo/bar (4)', '**/*\\[*\\]'));
-      assert(!isMatch('foo/bar (7)', '**/*\\[*\\]'));
-      assert(!isMatch('foo/bar (42)', '**/*\\[*\\]'));
-      assert(isMatch('foo/bar - copy [1]', '**/*\\[*\\]'));
-      assert(isMatch('foo/bar - foo + bar - copy [1]', '**/*\\[*\\]'));
-
-      assert(isMatch('foo/bar - 1', '**/*[1]'));
-      assert(!isMatch('foo/bar - copy (1)', '**/*[1]'));
-      assert(!isMatch('foo/bar (1)', '**/*[1]'));
-      assert(!isMatch('foo/bar (4)', '**/*[1]'));
-      assert(!isMatch('foo/bar (7)', '**/*[1]'));
-      assert(!isMatch('foo/bar (42)', '**/*[1]'));
-      assert(isMatch('foo/bar - copy [1]', '**/*[1]'));
-      assert(isMatch('foo/bar - foo + bar - copy [1]', '**/*[1]'));
-
-      assert(!isMatch('foo/bar - 1', '**/*\\[1\\]'));
-      assert(!isMatch('foo/bar - copy (1)', '**/*\\[1\\]'));
-      assert(!isMatch('foo/bar (1)', '**/*\\[1\\]'));
-      assert(!isMatch('foo/bar (4)', '**/*\\[1\\]'));
-      assert(!isMatch('foo/bar (7)', '**/*\\[1\\]'));
-      assert(!isMatch('foo/bar (42)', '**/*\\[1\\]'));
-      assert(isMatch('foo/bar - copy [1]', '**/*\\[1\\]'));
-      assert(isMatch('foo/bar - foo + bar - copy [1]', '**/*\\[1\\]'));
-
-      assert(!isMatch('foo/bar - 1', '*/*\\[*\\]'));
-      assert(!isMatch('foo/bar - copy (1)', '*/*\\[*\\]'));
-      assert(!isMatch('foo/bar (1)', '*/*\\[*\\]'));
-      assert(!isMatch('foo/bar (4)', '*/*\\[*\\]'));
-      assert(!isMatch('foo/bar (7)', '*/*\\[*\\]'));
-      assert(!isMatch('foo/bar (42)', '*/*\\[*\\]'));
-      assert(isMatch('foo/bar - copy [1]', '*/*\\[*\\]'));
-      assert(isMatch('foo/bar - foo + bar - copy [1]', '*/*\\[*\\]'));
-    });
-
-    it('should match parens', () => {
-      const expandRange = (a, b) => `(${fill(a, b, { toRegex: true })})`;
-
-      assert(!isMatch('foo/bar - 1', '*/* \\({4..10}\\)', { expandRange }));
-      assert(!isMatch('foo/bar - copy (1)', '*/* \\({4..10}\\)', { expandRange }));
-      assert(!isMatch('foo/bar (1)', '*/* \\({4..10}\\)', { expandRange }));
-      assert(isMatch('foo/bar (4)', '*/* \\({4..10}\\)', { expandRange }));
-      assert(isMatch('foo/bar (7)', '*/* \\({4..10}\\)', { expandRange }));
-      assert(!isMatch('foo/bar (42)', '*/* \\({4..10}\\)', { expandRange }));
-      assert(!isMatch('foo/bar - copy [1]', '*/* \\({4..10}\\)', { expandRange }));
-      assert(!isMatch('foo/bar - foo + bar - copy [1]', '*/* \\({4..10}\\)', { expandRange }));
-
-      assert(!isMatch('my/folder (Work, Accts)', '/*'));
-      assert(isMatch('my/folder (Work, Accts)', '*/*'));
-      assert(isMatch('my/folder (Work, Accts)', '*/*,*'));
-      assert(isMatch('my/folder (Work, Accts)', '*/*(W*, *)*'));
-      assert(isMatch('my/folder/(Work, Accts)', '**/*(W*, *)*'));
-      assert(!isMatch('my/folder/(Work, Accts)', '*/*(W*, *)*'));
-      assert(isMatch('foo(bar)baz', 'foo*baz'));
-      assert(isMatch('foo(bar)baz', 'foo[bar()]+baz'));
-    });
-
-    it.skip('should throw an error on imbalanced, unescaped parens', () => {
-      assert.throws(() => pm.makeRe('*)'), /Missing opening: "\("/);
-      assert.throws(() => pm.makeRe('*('), /Missing closing: "\)"/);
-    });
-
-    it('should support regex lookbehinds', () => {
-      let v = process.version;
-      Reflect.defineProperty(process, 'version', { value: 'v6.0.0' });
-      assert.throws(() => isMatch('foo/cbaz', 'foo/*(?<!c)baz'), /Node\.js v10 or higher/);
-      Reflect.defineProperty(process, 'version', { value: v });
-
-      if (parseInt(v.slice(1), 10) >= 10) {
-        assert(isMatch('foo/cbaz', 'foo/*(?<!d)baz'));
-        assert(!isMatch('foo/cbaz', 'foo/*(?<!c)baz'));
-        assert(!isMatch('foo/cbaz', 'foo/*(?<=d)baz'));
-        assert(isMatch('foo/cbaz', 'foo/*(?<=c)baz'));
-      }
+    it('should correctly deal with empty globs', () => {
+      assert(!isMatch('ab', ''));
+      assert(!isMatch('a', ''));
+      assert(!isMatch('.', ''));
     });
   });
 
