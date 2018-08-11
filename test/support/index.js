@@ -71,9 +71,10 @@ compare.micromatch = compare.mi = (list, pattern, options) => {
 compare.bash = compare.b = (list, pattern, options) => {
   let bashResult = bash(list, pattern, options);
   let pmResult = picomatch(list, pattern, options);
+  let v = bash.version().split('.').slice(0, 2).join('.');
   if (bashResult.join('') !== pmResult.join('') || argv.v) {
     header(list, pattern, options);
-    console.log('      bash', format(bashResult, green));
+    console.log(` bash v${v}`, format(bashResult, green));
     console.log(' picomatch', format(pmResult, green));
     console.log();
   }
