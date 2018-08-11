@@ -319,7 +319,7 @@ describe('extglobs', () => {
   });
 
   it('should match exactly one of the given pattern:', () => {
-    var arr = ['aa.aa', 'a.bb', 'a.aa.a', 'cc.a', 'a.a', 'c.a', 'dd.aa.d', 'b.a'];
+    let arr = ['aa.aa', 'a.bb', 'a.aa.a', 'cc.a', 'a.a', 'c.a', 'dd.aa.d', 'b.a'];
     // assert.deepEqual(pm.match(arr, '(b|a).(a)'), []);
     assert(!isMatch('aa.aa', '(b|a).(a)'));
     assert(!isMatch('a.bb', '(b|a).(a)'));
@@ -426,7 +426,7 @@ describe('extglobs', () => {
   });
 
   it('should support multiple extglobs:', () => {
-    var arr = ['a.a', 'a.b', 'a.c', 'a.c.d', 'c.c', 'a.', 'd.d', 'e.e', 'f.f', 'a.abcd'];
+    let arr = ['a.a', 'a.b', 'a.c', 'a.c.d', 'c.c', 'a.', 'd.d', 'e.e', 'f.f', 'a.abcd'];
     assert.deepEqual(pm.match(arr, '*.@(a|b|@(ab|a*@(b))*@(c)d)'), ['a.a', 'a.b', 'a.abcd']);
     assert(isMatch('a.a', '*.@(a|b|@(ab|a*@(b))*@(c)d)'));
     assert(isMatch('a.b', '*.@(a|b|@(ab|a*@(b))*@(c)d)'));
@@ -559,7 +559,7 @@ describe('extglobs', () => {
   });
 
   it('should match escaped parens', () => {
-    var arr = ['a(b', 'a\\(b', 'a((b', 'a((((b', 'ab'];
+    let arr = ['a(b', 'a\\(b', 'a((b', 'a((((b', 'ab'];
 
     // assert.deepEqual(pm.match(arr, 'a(b'), []);
     assert(isMatch('a(b', 'a(b'));
@@ -600,7 +600,7 @@ describe('extglobs', () => {
   // these are not extglobs, and do not need to pass, but they are included
   // to test integration with expand-brackets
   it.skip('should match common regex patterns', () => {
-    var fixtures = [
+    let fixtures = [
       'a c',
       'a1c',
       'a123c',
@@ -657,326 +657,854 @@ describe('extglobs', () => {
 });
 
 describe('bash unit tests', () => {
-  var fixtures = (pattern, matches) => {
-    var arr = ['ffffffo', 'fffooofoooooffoofffooofff', 'ffo', 'fofo', 'fofoofoofofoo', 'foo', 'foob', 'foobb', 'foofoofo', 'fooofoofofooo', 'foooofo', 'foooofof', 'foooofofx', 'foooxfooxfoxfooox', 'foooxfooxfxfooox', 'foooxfooxofoxfooox', 'foot', 'foox', 'ofoofo', 'ofooofoofofooo', 'ofoooxoofxo', 'ofoooxoofxoofoooxoofxo', 'ofoooxoofxoofoooxoofxofo', 'ofoooxoofxoofoooxoofxoo', 'ofoooxoofxoofoooxoofxooofxofxo', 'ofxoofxo', 'oofooofo', 'ooo', 'oxfoxfox', 'oxfoxoxfox', 'xfoooofof'];
-    for (var i = 0; i < arr.length; i++) {
+  let fixtures = (pattern, matches) => {
+    let arr = ['ffffffo', 'fffooofoooooffoofffooofff', 'ffo', 'fofo', 'fofoofoofofoo', 'foo', 'foob', 'foobb', 'foofoofo', 'fooofoofofooo', 'foooofo', 'foooofof', 'foooofofx', 'foooxfooxfoxfooox', 'foooxfooxfxfooox', 'foooxfooxofoxfooox', 'foot', 'foox', 'ofoofo', 'ofooofoofofooo', 'ofoooxoofxo', 'ofoooxoofxoofoooxoofxo', 'ofoooxoofxoofoooxoofxofo', 'ofoooxoofxoofoooxoofxoo', 'ofoooxoofxoofoooxoofxooofxofxo', 'ofxoofxo', 'oofooofo', 'ooo', 'oxfoxfox', 'oxfoxoxfox', 'xfoooofof'];
+    for (let i = 0; i < arr.length; i++) {
       assert(isMatch(arr[i], pattern) === matches.includes(arr[i]));
     }
   };
 
   it('should match extended globs from the bash spec:', () => {
-    var f2 = (pattern, matches) => {
-      var arr = ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foo/bar', 'foobar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx'];
-      for (var i = 0; i < arr.length; i++) {
+    let f2 = (pattern, matches) => {
+      let arr = ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foo/bar', 'foobar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx'];
+      for (let i = 0; i < arr.length; i++) {
         assert(isMatch(arr[i], pattern) === matches.includes(arr[i]));
       }
     };
 
-    f2('!(foo)', [
-        'bar',
-        'f',
-        'fa',
-        'fb',
-        'ff',
-        'fff',
-        'fo',
-        // 'foo/bar',
-        'foobar',
-        'foot',
-        'foox',
-        'o',
-        'of',
-        'ooo',
-        'ox',
-        'x',
-        'xx'
-      ]);
+
+    f2('!(foo)', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', /* 'foo/bar', */ 'foobar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
+    assert(isMatch('bar', '!(foo)'));
+    assert(isMatch('f', '!(foo)'));
+    assert(isMatch('fa', '!(foo)'));
+    assert(isMatch('fb', '!(foo)'));
+    assert(isMatch('ff', '!(foo)'));
+    assert(isMatch('fff', '!(foo)'));
+    assert(isMatch('fo', '!(foo)'));
+    assert(!isMatch('foo', '!(foo)'));
+    // assert(isMatch('foo/bar', '!(foo)'));
+    assert(isMatch('foobar', '!(foo)'));
+    assert(isMatch('foot', '!(foo)'));
+    assert(isMatch('foox', '!(foo)'));
+    assert(isMatch('o', '!(foo)'));
+    assert(isMatch('of', '!(foo)'));
+    assert(isMatch('ooo', '!(foo)'));
+    assert(isMatch('ox', '!(foo)'));
+    assert(isMatch('x', '!(foo)'));
+    assert(isMatch('xx', '!(foo)'));
+
     // f2('!(!(foo))', ['foo']);
-    // f2('!(!(!(foo)))', [
-    //     'bar',
-    //     'f',
-    //     'fa',
-    //     'fb',
-    //     'ff',
-    //     'fff',
-    //     'fo',
-    //     'foo/bar',
-    //     'foobar',
-    //     'foot',
-    //     'foox',
-    //     'o',
-    //     'of',
-    //     'ooo',
-    //     'ox',
-    //     'x',
-    //     'xx'
-    //   ]);
+    // assert(!isMatch('bar', '!(!(foo))'));
+    // assert(!isMatch('f', '!(!(foo))'));
+    // assert(!isMatch('fa', '!(!(foo))'));
+    // assert(!isMatch('fb', '!(!(foo))'));
+    // assert(!isMatch('ff', '!(!(foo))'));
+    // assert(!isMatch('fff', '!(!(foo))'));
+    // assert(!isMatch('fo', '!(!(foo))'));
+    // assert(isMatch('foo', '!(!(foo))'));
+    // assert(!isMatch('foo/bar', '!(!(foo))'));
+    // assert(!isMatch('foobar', '!(!(foo))'));
+    // assert(!isMatch('foot', '!(!(foo))'));
+    // assert(!isMatch('foox', '!(!(foo))'));
+    // assert(!isMatch('o', '!(!(foo))'));
+    // assert(!isMatch('of', '!(!(foo))'));
+    // assert(!isMatch('ooo', '!(!(foo))'));
+    // assert(!isMatch('ox', '!(!(foo))'));
+    // assert(!isMatch('x', '!(!(foo))'));
+    // assert(!isMatch('xx', '!(!(foo))'));
+
+    // f2('!(!(!(foo)))', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo/bar', 'foobar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
+    // assert(isMatch('bar', '!(!(!(foo)))'));
+    // assert(isMatch('f', '!(!(!(foo)))'));
+    // assert(isMatch('fa', '!(!(!(foo)))'));
+    // assert(isMatch('fb', '!(!(!(foo)))'));
+    // assert(isMatch('ff', '!(!(!(foo)))'));
+    // assert(isMatch('fff', '!(!(!(foo)))'));
+    // assert(isMatch('fo', '!(!(!(foo)))'));
+    // assert(!isMatch('foo', '!(!(!(foo)))'));
+    // assert(isMatch('foo/bar', '!(!(!(foo)))'));
+    // assert(isMatch('foobar', '!(!(!(foo)))'));
+    // assert(isMatch('foot', '!(!(!(foo)))'));
+    // assert(isMatch('foox', '!(!(!(foo)))'));
+    // assert(isMatch('o', '!(!(!(foo)))'));
+    // assert(isMatch('of', '!(!(!(foo)))'));
+    // assert(isMatch('ooo', '!(!(!(foo)))'));
+    // assert(isMatch('ox', '!(!(!(foo)))'));
+    // assert(isMatch('x', '!(!(!(foo)))'));
+    // assert(isMatch('xx', '!(!(!(foo)))'));
+
     // f2('!(!(!(!(foo))))', ['foo']);
+    // assert(!isMatch('bar', '!(!(!(!(foo))))'));
+    // assert(!isMatch('f', '!(!(!(!(foo))))'));
+    // assert(!isMatch('fa', '!(!(!(!(foo))))'));
+    // assert(!isMatch('fb', '!(!(!(!(foo))))'));
+    // assert(!isMatch('ff', '!(!(!(!(foo))))'));
+    // assert(!isMatch('fff', '!(!(!(!(foo))))'));
+    // assert(!isMatch('fo', '!(!(!(!(foo))))'));
+    // assert(isMatch('foo', '!(!(!(!(foo))))'));
+    // assert(!isMatch('foo/bar', '!(!(!(!(foo))))'));
+    // assert(!isMatch('foobar', '!(!(!(!(foo))))'));
+    // assert(!isMatch('foot', '!(!(!(!(foo))))'));
+    // assert(!isMatch('foox', '!(!(!(!(foo))))'));
+    // assert(!isMatch('o', '!(!(!(!(foo))))'));
+    // assert(!isMatch('of', '!(!(!(!(foo))))'));
+    // assert(!isMatch('ooo', '!(!(!(!(foo))))'));
+    // assert(!isMatch('ox', '!(!(!(!(foo))))'));
+    // assert(!isMatch('x', '!(!(!(!(foo))))'));
+    // assert(!isMatch('xx', '!(!(!(!(foo))))'));
+
     f2('!(!(foo))*', ['foo', 'foo/bar', 'foobar', 'foot', 'foox']);
+    assert(!isMatch('bar', '!(!(foo))*'));
+    assert(!isMatch('f', '!(!(foo))*'));
+    assert(!isMatch('fa', '!(!(foo))*'));
+    assert(!isMatch('fb', '!(!(foo))*'));
+    assert(!isMatch('ff', '!(!(foo))*'));
+    assert(!isMatch('fff', '!(!(foo))*'));
+    assert(!isMatch('fo', '!(!(foo))*'));
+    assert(isMatch('foo', '!(!(foo))*'));
+    assert(isMatch('foo/bar', '!(!(foo))*'));
+    assert(isMatch('foobar', '!(!(foo))*'));
+    assert(isMatch('foot', '!(!(foo))*'));
+    assert(isMatch('foox', '!(!(foo))*'));
+    assert(!isMatch('o', '!(!(foo))*'));
+    assert(!isMatch('of', '!(!(foo))*'));
+    assert(!isMatch('ooo', '!(!(foo))*'));
+    assert(!isMatch('ox', '!(!(foo))*'));
+    assert(!isMatch('x', '!(!(foo))*'));
+    assert(!isMatch('xx', '!(!(foo))*'));
+
     // f2('!(f!(o))', ['fo']);
-    f2('!(f(o))', [
-        'bar',
-        'f',
-        'fa',
-        'fb',
-        'ff',
-        'fff',
-        'foo',
-        'foobar',
-        'foo/bar',
-        'foot',
-        'foox',
-        'o',
-        'of',
-        'ooo',
-        'ox',
-        'x',
-        'xx'
-      ]);
-    // f2('!(f)', [
-    //     'bar',
-    //     'fa',
-    //     'fb',
-    //     'ff',
-    //     'fff',
-    //     'fo',
-    //     'foo',
-    //     'foobar',
-    //     'foo/bar',
-    //     'foot',
-    //     'foox',
-    //     'o',
-    //     'of',
-    //     'ooo',
-    //     'ox',
-    //     'x',
-    //     'xx'
-    //   ]);
-    // f2('!(f)', [
-    //     'bar',
-    //     'fa',
-    //     'fb',
-    //     'ff',
-    //     'fff',
-    //     'fo',
-    //     'foo',
-    //     'foobar',
-    //     'foo/bar',
-    //     'foot',
-    //     'foox',
-    //     'o',
-    //     'of',
-    //     'ooo',
-    //     'ox',
-    //     'x',
-    //     'xx'
-    //   ]);
-    // f2('!(foo)', [
-    //     'bar',
-    //     'f',
-    //     'fa',
-    //     'fb',
-    //     'ff',
-    //     'fff',
-    //     'fo',
-    //     'foobar',
-    //     'foo/bar',
-    //     'foot',
-    //     'foox',
-    //     'o',
-    //     'of',
-    //     'ooo',
-    //     'ox',
-    //     'x',
-    //     'xx'
-    //   ]);
+    // assert(!isMatch('bar', '!(f!(o))'));
+    // assert(!isMatch('f', '!(f!(o))'));
+    // assert(!isMatch('fa', '!(f!(o))'));
+    // assert(!isMatch('fb', '!(f!(o))'));
+    // assert(!isMatch('ff', '!(f!(o))'));
+    // assert(!isMatch('fff', '!(f!(o))'));
+    // assert(isMatch('fo', '!(f!(o))'));
+    // assert(!isMatch('foo', '!(f!(o))'));
+    // assert(!isMatch('foo/bar', '!(f!(o))'));
+    // assert(!isMatch('foobar', '!(f!(o))'));
+    // assert(!isMatch('foot', '!(f!(o))'));
+    // assert(!isMatch('foox', '!(f!(o))'));
+    // assert(!isMatch('o', '!(f!(o))'));
+    // assert(!isMatch('of', '!(f!(o))'));
+    // assert(!isMatch('ooo', '!(f!(o))'));
+    // assert(!isMatch('ox', '!(f!(o))'));
+    // assert(!isMatch('x', '!(f!(o))'));
+    // assert(!isMatch('xx', '!(f!(o))'));
+
+    f2('!(f(o))', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
+    assert(isMatch('bar', '!(f(o))'));
+    assert(isMatch('f', '!(f(o))'));
+    assert(isMatch('fa', '!(f(o))'));
+    assert(isMatch('fb', '!(f(o))'));
+    assert(isMatch('ff', '!(f(o))'));
+    assert(isMatch('fff', '!(f(o))'));
+    assert(!isMatch('fo', '!(f(o))'));
+    assert(isMatch('foo', '!(f(o))'));
+    assert(isMatch('foo/bar', '!(f(o))'));
+    assert(isMatch('foobar', '!(f(o))'));
+    assert(isMatch('foot', '!(f(o))'));
+    assert(isMatch('foox', '!(f(o))'));
+    assert(isMatch('o', '!(f(o))'));
+    assert(isMatch('of', '!(f(o))'));
+    assert(isMatch('ooo', '!(f(o))'));
+    assert(isMatch('ox', '!(f(o))'));
+    assert(isMatch('x', '!(f(o))'));
+    assert(isMatch('xx', '!(f(o))'));
+
+    // f2('!(f)', ['bar', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
+    // assert(isMatch('bar', '!(f)'));
+    // assert(!isMatch('f', '!(f)'));
+    // assert(isMatch('fa', '!(f)'));
+    // assert(isMatch('fb', '!(f)'));
+    // assert(isMatch('ff', '!(f)'));
+    // assert(isMatch('fff', '!(f)'));
+    // assert(isMatch('fo', '!(f)'));
+    // assert(isMatch('foo', '!(f)'));
+    // assert(isMatch('foo/bar', '!(f)'));
+    // assert(isMatch('foobar', '!(f)'));
+    // assert(isMatch('foot', '!(f)'));
+    // assert(isMatch('foox', '!(f)'));
+    // assert(isMatch('o', '!(f)'));
+    // assert(isMatch('of', '!(f)'));
+    // assert(isMatch('ooo', '!(f)'));
+    // assert(isMatch('ox', '!(f)'));
+    // assert(isMatch('x', '!(f)'));
+    // assert(isMatch('xx', '!(f)'));
+
+    // f2('!(f)', ['bar', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
+    // assert(isMatch('bar', '!(f)'));
+    // assert(!isMatch('f', '!(f)'));
+    // assert(isMatch('fa', '!(f)'));
+    // assert(isMatch('fb', '!(f)'));
+    // assert(isMatch('ff', '!(f)'));
+    // assert(isMatch('fff', '!(f)'));
+    // assert(isMatch('fo', '!(f)'));
+    // assert(isMatch('foo', '!(f)'));
+    // assert(isMatch('foo/bar', '!(f)'));
+    // assert(isMatch('foobar', '!(f)'));
+    // assert(isMatch('foot', '!(f)'));
+    // assert(isMatch('foox', '!(f)'));
+    // assert(isMatch('o', '!(f)'));
+    // assert(isMatch('of', '!(f)'));
+    // assert(isMatch('ooo', '!(f)'));
+    // assert(isMatch('ox', '!(f)'));
+    // assert(isMatch('x', '!(f)'));
+    // assert(isMatch('xx', '!(f)'));
+
+    // f2('!(foo)', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
+    // assert(isMatch('bar', '!(foo)'));
+    // assert(isMatch('f', '!(foo)'));
+    // assert(isMatch('fa', '!(foo)'));
+    // assert(isMatch('fb', '!(foo)'));
+    // assert(isMatch('ff', '!(foo)'));
+    // assert(isMatch('fff', '!(foo)'));
+    // assert(isMatch('fo', '!(foo)'));
+    // assert(!isMatch('foo', '!(foo)'));
+    // assert(isMatch('foo/bar', '!(foo)'));
+    // assert(isMatch('foobar', '!(foo)'));
+    // assert(isMatch('foot', '!(foo)'));
+    // assert(isMatch('foox', '!(foo)'));
+    // assert(isMatch('o', '!(foo)'));
+    // assert(isMatch('of', '!(foo)'));
+    // assert(isMatch('ooo', '!(foo)'));
+    // assert(isMatch('ox', '!(foo)'));
+    // assert(isMatch('x', '!(foo)'));
+    // assert(isMatch('xx', '!(foo)'));
+
     f2('!(foo)*', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
-    // f2('!(x)', [
-    //     'bar',
-    //     'f',
-    //     'fa',
-    //     'fb',
-    //     'ff',
-    //     'fff',
-    //     'fo',
-    //     'foo',
-    //     'foobar',
-    //     'foo/bar',
-    //     'foot',
-    //     'foox',
-    //     'o',
-    //     'of',
-    //     'ooo',
-    //     'ox',
-    //     'xx'
-    //   ]);
-    // f2('!(x)*', [
-    //     'bar',
-    //     'f',
-    //     'fa',
-    //     'fb',
-    //     'ff',
-    //     'fff',
-    //     'fo',
-    //     'foo',
-    //     'foobar',
-    //     'foo/bar',
-    //     'foot',
-    //     'foox',
-    //     'o',
-    //     'of',
-    //     'ooo',
-    //     'ox'
-    //   ]);
-    // f2('*(!(f))', [
-    //     'bar',
-    //     'fa',
-    //     'fb',
-    //     'ff',
-    //     'fff',
-    //     'fo',
-    //     'foo',
-    //     'foobar',
-    //     'foo/bar',
-    //     'foot',
-    //     'foox',
-    //     'o',
-    //     'of',
-    //     'ooo',
-    //     'ox',
-    //     'x',
-    //     'xx'
-    //   ]);
+    assert(isMatch('bar', '!(foo)*'));
+    assert(isMatch('f', '!(foo)*'));
+    assert(isMatch('fa', '!(foo)*'));
+    assert(isMatch('fb', '!(foo)*'));
+    assert(isMatch('ff', '!(foo)*'));
+    assert(isMatch('fff', '!(foo)*'));
+    assert(isMatch('fo', '!(foo)*'));
+    assert(!isMatch('foo', '!(foo)*'));
+    assert(!isMatch('foo/bar', '!(foo)*'));
+    assert(!isMatch('foobar', '!(foo)*'));
+    assert(!isMatch('foot', '!(foo)*'));
+    assert(!isMatch('foox', '!(foo)*'));
+    assert(isMatch('o', '!(foo)*'));
+    assert(isMatch('of', '!(foo)*'));
+    assert(isMatch('ooo', '!(foo)*'));
+    assert(isMatch('ox', '!(foo)*'));
+    assert(isMatch('x', '!(foo)*'));
+    assert(isMatch('xx', '!(foo)*'));
+
+    // f2('!(x)', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'xx']);
+    // assert(isMatch('bar', '!(x)'));
+    // assert(isMatch('f', '!(x)'));
+    // assert(isMatch('fa', '!(x)'));
+    // assert(isMatch('fb', '!(x)'));
+    // assert(isMatch('ff', '!(x)'));
+    // assert(isMatch('fff', '!(x)'));
+    // assert(isMatch('fo', '!(x)'));
+    // assert(isMatch('foo', '!(x)'));
+    // assert(isMatch('foo/bar', '!(x)'));
+    // assert(isMatch('foobar', '!(x)'));
+    // assert(isMatch('foot', '!(x)'));
+    // assert(isMatch('foox', '!(x)'));
+    // assert(isMatch('o', '!(x)'));
+    // assert(isMatch('of', '!(x)'));
+    // assert(isMatch('ooo', '!(x)'));
+    // assert(isMatch('ox', '!(x)'));
+    // assert(!isMatch('x', '!(x)'));
+    // assert(isMatch('xx', '!(x)'));
+
+    // f2('!(x)*', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox']);
+    // assert(isMatch('bar', '!(x)*'));
+    // assert(isMatch('f', '!(x)*'));
+    // assert(isMatch('fa', '!(x)*'));
+    // assert(isMatch('fb', '!(x)*'));
+    // assert(isMatch('ff', '!(x)*'));
+    // assert(isMatch('fff', '!(x)*'));
+    // assert(isMatch('fo', '!(x)*'));
+    // assert(isMatch('foo', '!(x)*'));
+    // assert(isMatch('foo/bar', '!(x)*'));
+    // assert(isMatch('foobar', '!(x)*'));
+    // assert(isMatch('foot', '!(x)*'));
+    // assert(isMatch('foox', '!(x)*'));
+    // assert(isMatch('o', '!(x)*'));
+    // assert(isMatch('of', '!(x)*'));
+    // assert(isMatch('ooo', '!(x)*'));
+    // assert(isMatch('ox', '!(x)*'));
+    // assert(!isMatch('x', '!(x)*'));
+    // assert(!isMatch('xx', '!(x)*'));
+
+    // f2('*(!(f))', ['bar', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
+    // assert(isMatch('bar', '*(!(f))'));
+    // assert(isMatch('f', '*(!(f))'));
+    // assert(isMatch('fa', '*(!(f))'));
+    // assert(isMatch('fb', '*(!(f))'));
+    // assert(isMatch('ff', '*(!(f))'));
+    // assert(isMatch('fff', '*(!(f))'));
+    // assert(isMatch('fo', '*(!(f))'));
+    // assert(isMatch('foo', '*(!(f))'));
+    // assert(isMatch('foo/bar', '*(!(f))'));
+    // assert(isMatch('foobar', '*(!(f))'));
+    // assert(isMatch('foot', '*(!(f))'));
+    // assert(isMatch('foox', '*(!(f))'));
+    // assert(isMatch('o', '*(!(f))'));
+    // assert(isMatch('of', '*(!(f))'));
+    // assert(isMatch('ooo', '*(!(f))'));
+    // assert(isMatch('ox', '*(!(f))'));
+    // assert(isMatch('x', '*(!(f))'));
+    // assert(isMatch('xx', '*(!(f))'));
+
     f2('*((foo))', ['foo']);
-    // f2('+(!(f))', [
-    //     'bar',
-    //     'fa',
-    //     'fb',
-    //     'ff',
-    //     'fff',
-    //     'fo',
-    //     'foo',
-    //     'foobar',
-    //     'foo/bar',
-    //     'foot',
-    //     'foox',
-    //     'o',
-    //     'of',
-    //     'ooo',
-    //     'ox',
-    //     'x',
-    //     'xx'
-    //   ]);
-    // f2('@(!(z*)|*x)', [
-    //     'bar',
-    //     'f',
-    //     'fa',
-    //     'fb',
-    //     'ff',
-    //     'fff',
-    //     'fo',
-    //     'foo',
-    //     'foobar',
-    //     'foo/bar',
-    //     'foot',
-    //     'foox',
-    //     'o',
-    //     'of',
-    //     'ooo',
-    //     'ox',
-    //     'x',
-    //     'xx'
-    //   ]);
+    assert(!isMatch('bar', '*((foo))'));
+    assert(!isMatch('f', '*((foo))'));
+    assert(!isMatch('fa', '*((foo))'));
+    assert(!isMatch('fb', '*((foo))'));
+    assert(!isMatch('ff', '*((foo))'));
+    assert(!isMatch('fff', '*((foo))'));
+    assert(!isMatch('fo', '*((foo))'));
+    assert(isMatch('foo', '*((foo))'));
+    assert(!isMatch('foo/bar', '*((foo))'));
+    assert(!isMatch('foobar', '*((foo))'));
+    assert(!isMatch('foot', '*((foo))'));
+    assert(!isMatch('foox', '*((foo))'));
+    assert(!isMatch('o', '*((foo))'));
+    assert(!isMatch('of', '*((foo))'));
+    assert(!isMatch('ooo', '*((foo))'));
+    assert(!isMatch('ox', '*((foo))'));
+    assert(!isMatch('x', '*((foo))'));
+    assert(!isMatch('xx', '*((foo))'));
+
+    // f2('+(!(f))', ['bar', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
+    // assert(isMatch('bar', '+(!(f))'));
+    // assert(isMatch('f', '+(!(f))'));
+    // assert(isMatch('fa', '+(!(f))'));
+    // assert(isMatch('fb', '+(!(f))'));
+    // assert(isMatch('ff', '+(!(f))'));
+    // assert(isMatch('fff', '+(!(f))'));
+    // assert(isMatch('fo', '+(!(f))'));
+    // assert(isMatch('foo', '+(!(f))'));
+    // assert(isMatch('foo/bar', '+(!(f))'));
+    // assert(isMatch('foobar', '+(!(f))'));
+    // assert(isMatch('foot', '+(!(f))'));
+    // assert(isMatch('foox', '+(!(f))'));
+    // assert(isMatch('o', '+(!(f))'));
+    // assert(isMatch('of', '+(!(f))'));
+    // assert(isMatch('ooo', '+(!(f))'));
+    // assert(isMatch('ox', '+(!(f))'));
+    // assert(isMatch('x', '+(!(f))'));
+    // assert(isMatch('xx', '+(!(f))'));
+
+    // f2('@(!(z*)|*x)', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
+    // assert(isMatch('bar', '@(!(z*)|*x)'));
+    // assert(isMatch('f', '@(!(z*)|*x)'));
+    // assert(isMatch('fa', '@(!(z*)|*x)'));
+    // assert(isMatch('fb', '@(!(z*)|*x)'));
+    // assert(isMatch('ff', '@(!(z*)|*x)'));
+    // assert(isMatch('fff', '@(!(z*)|*x)'));
+    // assert(isMatch('fo', '@(!(z*)|*x)'));
+    // assert(isMatch('foo', '@(!(z*)|*x)'));
+    // assert(isMatch('foo/bar', '@(!(z*)|*x)'));
+    // assert(isMatch('foobar', '@(!(z*)|*x)'));
+    // assert(isMatch('foot', '@(!(z*)|*x)'));
+    // assert(isMatch('foox', '@(!(z*)|*x)'));
+    // assert(isMatch('o', '@(!(z*)|*x)'));
+    // assert(isMatch('of', '@(!(z*)|*x)'));
+    // assert(isMatch('ooo', '@(!(z*)|*x)'));
+    // assert(isMatch('ox', '@(!(z*)|*x)'));
+    // assert(isMatch('x', '@(!(z*)|*x)'));
+    // assert(isMatch('xx', '@(!(z*)|*x)'));
+
     f2('foo/!(foo)', ['foo/bar']);
+    assert(!isMatch('bar', 'foo/!(foo)'));
+    assert(!isMatch('f', 'foo/!(foo)'));
+    assert(!isMatch('fa', 'foo/!(foo)'));
+    assert(!isMatch('fb', 'foo/!(foo)'));
+    assert(!isMatch('ff', 'foo/!(foo)'));
+    assert(!isMatch('fff', 'foo/!(foo)'));
+    assert(!isMatch('fo', 'foo/!(foo)'));
+    assert(!isMatch('foo', 'foo/!(foo)'));
+    assert(isMatch('foo/bar', 'foo/!(foo)'));
+    assert(!isMatch('foobar', 'foo/!(foo)'));
+    assert(!isMatch('foot', 'foo/!(foo)'));
+    assert(!isMatch('foox', 'foo/!(foo)'));
+    assert(!isMatch('o', 'foo/!(foo)'));
+    assert(!isMatch('of', 'foo/!(foo)'));
+    assert(!isMatch('ooo', 'foo/!(foo)'));
+    assert(!isMatch('ox', 'foo/!(foo)'));
+    assert(!isMatch('x', 'foo/!(foo)'));
+    assert(!isMatch('xx', 'foo/!(foo)'));
 
     fixtures('(foo)bb', ['foobb']);
-    fixtures('*(*(f)*(o))', [
-        'ffffffo',
-        'fffooofoooooffoofffooofff',
-        'ffo',
-        'fofo',
-        'fofoofoofofoo',
-        'foo',
-        'foofoofo',
-        'fooofoofofooo',
-        'foooofo',
-        'foooofof',
-        'ofoofo',
-        'ofooofoofofooo',
-        'oofooofo',
-        'ooo'
-      ]);
-    fixtures('*(*(of*(o)x)o)', [
-        'ofoooxoofxo',
-        'ofoooxoofxoofoooxoofxo',
-        'ofoooxoofxoofoooxoofxoo',
-        'ofoooxoofxoofoooxoofxooofxofxo',
-        'ofxoofxo',
-        'ooo'
-      ]);
-    fixtures('*(f*(o))', [
-        'ffffffo',
-        'fffooofoooooffoofffooofff',
-        'ffo',
-        'fofo',
-        'fofoofoofofoo',
-        'foo',
-        'foofoofo',
-        'fooofoofofooo',
-        'foooofo',
-        'foooofof'
-      ]);
-    fixtures('*(f*(o)x)', ['foooxfooxfoxfooox', 'foooxfooxfxfooox', 'foox']);
-    fixtures('*(f+(o))', ['fofo', 'fofoofoofofoo', 'foo', 'foofoofo', 'fooofoofofooo', 'foooofo']);
-    fixtures('*(of+(o))', ['ofoofo']);
-    fixtures('*(of+(o)|f)', ['fofo', 'fofoofoofofoo', 'ofoofo', 'ofooofoofofooo']);
-    fixtures('*(of|oof+(o))', ['ofoofo', 'oofooofo']);
-    fixtures('*(oxf+(ox))', ['oxfoxoxfox']);
-    fixtures('@(!(z*)|*x)', [
-        'ffffffo',
-        'fffooofoooooffoofffooofff',
-        'ffo',
-        'fofo',
-        'fofoofoofofoo',
-        'foo',
-        'foob',
-        'foobb',
-        'foofoofo',
-        'fooofoofofooo',
-        'foooofo',
-        'foooofof',
-        'foooofofx',
-        'foooxfooxfoxfooox',
-        'foooxfooxfxfooox',
-        'foooxfooxofoxfooox',
-        'foot',
-        'foox',
-        'ofoofo',
-        'ofooofoofofooo',
-        'ofoooxoofxo',
-        'ofoooxoofxoofoooxoofxo',
-        'ofoooxoofxoofoooxoofxofo',
-        'ofoooxoofxoofoooxoofxoo',
-        'ofoooxoofxoofoooxoofxooofxofxo',
-        'ofxoofxo',
-        'oofooofo',
-        'ooo',
-        'oxfoxfox',
-        'oxfoxoxfox',
-        'xfoooofof'
-      ]);
-    fixtures('@(foo|f|fo)*(f|of+(o))', ['fofo', 'fofoofoofofoo', 'foo', 'foofoofo', 'fooofoofofooo']);
+    assert(!isMatch('ffffffo', '(foo)bb'));
+    assert(!isMatch('fffooofoooooffoofffooofff', '(foo)bb'));
+    assert(!isMatch('ffo', '(foo)bb'));
+    assert(!isMatch('fofo', '(foo)bb'));
+    assert(!isMatch('fofoofoofofoo', '(foo)bb'));
+    assert(!isMatch('foo', '(foo)bb'));
+    assert(!isMatch('foob', '(foo)bb'));
+    assert(isMatch('foobb', '(foo)bb'));
+    assert(!isMatch('foofoofo', '(foo)bb'));
+    assert(!isMatch('fooofoofofooo', '(foo)bb'));
+    assert(!isMatch('foooofo', '(foo)bb'));
+    assert(!isMatch('foooofof', '(foo)bb'));
+    assert(!isMatch('foooofofx', '(foo)bb'));
+    assert(!isMatch('foooxfooxfoxfooox', '(foo)bb'));
+    assert(!isMatch('foooxfooxfxfooox', '(foo)bb'));
+    assert(!isMatch('foooxfooxofoxfooox', '(foo)bb'));
+    assert(!isMatch('foot', '(foo)bb'));
+    assert(!isMatch('foox', '(foo)bb'));
+    assert(!isMatch('ofoofo', '(foo)bb'));
+    assert(!isMatch('ofooofoofofooo', '(foo)bb'));
+    assert(!isMatch('ofoooxoofxo', '(foo)bb'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '(foo)bb'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '(foo)bb'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '(foo)bb'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '(foo)bb'));
+    assert(!isMatch('ofxoofxo', '(foo)bb'));
+    assert(!isMatch('oofooofo', '(foo)bb'));
+    assert(!isMatch('ooo', '(foo)bb'));
+    assert(!isMatch('oxfoxfox', '(foo)bb'));
+    assert(!isMatch('oxfoxoxfox', '(foo)bb'));
+    assert(!isMatch('xfoooofof', '(foo)bb'));
 
-    var arr = ['aaac', 'aac', 'ac', 'abbcd', 'abcd', 'acd', 'baaac', 'c', 'foo'];
-    assert.deepEqual(pm.match(arr, '*(@(a))a@(c)'), ['aaac', 'aac', 'ac']);
-    assert.deepEqual(pm.match(arr, '@(ab|a*(b))*(c)d'), ['abbcd', 'abcd', 'acd']);
-    assert.deepEqual(pm.match(arr, '?@(a|b)*@(c)d'), ['abbcd', 'abcd']);
-    assert.deepEqual(pm.match(arr, '@(ab|a*@(b))*(c)d'), ['abbcd', 'abcd']);
-    assert.deepEqual(pm.match(['aac'], '*(@(a))b@(c)'), []);
+    fixtures('*(*(f)*(o))', ['ffffffo', 'fffooofoooooffoofffooofff', 'ffo', 'fofo', 'fofoofoofofoo', 'foo', 'foofoofo', 'fooofoofofooo', 'foooofo', 'foooofof', 'ofoofo', 'ofooofoofofooo', 'oofooofo', 'ooo']);
+    assert(isMatch('ffffffo', '*(*(f)*(o))'));
+    assert(isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))'));
+    assert(isMatch('ffo', '*(*(f)*(o))'));
+    assert(isMatch('fofo', '*(*(f)*(o))'));
+    assert(isMatch('fofoofoofofoo', '*(*(f)*(o))'));
+    assert(isMatch('foo', '*(*(f)*(o))'));
+    assert(!isMatch('foob', '*(*(f)*(o))'));
+    assert(!isMatch('foobb', '*(*(f)*(o))'));
+    assert(isMatch('foofoofo', '*(*(f)*(o))'));
+    assert(isMatch('fooofoofofooo', '*(*(f)*(o))'));
+    assert(isMatch('foooofo', '*(*(f)*(o))'));
+    assert(isMatch('foooofof', '*(*(f)*(o))'));
+    assert(!isMatch('foooofofx', '*(*(f)*(o))'));
+    assert(!isMatch('foooxfooxfoxfooox', '*(*(f)*(o))'));
+    assert(!isMatch('foooxfooxfxfooox', '*(*(f)*(o))'));
+    assert(!isMatch('foooxfooxofoxfooox', '*(*(f)*(o))'));
+    assert(!isMatch('foot', '*(*(f)*(o))'));
+    assert(!isMatch('foox', '*(*(f)*(o))'));
+    assert(isMatch('ofoofo', '*(*(f)*(o))'));
+    assert(isMatch('ofooofoofofooo', '*(*(f)*(o))'));
+    assert(!isMatch('ofoooxoofxo', '*(*(f)*(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(*(f)*(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(*(f)*(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(*(f)*(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(f)*(o))'));
+    assert(!isMatch('ofxoofxo', '*(*(f)*(o))'));
+    assert(isMatch('oofooofo', '*(*(f)*(o))'));
+    assert(isMatch('ooo', '*(*(f)*(o))'));
+    assert(!isMatch('oxfoxfox', '*(*(f)*(o))'));
+    assert(!isMatch('oxfoxoxfox', '*(*(f)*(o))'));
+    assert(!isMatch('xfoooofof', '*(*(f)*(o))'));
+
+    fixtures('*(*(of*(o)x)o)', ['ofoooxoofxo', 'ofoooxoofxoofoooxoofxo', 'ofoooxoofxoofoooxoofxoo', 'ofoooxoofxoofoooxoofxooofxofxo', 'ofxoofxo', 'ooo']);
+    assert(!isMatch('ffffffo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('fffooofoooooffoofffooofff', '*(*(of*(o)x)o)'));
+    assert(!isMatch('ffo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('fofo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('fofoofoofofoo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foob', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foobb', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foofoofo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('fooofoofofooo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foooofo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foooofof', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foooofofx', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foooxfooxfoxfooox', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foooxfooxfxfooox', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foooxfooxofoxfooox', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foot', '*(*(of*(o)x)o)'));
+    assert(!isMatch('foox', '*(*(of*(o)x)o)'));
+    assert(!isMatch('ofoofo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('ofooofoofofooo', '*(*(of*(o)x)o)'));
+    assert(isMatch('ofoooxoofxo', '*(*(of*(o)x)o)'));
+    assert(isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)'));
+    assert(isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)'));
+    assert(isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)'));
+    assert(isMatch('ofxoofxo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('oofooofo', '*(*(of*(o)x)o)'));
+    assert(isMatch('ooo', '*(*(of*(o)x)o)'));
+    assert(!isMatch('oxfoxfox', '*(*(of*(o)x)o)'));
+    assert(!isMatch('oxfoxoxfox', '*(*(of*(o)x)o)'));
+    assert(!isMatch('xfoooofof', '*(*(of*(o)x)o)'));
+
+    fixtures('*(f*(o))', ['ffffffo', 'fffooofoooooffoofffooofff', 'ffo', 'fofo', 'fofoofoofofoo', 'foo', 'foofoofo', 'fooofoofofooo', 'foooofo', 'foooofof']);
+    assert(isMatch('ffffffo', '*(f*(o))'));
+    assert(isMatch('fffooofoooooffoofffooofff', '*(f*(o))'));
+    assert(isMatch('ffo', '*(f*(o))'));
+    assert(isMatch('fofo', '*(f*(o))'));
+    assert(isMatch('fofoofoofofoo', '*(f*(o))'));
+    assert(isMatch('foo', '*(f*(o))'));
+    assert(!isMatch('foob', '*(f*(o))'));
+    assert(!isMatch('foobb', '*(f*(o))'));
+    assert(isMatch('foofoofo', '*(f*(o))'));
+    assert(isMatch('fooofoofofooo', '*(f*(o))'));
+    assert(isMatch('foooofo', '*(f*(o))'));
+    assert(isMatch('foooofof', '*(f*(o))'));
+    assert(!isMatch('foooofofx', '*(f*(o))'));
+    assert(!isMatch('foooxfooxfoxfooox', '*(f*(o))'));
+    assert(!isMatch('foooxfooxfxfooox', '*(f*(o))'));
+    assert(!isMatch('foooxfooxofoxfooox', '*(f*(o))'));
+    assert(!isMatch('foot', '*(f*(o))'));
+    assert(!isMatch('foox', '*(f*(o))'));
+    assert(!isMatch('ofoofo', '*(f*(o))'));
+    assert(!isMatch('ofooofoofofooo', '*(f*(o))'));
+    assert(!isMatch('ofoooxoofxo', '*(f*(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(f*(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(f*(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(f*(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(f*(o))'));
+    assert(!isMatch('ofxoofxo', '*(f*(o))'));
+    assert(!isMatch('oofooofo', '*(f*(o))'));
+    assert(!isMatch('ooo', '*(f*(o))'));
+    assert(!isMatch('oxfoxfox', '*(f*(o))'));
+    assert(!isMatch('oxfoxoxfox', '*(f*(o))'));
+    assert(!isMatch('xfoooofof', '*(f*(o))'));
+
+    fixtures('*(f*(o)x)', ['foooxfooxfoxfooox', 'foooxfooxfxfooox', 'foox']);
+    assert(!isMatch('ffffffo', '*(f*(o)x)'));
+    assert(!isMatch('fffooofoooooffoofffooofff', '*(f*(o)x)'));
+    assert(!isMatch('ffo', '*(f*(o)x)'));
+    assert(!isMatch('fofo', '*(f*(o)x)'));
+    assert(!isMatch('fofoofoofofoo', '*(f*(o)x)'));
+    assert(!isMatch('foo', '*(f*(o)x)'));
+    assert(!isMatch('foob', '*(f*(o)x)'));
+    assert(!isMatch('foobb', '*(f*(o)x)'));
+    assert(!isMatch('foofoofo', '*(f*(o)x)'));
+    assert(!isMatch('fooofoofofooo', '*(f*(o)x)'));
+    assert(!isMatch('foooofo', '*(f*(o)x)'));
+    assert(!isMatch('foooofof', '*(f*(o)x)'));
+    assert(!isMatch('foooofofx', '*(f*(o)x)'));
+    assert(isMatch('foooxfooxfoxfooox', '*(f*(o)x)'));
+    assert(isMatch('foooxfooxfxfooox', '*(f*(o)x)'));
+    assert(!isMatch('foooxfooxofoxfooox', '*(f*(o)x)'));
+    assert(!isMatch('foot', '*(f*(o)x)'));
+    assert(isMatch('foox', '*(f*(o)x)'));
+    assert(!isMatch('ofoofo', '*(f*(o)x)'));
+    assert(!isMatch('ofooofoofofooo', '*(f*(o)x)'));
+    assert(!isMatch('ofoooxoofxo', '*(f*(o)x)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(f*(o)x)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(f*(o)x)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(f*(o)x)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(f*(o)x)'));
+    assert(!isMatch('ofxoofxo', '*(f*(o)x)'));
+    assert(!isMatch('oofooofo', '*(f*(o)x)'));
+    assert(!isMatch('ooo', '*(f*(o)x)'));
+    assert(!isMatch('oxfoxfox', '*(f*(o)x)'));
+    assert(!isMatch('oxfoxoxfox', '*(f*(o)x)'));
+    assert(!isMatch('xfoooofof', '*(f*(o)x)'));
+
+    fixtures('*(f+(o))', ['fofo', 'fofoofoofofoo', 'foo', 'foofoofo', 'fooofoofofooo', 'foooofo']);
+    assert(!isMatch('ffffffo', '*(f+(o))'));
+    assert(!isMatch('fffooofoooooffoofffooofff', '*(f+(o))'));
+    assert(!isMatch('ffo', '*(f+(o))'));
+    assert(isMatch('fofo', '*(f+(o))'));
+    assert(isMatch('fofoofoofofoo', '*(f+(o))'));
+    assert(isMatch('foo', '*(f+(o))'));
+    assert(!isMatch('foob', '*(f+(o))'));
+    assert(!isMatch('foobb', '*(f+(o))'));
+    assert(isMatch('foofoofo', '*(f+(o))'));
+    assert(isMatch('fooofoofofooo', '*(f+(o))'));
+    assert(isMatch('foooofo', '*(f+(o))'));
+    assert(!isMatch('foooofof', '*(f+(o))'));
+    assert(!isMatch('foooofofx', '*(f+(o))'));
+    assert(!isMatch('foooxfooxfoxfooox', '*(f+(o))'));
+    assert(!isMatch('foooxfooxfxfooox', '*(f+(o))'));
+    assert(!isMatch('foooxfooxofoxfooox', '*(f+(o))'));
+    assert(!isMatch('foot', '*(f+(o))'));
+    assert(!isMatch('foox', '*(f+(o))'));
+    assert(!isMatch('ofoofo', '*(f+(o))'));
+    assert(!isMatch('ofooofoofofooo', '*(f+(o))'));
+    assert(!isMatch('ofoooxoofxo', '*(f+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(f+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(f+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(f+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(f+(o))'));
+    assert(!isMatch('ofxoofxo', '*(f+(o))'));
+    assert(!isMatch('oofooofo', '*(f+(o))'));
+    assert(!isMatch('ooo', '*(f+(o))'));
+    assert(!isMatch('oxfoxfox', '*(f+(o))'));
+    assert(!isMatch('oxfoxoxfox', '*(f+(o))'));
+    assert(!isMatch('xfoooofof', '*(f+(o))'));
+
+    fixtures('*(of+(o))', ['ofoofo']);
+    assert(!isMatch('ffffffo', '*(of+(o))'));
+    assert(!isMatch('fffooofoooooffoofffooofff', '*(of+(o))'));
+    assert(!isMatch('ffo', '*(of+(o))'));
+    assert(!isMatch('fofo', '*(of+(o))'));
+    assert(!isMatch('fofoofoofofoo', '*(of+(o))'));
+    assert(!isMatch('foo', '*(of+(o))'));
+    assert(!isMatch('foob', '*(of+(o))'));
+    assert(!isMatch('foobb', '*(of+(o))'));
+    assert(!isMatch('foofoofo', '*(of+(o))'));
+    assert(!isMatch('fooofoofofooo', '*(of+(o))'));
+    assert(!isMatch('foooofo', '*(of+(o))'));
+    assert(!isMatch('foooofof', '*(of+(o))'));
+    assert(!isMatch('foooofofx', '*(of+(o))'));
+    assert(!isMatch('foooxfooxfoxfooox', '*(of+(o))'));
+    assert(!isMatch('foooxfooxfxfooox', '*(of+(o))'));
+    assert(!isMatch('foooxfooxofoxfooox', '*(of+(o))'));
+    assert(!isMatch('foot', '*(of+(o))'));
+    assert(!isMatch('foox', '*(of+(o))'));
+    assert(isMatch('ofoofo', '*(of+(o))'));
+    assert(!isMatch('ofooofoofofooo', '*(of+(o))'));
+    assert(!isMatch('ofoooxoofxo', '*(of+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(of+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(of+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(of+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(of+(o))'));
+    assert(!isMatch('ofxoofxo', '*(of+(o))'));
+    assert(!isMatch('oofooofo', '*(of+(o))'));
+    assert(!isMatch('ooo', '*(of+(o))'));
+    assert(!isMatch('oxfoxfox', '*(of+(o))'));
+    assert(!isMatch('oxfoxoxfox', '*(of+(o))'));
+    assert(!isMatch('xfoooofof', '*(of+(o))'));
+
+    fixtures('*(of+(o)|f)', ['fofo', 'fofoofoofofoo', 'ofoofo', 'ofooofoofofooo']);
+    assert(!isMatch('ffffffo', '*(of+(o)|f)'));
+    assert(!isMatch('fffooofoooooffoofffooofff', '*(of+(o)|f)'));
+    assert(!isMatch('ffo', '*(of+(o)|f)'));
+    assert(isMatch('fofo', '*(of+(o)|f)'));
+    assert(isMatch('fofoofoofofoo', '*(of+(o)|f)'));
+    assert(!isMatch('foo', '*(of+(o)|f)'));
+    assert(!isMatch('foob', '*(of+(o)|f)'));
+    assert(!isMatch('foobb', '*(of+(o)|f)'));
+    assert(!isMatch('foofoofo', '*(of+(o)|f)'));
+    assert(!isMatch('fooofoofofooo', '*(of+(o)|f)'));
+    assert(!isMatch('foooofo', '*(of+(o)|f)'));
+    assert(!isMatch('foooofof', '*(of+(o)|f)'));
+    assert(!isMatch('foooofofx', '*(of+(o)|f)'));
+    assert(!isMatch('foooxfooxfoxfooox', '*(of+(o)|f)'));
+    assert(!isMatch('foooxfooxfxfooox', '*(of+(o)|f)'));
+    assert(!isMatch('foooxfooxofoxfooox', '*(of+(o)|f)'));
+    assert(!isMatch('foot', '*(of+(o)|f)'));
+    assert(!isMatch('foox', '*(of+(o)|f)'));
+    assert(isMatch('ofoofo', '*(of+(o)|f)'));
+    assert(isMatch('ofooofoofofooo', '*(of+(o)|f)'));
+    assert(!isMatch('ofoooxoofxo', '*(of+(o)|f)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(of+(o)|f)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(of+(o)|f)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(of+(o)|f)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(of+(o)|f)'));
+    assert(!isMatch('ofxoofxo', '*(of+(o)|f)'));
+    assert(!isMatch('oofooofo', '*(of+(o)|f)'));
+    assert(!isMatch('ooo', '*(of+(o)|f)'));
+    assert(!isMatch('oxfoxfox', '*(of+(o)|f)'));
+    assert(!isMatch('oxfoxoxfox', '*(of+(o)|f)'));
+    assert(!isMatch('xfoooofof', '*(of+(o)|f)'));
+
+    fixtures('*(of|oof+(o))', ['ofoofo', 'oofooofo']);
+    assert(!isMatch('ffffffo', '*(of|oof+(o))'));
+    assert(!isMatch('fffooofoooooffoofffooofff', '*(of|oof+(o))'));
+    assert(!isMatch('ffo', '*(of|oof+(o))'));
+    assert(!isMatch('fofo', '*(of|oof+(o))'));
+    assert(!isMatch('fofoofoofofoo', '*(of|oof+(o))'));
+    assert(!isMatch('foo', '*(of|oof+(o))'));
+    assert(!isMatch('foob', '*(of|oof+(o))'));
+    assert(!isMatch('foobb', '*(of|oof+(o))'));
+    assert(!isMatch('foofoofo', '*(of|oof+(o))'));
+    assert(!isMatch('fooofoofofooo', '*(of|oof+(o))'));
+    assert(!isMatch('foooofo', '*(of|oof+(o))'));
+    assert(!isMatch('foooofof', '*(of|oof+(o))'));
+    assert(!isMatch('foooofofx', '*(of|oof+(o))'));
+    assert(!isMatch('foooxfooxfoxfooox', '*(of|oof+(o))'));
+    assert(!isMatch('foooxfooxfxfooox', '*(of|oof+(o))'));
+    assert(!isMatch('foooxfooxofoxfooox', '*(of|oof+(o))'));
+    assert(!isMatch('foot', '*(of|oof+(o))'));
+    assert(!isMatch('foox', '*(of|oof+(o))'));
+    assert(isMatch('ofoofo', '*(of|oof+(o))'));
+    assert(!isMatch('ofooofoofofooo', '*(of|oof+(o))'));
+    assert(!isMatch('ofoooxoofxo', '*(of|oof+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(of|oof+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(of|oof+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(of|oof+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(of|oof+(o))'));
+    assert(!isMatch('ofxoofxo', '*(of|oof+(o))'));
+    assert(isMatch('oofooofo', '*(of|oof+(o))'));
+    assert(!isMatch('ooo', '*(of|oof+(o))'));
+    assert(!isMatch('oxfoxfox', '*(of|oof+(o))'));
+    assert(!isMatch('oxfoxoxfox', '*(of|oof+(o))'));
+    assert(!isMatch('xfoooofof', '*(of|oof+(o))'));
+
+    fixtures('*(oxf+(ox))', ['oxfoxoxfox']);
+    assert(!isMatch('ffffffo', '*(oxf+(ox))'));
+    assert(!isMatch('fffooofoooooffoofffooofff', '*(oxf+(ox))'));
+    assert(!isMatch('ffo', '*(oxf+(ox))'));
+    assert(!isMatch('fofo', '*(oxf+(ox))'));
+    assert(!isMatch('fofoofoofofoo', '*(oxf+(ox))'));
+    assert(!isMatch('foo', '*(oxf+(ox))'));
+    assert(!isMatch('foob', '*(oxf+(ox))'));
+    assert(!isMatch('foobb', '*(oxf+(ox))'));
+    assert(!isMatch('foofoofo', '*(oxf+(ox))'));
+    assert(!isMatch('fooofoofofooo', '*(oxf+(ox))'));
+    assert(!isMatch('foooofo', '*(oxf+(ox))'));
+    assert(!isMatch('foooofof', '*(oxf+(ox))'));
+    assert(!isMatch('foooofofx', '*(oxf+(ox))'));
+    assert(!isMatch('foooxfooxfoxfooox', '*(oxf+(ox))'));
+    assert(!isMatch('foooxfooxfxfooox', '*(oxf+(ox))'));
+    assert(!isMatch('foooxfooxofoxfooox', '*(oxf+(ox))'));
+    assert(!isMatch('foot', '*(oxf+(ox))'));
+    assert(!isMatch('foox', '*(oxf+(ox))'));
+    assert(!isMatch('ofoofo', '*(oxf+(ox))'));
+    assert(!isMatch('ofooofoofofooo', '*(oxf+(ox))'));
+    assert(!isMatch('ofoooxoofxo', '*(oxf+(ox))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(oxf+(ox))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(oxf+(ox))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(oxf+(ox))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(oxf+(ox))'));
+    assert(!isMatch('ofxoofxo', '*(oxf+(ox))'));
+    assert(!isMatch('oofooofo', '*(oxf+(ox))'));
+    assert(!isMatch('ooo', '*(oxf+(ox))'));
+    assert(!isMatch('oxfoxfox', '*(oxf+(ox))'));
+    assert(isMatch('oxfoxoxfox', '*(oxf+(ox))'));
+    assert(!isMatch('xfoooofof', '*(oxf+(ox))'));
+
+    fixtures('@(!(z*)|*x)', ['ffffffo', 'fffooofoooooffoofffooofff', 'ffo', 'fofo', 'fofoofoofofoo', 'foo', 'foob', 'foobb', 'foofoofo', 'fooofoofofooo', 'foooofo', 'foooofof', 'foooofofx', 'foooxfooxfoxfooox', 'foooxfooxfxfooox', 'foooxfooxofoxfooox', 'foot', 'foox', 'ofoofo', 'ofooofoofofooo', 'ofoooxoofxo', 'ofoooxoofxoofoooxoofxo', 'ofoooxoofxoofoooxoofxofo', 'ofoooxoofxoofoooxoofxoo', 'ofoooxoofxoofoooxoofxooofxofxo', 'ofxoofxo', 'oofooofo', 'ooo', 'oxfoxfox', 'oxfoxoxfox', 'xfoooofof']);
+    assert(isMatch('ffffffo', '@(!(z*)|*x)'));
+    assert(isMatch('fffooofoooooffoofffooofff', '@(!(z*)|*x)'));
+    assert(isMatch('ffo', '@(!(z*)|*x)'));
+    assert(isMatch('fofo', '@(!(z*)|*x)'));
+    assert(isMatch('fofoofoofofoo', '@(!(z*)|*x)'));
+    assert(isMatch('foo', '@(!(z*)|*x)'));
+    assert(isMatch('foob', '@(!(z*)|*x)'));
+    assert(isMatch('foobb', '@(!(z*)|*x)'));
+    assert(isMatch('foofoofo', '@(!(z*)|*x)'));
+    assert(isMatch('fooofoofofooo', '@(!(z*)|*x)'));
+    assert(isMatch('foooofo', '@(!(z*)|*x)'));
+    assert(isMatch('foooofof', '@(!(z*)|*x)'));
+    assert(isMatch('foooofofx', '@(!(z*)|*x)'));
+    assert(isMatch('foooxfooxfoxfooox', '@(!(z*)|*x)'));
+    assert(isMatch('foooxfooxfxfooox', '@(!(z*)|*x)'));
+    assert(isMatch('foooxfooxofoxfooox', '@(!(z*)|*x)'));
+    assert(isMatch('foot', '@(!(z*)|*x)'));
+    assert(isMatch('foox', '@(!(z*)|*x)'));
+    assert(isMatch('ofoofo', '@(!(z*)|*x)'));
+    assert(isMatch('ofooofoofofooo', '@(!(z*)|*x)'));
+    assert(isMatch('ofoooxoofxo', '@(!(z*)|*x)'));
+    assert(isMatch('ofoooxoofxoofoooxoofxo', '@(!(z*)|*x)'));
+    assert(isMatch('ofoooxoofxoofoooxoofxofo', '@(!(z*)|*x)'));
+    assert(isMatch('ofoooxoofxoofoooxoofxoo', '@(!(z*)|*x)'));
+    assert(isMatch('ofoooxoofxoofoooxoofxooofxofxo', '@(!(z*)|*x)'));
+    assert(isMatch('ofxoofxo', '@(!(z*)|*x)'));
+    assert(isMatch('oofooofo', '@(!(z*)|*x)'));
+    assert(isMatch('ooo', '@(!(z*)|*x)'));
+    assert(isMatch('oxfoxfox', '@(!(z*)|*x)'));
+    assert(isMatch('oxfoxoxfox', '@(!(z*)|*x)'));
+    assert(isMatch('xfoooofof', '@(!(z*)|*x)'));
+
+    fixtures('@(foo|f|fo)*(f|of+(o))', ['fofo', 'fofoofoofofoo', 'foo', 'foofoofo', 'fooofoofofooo']);
+    assert(!isMatch('ffffffo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('fffooofoooooffoofffooofff', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('ffo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(isMatch('fofo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(isMatch('fofoofoofofoo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(isMatch('foo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('foob', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('foobb', '@(foo|f|fo)*(f|of+(o))'));
+    assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(isMatch('fooofoofofooo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('foooofo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('foooofof', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('foooofofx', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('foooxfooxfoxfooox', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('foooxfooxfxfooox', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('foooxfooxofoxfooox', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('foot', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('foox', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('ofoofo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('ofooofoofofooo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('ofoooxoofxo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('ofxoofxo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('oofooofo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('ooo', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('oxfoxfox', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('oxfoxoxfox', '@(foo|f|fo)*(f|of+(o))'));
+    assert(!isMatch('xfoooofof', '@(foo|f|fo)*(f|of+(o))'));
+
+    assert(isMatch('aaac', '*(@(a))a@(c)'));
+    assert(isMatch('aac', '*(@(a))a@(c)'));
+    assert(isMatch('ac', '*(@(a))a@(c)'));
+    assert(!isMatch('abbcd', '*(@(a))a@(c)'));
+    assert(!isMatch('abcd', '*(@(a))a@(c)'));
+    assert(!isMatch('acd', '*(@(a))a@(c)'));
+    assert(!isMatch('baaac', '*(@(a))a@(c)'));
+    assert(!isMatch('c', '*(@(a))a@(c)'));
+    assert(!isMatch('foo', '*(@(a))a@(c)'));
+
+    assert(!isMatch('aaac', '@(ab|a*(b))*(c)d'));
+    assert(!isMatch('aac', '@(ab|a*(b))*(c)d'));
+    assert(!isMatch('ac', '@(ab|a*(b))*(c)d'));
+    assert(isMatch('abbcd', '@(ab|a*(b))*(c)d'));
+    assert(isMatch('abcd', '@(ab|a*(b))*(c)d'));
+    assert(isMatch('acd', '@(ab|a*(b))*(c)d'));
+    assert(!isMatch('baaac', '@(ab|a*(b))*(c)d'));
+    assert(!isMatch('c', '@(ab|a*(b))*(c)d'));
+    assert(!isMatch('foo', '@(ab|a*(b))*(c)d'));
+
+    assert(!isMatch('aaac', '?@(a|b)*@(c)d'));
+    assert(!isMatch('aac', '?@(a|b)*@(c)d'));
+    assert(!isMatch('ac', '?@(a|b)*@(c)d'));
+    assert(isMatch('abbcd', '?@(a|b)*@(c)d'));
+    assert(isMatch('abcd', '?@(a|b)*@(c)d'));
+    assert(!isMatch('acd', '?@(a|b)*@(c)d'));
+    assert(!isMatch('baaac', '?@(a|b)*@(c)d'));
+    assert(!isMatch('c', '?@(a|b)*@(c)d'));
+    assert(!isMatch('foo', '?@(a|b)*@(c)d'));
+
+    assert(!isMatch('aaac', '@(ab|a*@(b))*(c)d'));
+    assert(!isMatch('aac', '@(ab|a*@(b))*(c)d'));
+    assert(!isMatch('ac', '@(ab|a*@(b))*(c)d'));
+    assert(isMatch('abbcd', '@(ab|a*@(b))*(c)d'));
+    assert(isMatch('abcd', '@(ab|a*@(b))*(c)d'));
+    assert(!isMatch('acd', '@(ab|a*@(b))*(c)d'));
+    assert(!isMatch('baaac', '@(ab|a*@(b))*(c)d'));
+    assert(!isMatch('c', '@(ab|a*@(b))*(c)d'));
+    assert(!isMatch('foo', '@(ab|a*@(b))*(c)d'));
+
+    assert(!isMatch('aac', '*(@(a))b@(c)'));
   });
 
   it('should backtrack in alternation matches', () => {
     fixtures('*(fo|foo)', ['fofo', 'fofoofoofofoo', 'foo', 'foofoofo']);
+    assert(!isMatch('ffffffo', '*(fo|foo)'));
+    assert(!isMatch('fffooofoooooffoofffooofff', '*(fo|foo)'));
+    assert(!isMatch('ffo', '*(fo|foo)'));
+    assert(isMatch('fofo', '*(fo|foo)'));
+    assert(isMatch('fofoofoofofoo', '*(fo|foo)'));
+    assert(isMatch('foo', '*(fo|foo)'));
+    assert(!isMatch('foob', '*(fo|foo)'));
+    assert(!isMatch('foobb', '*(fo|foo)'));
+    assert(isMatch('foofoofo', '*(fo|foo)'));
+    assert(!isMatch('fooofoofofooo', '*(fo|foo)'));
+    assert(!isMatch('foooofo', '*(fo|foo)'));
+    assert(!isMatch('foooofof', '*(fo|foo)'));
+    assert(!isMatch('foooofofx', '*(fo|foo)'));
+    assert(!isMatch('foooxfooxfoxfooox', '*(fo|foo)'));
+    assert(!isMatch('foooxfooxfxfooox', '*(fo|foo)'));
+    assert(!isMatch('foooxfooxofoxfooox', '*(fo|foo)'));
+    assert(!isMatch('foot', '*(fo|foo)'));
+    assert(!isMatch('foox', '*(fo|foo)'));
+    assert(!isMatch('ofoofo', '*(fo|foo)'));
+    assert(!isMatch('ofooofoofofooo', '*(fo|foo)'));
+    assert(!isMatch('ofoooxoofxo', '*(fo|foo)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(fo|foo)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(fo|foo)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(fo|foo)'));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(fo|foo)'));
+    assert(!isMatch('ofxoofxo', '*(fo|foo)'));
+    assert(!isMatch('oofooofo', '*(fo|foo)'));
+    assert(!isMatch('ooo', '*(fo|foo)'));
+    assert(!isMatch('oxfoxfox', '*(fo|foo)'));
+    assert(!isMatch('oxfoxoxfox', '*(fo|foo)'));
+    assert(!isMatch('xfoooofof', '*(fo|foo)'));
   });
 
   it('should support exclusions', () => {
@@ -1181,7 +1709,6 @@ describe('bash unit tests', () => {
   });
 
   it('More tests derived from a bug report (in bash) concerning extended glob patterns following a *', () => {
-    var fixtures = ['123abc', 'ab', 'abab', 'abcdef', 'accdef', 'abcfefg', 'abef', 'abcfef', 'abd', 'acd'];
     assert(isMatch('/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*'));
     assert(!isMatch('123abc', '(a+|b)*'));
     assert(isMatch('ab', '(a+|b)*'));
@@ -1311,8 +1838,6 @@ describe('bash unit tests', () => {
   });
 
   it('should work with character classes', () => {
-    var fixtures = ['a.b', 'a,b', 'a:b', 'a-b', 'a;b', 'a b', 'a_b'];
-
     // assert.deepEqual(pm.match(fixtures, 'a[^[:alnum:]]b'), fixtures);
     // assert(isMatch('a.b', 'a[^[:alnum:]]b'));
     // assert(isMatch('a,b', 'a[^[:alnum:]]b'));
