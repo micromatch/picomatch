@@ -2,6 +2,7 @@
 
 require('mocha');
 const path = require('path');
+const util = require('util');
 const argv = require('minimist')(process.argv.slice(2));
 const assert = require('assert');
 const picomatch = require('..');
@@ -676,7 +677,7 @@ describe('extglob', () => {
     let expected = unit[1];
 
     it(`"${args[0]}" should ${expected ? '' : 'not '}match "${args[1]}"`, () => {
-      assert.equal(pm.isMatch(...args), expected, unit[2]);
+      assert.equal(pm.isMatch(...args), expected, util.inspect(args));
     });
   });
 });

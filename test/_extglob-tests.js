@@ -1,15 +1,16 @@
 'use strict';
 
 const assert = require('assert');
-const minimatch = require('minimatch');
-const pm = require('./support');
-const { isMatch } = pm;
+const { isMatch } = require('./support');
+const pm = require('..');
 
 /**
  * Most of these tests were converted directly from bash 4.3 and 4.4 unit tests.
  */
 
 describe('extglobs', () => {
+  beforeEach(() => pm.clearCache());
+
   it.skip('failing unit tests from bash', () => {
     assert(isMatch('moo.cow', '!(*.*).!(*.*)'));
     assert(isMatch('foo.js.js', '*.!(js)*'));
@@ -198,6 +199,8 @@ describe('extglobs', () => {
   it('should support nested negation !(...) extglobs', () => {
     assert(isMatch('ac.d', '!(!(a|b)c.!(d|e))'));
     assert(isMatch('bc.d', '!(!(a|b)c.!(d|e))'));
+    assert(!isMatch('cc.d', '!(a|b)c.!(d|e)'));
+    assert(isMatch('cc.d', '!(!(a|b)c.!(d|e))'));
     assert(isMatch('cc.d', '!(!(a|b)c.!(d|e))'));
     assert(isMatch('ac.e', '!(!(a|b)c.!(d|e))'));
     assert(isMatch('bc.e', '!(!(a|b)c.!(d|e))'));
@@ -319,18 +322,15 @@ describe('extglobs', () => {
   });
 
   it('should match exactly one of the given pattern:', () => {
-    let arr = ['aa.aa', 'a.bb', 'a.aa.a', 'cc.a', 'a.a', 'c.a', 'dd.aa.d', 'b.a'];
-    // assert.deepEqual(pm.match(arr, '(b|a).(a)'), []);
     assert(!isMatch('aa.aa', '(b|a).(a)'));
     assert(!isMatch('a.bb', '(b|a).(a)'));
     assert(!isMatch('a.aa.a', '(b|a).(a)'));
     assert(!isMatch('cc.a', '(b|a).(a)'));
-    // assert(!isMatch('a.a', '(b|a).(a)'));
+    assert(isMatch('a.a', '(b|a).(a)'));
     assert(!isMatch('c.a', '(b|a).(a)'));
     assert(!isMatch('dd.aa.d', '(b|a).(a)'));
-    // assert(!isMatch('b.a', '(b|a).(a)'));
+    assert(isMatch('b.a', '(b|a).(a)'));
 
-    assert.deepEqual(pm.match(arr, '@(b|a).@(a)'), ['a.a', 'b.a']);
     assert(!isMatch('aa.aa', '@(b|a).@(a)'));
     assert(!isMatch('a.bb', '@(b|a).@(a)'));
     assert(!isMatch('a.aa.a', '@(b|a).@(a)'));
@@ -359,29 +359,25 @@ describe('extglobs', () => {
   });
 
   it("tests derived from those in rosenblatt's korn shell book", () => {
-    // assert.deepEqual(pm.match(['', '137577991', '2468'], '*(0|1|3|5|7|9)'), ['', '137577991']);
-    // assert(isMatch('', '*(0|1|3|5|7|9)'));
+    assert(!isMatch('', '*(0|1|3|5|7|9)')); // only one that disagrees, since we don't match empty strings
     assert(isMatch('137577991', '*(0|1|3|5|7|9)'));
     assert(!isMatch('2468', '*(0|1|3|5|7|9)'));
 
-    assert.deepEqual(pm.match(['file.c', 'file.C', 'file.cc', 'file.ccc'], '*.c?(c)'), ['file.c', 'file.cc']);
     assert(isMatch('file.c', '*.c?(c)'));
     assert(!isMatch('file.C', '*.c?(c)'));
     assert(isMatch('file.cc', '*.c?(c)'));
     assert(!isMatch('file.ccc', '*.c?(c)'));
 
-    assert.deepEqual(pm.match(['parse.y', 'shell.c', 'Makefile', 'Makefile.in'], '!(*.c|*.h|Makefile.in|config*|README)'), ['parse.y', 'Makefile']) ;
     assert(isMatch('parse.y', '!(*.c|*.h|Makefile.in|config*|README)'));
     assert(!isMatch('shell.c', '!(*.c|*.h|Makefile.in|config*|README)'));
     assert(isMatch('Makefile', '!(*.c|*.h|Makefile.in|config*|README)'));
     assert(!isMatch('Makefile.in', '!(*.c|*.h|Makefile.in|config*|README)'));
 
-    assert.deepEqual(pm.match(['VMS.FILE;', 'VMS.FILE;0', 'VMS.FILE;1', 'VMS.FILE;139', 'VMS.FILE;1N'], '*\\;[1-9]*([0-9])'), ['VMS.FILE;1', 'VMS.FILE;139']) ;
-    // assert(isMatch(!'VMS.FILE;', '*\\;[1-9]*([0-9])'));
-    // assert(isMatch(!'VMS.FILE;0', '*\\;[1-9]*([0-9])'));
+    assert(!isMatch('VMS.FILE;', '*\\;[1-9]*([0-9])'));
+    assert(!isMatch('VMS.FILE;0', '*\\;[1-9]*([0-9])'));
     assert(isMatch('VMS.FILE;1', '*\\;[1-9]*([0-9])'));
     assert(isMatch('VMS.FILE;139', '*\\;[1-9]*([0-9])'));
-    // assert(isMatch(!'VMS.FILE;1N', '*\\;[1-9]*([0-9])'));
+    assert(!isMatch('VMS.FILE;1N', '*\\;[1-9]*([0-9])'));
   });
 
   it('tests derived from the pd-ksh test suite', () => {
@@ -418,16 +414,13 @@ describe('extglobs', () => {
     assert(isMatch('foo', '*(a|b|f)*'));
     assert(isMatch('foo', '*(a|b|o)*'));
     assert(isMatch('foo', '*(a|b|f|o)'));
-    // assert(isMatch('*(a|b[)', '*(a|b\\[)'));
     assert(isMatch('*(a|b[)', '\\*\\(a\\|b\\[\\)'));
     assert(!isMatch('foo', '*(a|b)'));
     assert(!isMatch('foo', '*(a|b\\[)'));
-    assert(!isMatch('foo', '*(a|b\\[)|f*'));
+    assert(isMatch('foo', '*(a|b\\[)|f*'));
   });
 
   it('should support multiple extglobs:', () => {
-    let arr = ['a.a', 'a.b', 'a.c', 'a.c.d', 'c.c', 'a.', 'd.d', 'e.e', 'f.f', 'a.abcd'];
-    assert.deepEqual(pm.match(arr, '*.@(a|b|@(ab|a*@(b))*@(c)d)'), ['a.a', 'a.b', 'a.abcd']);
     assert(isMatch('a.a', '*.@(a|b|@(ab|a*@(b))*@(c)d)'));
     assert(isMatch('a.b', '*.@(a|b|@(ab|a*@(b))*@(c)d)'));
     assert(!isMatch('a.c', '*.@(a|b|@(ab|a*@(b))*@(c)d)'));
@@ -439,7 +432,6 @@ describe('extglobs', () => {
     assert(!isMatch('f.f', '*.@(a|b|@(ab|a*@(b))*@(c)d)'));
     assert(isMatch('a.abcd', '*.@(a|b|@(ab|a*@(b))*@(c)d)'));
 
-    assert.deepEqual(pm.match(arr, '!(*.a|*.b|*.c)'), ['a.c.d', 'a.', 'd.d', 'e.e', 'f.f', 'a.abcd']);
     assert(!isMatch('a.a', '!(*.a|*.b|*.c)'));
     assert(!isMatch('a.b', '!(*.a|*.b|*.c)'));
     assert(!isMatch('a.c', '!(*.a|*.b|*.c)'));
@@ -451,7 +443,6 @@ describe('extglobs', () => {
     assert(isMatch('f.f', '!(*.a|*.b|*.c)'));
     assert(isMatch('a.abcd', '!(*.a|*.b|*.c)'));
 
-    assert.deepEqual(pm.match(arr, '!(*.[^a-c])'), ['a.a', 'a.b', 'a.c', 'c.c', 'a.', 'a.abcd']);
     assert(isMatch('a.a', '!(*.[^a-c])'));
     assert(isMatch('a.b', '!(*.[^a-c])'));
     assert(isMatch('a.c', '!(*.[^a-c])'));
@@ -463,7 +454,6 @@ describe('extglobs', () => {
     assert(!isMatch('f.f', '!(*.[^a-c])'));
     assert(isMatch('a.abcd', '!(*.[^a-c])'));
 
-    assert.deepEqual(pm.match(arr, '!(*.[a-c])'), ['a.c.d', 'a.', 'd.d', 'e.e', 'f.f', 'a.abcd']);
     assert(!isMatch('a.a', '!(*.[a-c])'));
     assert(!isMatch('a.b', '!(*.[a-c])'));
     assert(!isMatch('a.c', '!(*.[a-c])'));
@@ -475,7 +465,6 @@ describe('extglobs', () => {
     assert(isMatch('f.f', '!(*.[a-c])'));
     assert(isMatch('a.abcd', '!(*.[a-c])'));
 
-    assert.deepEqual(pm.match(arr, '!(*.[a-c]*)'), ['a.', 'd.d', 'e.e', 'f.f']);
     assert(!isMatch('a.a', '!(*.[a-c]*)'));
     assert(!isMatch('a.b', '!(*.[a-c]*)'));
     assert(!isMatch('a.c', '!(*.[a-c]*)'));
@@ -487,7 +476,6 @@ describe('extglobs', () => {
     assert(isMatch('f.f', '!(*.[a-c]*)'));
     assert(!isMatch('a.abcd', '!(*.[a-c]*)'));
 
-    assert.deepEqual(pm.match(arr, '*.!(a|b|c)'), ['a.c.d', 'a.', 'd.d', 'e.e', 'f.f', 'a.abcd']);
     assert(!isMatch('a.a', '*.!(a|b|c)'));
     assert(!isMatch('a.b', '*.!(a|b|c)'));
     assert(!isMatch('a.c', '*.!(a|b|c)'));
@@ -499,7 +487,6 @@ describe('extglobs', () => {
     assert(isMatch('f.f', '*.!(a|b|c)'));
     assert(isMatch('a.abcd', '*.!(a|b|c)'));
 
-    // assert.deepEqual(pm.match(arr, '*!(.a|.b|.c)'), arr);
     assert(isMatch('a.a', '*!(.a|.b|.c)'));
     assert(isMatch('a.b', '*!(.a|.b|.c)'));
     assert(isMatch('a.c', '*!(.a|.b|.c)'));
@@ -511,169 +498,104 @@ describe('extglobs', () => {
     assert(isMatch('f.f', '*!(.a|.b|.c)'));
     assert(isMatch('a.abcd', '*!(.a|.b|.c)'));
 
-    // assert.deepEqual(pm.match(arr, '!(*.[a-c])*'), arr);
-    // assert(!isMatch('a.a', '!(*.[a-c])*'));
-    // assert(!isMatch('a.b', '!(*.[a-c])*'));
-    // assert(!isMatch('a.c', '!(*.[a-c])*'));
-    // assert(!isMatch('a.c.d', '!(*.[a-c])*'));
-    // assert(!isMatch('c.c', '!(*.[a-c])*'));
-    // assert(isMatch('a.', '!(*.[a-c])*'));
-    // assert(isMatch('d.d', '!(*.[a-c])*'));
-    // assert(isMatch('e.e', '!(*.[a-c])*'));
-    // assert(isMatch('f.f', '!(*.[a-c])*'));
-    // assert(!isMatch('a.abcd', '!(*.[a-c])*'));
+    assert(!isMatch('a.a', '!(*.[a-c])*'));
+    assert(!isMatch('a.b', '!(*.[a-c])*'));
+    assert(!isMatch('a.c', '!(*.[a-c])*'));
+    assert(!isMatch('a.c.d', '!(*.[a-c])*'));
+    assert(!isMatch('c.c', '!(*.[a-c])*'));
+    assert(isMatch('a.', '!(*.[a-c])*'));
+    assert(isMatch('d.d', '!(*.[a-c])*'));
+    assert(isMatch('e.e', '!(*.[a-c])*'));
+    assert(isMatch('f.f', '!(*.[a-c])*'));
+    assert(!isMatch('a.abcd', '!(*.[a-c])*'));
 
-    // assert.deepEqual(pm.match(arr, '*!(.a|.b|.c)*'), arr);
-    // assert(isMatch('a.a', '*!(.a|.b|.c)*'));
-    // assert(isMatch('a.b', '*!(.a|.b|.c)*'));
-    // assert(isMatch('a.c', '*!(.a|.b|.c)*'));
-    // assert(isMatch('a.c.d', '*!(.a|.b|.c)*'));
-    // assert(isMatch('c.c', '*!(.a|.b|.c)*'));
-    // assert(isMatch('a.', '*!(.a|.b|.c)*'));
-    // assert(isMatch('d.d', '*!(.a|.b|.c)*'));
-    // assert(isMatch('e.e', '*!(.a|.b|.c)*'));
-    // assert(isMatch('f.f', '*!(.a|.b|.c)*'));
-    // assert(isMatch('a.abcd', '*!(.a|.b|.c)*'));
+    assert(isMatch('a.a', '*!(.a|.b|.c)*'));
+    assert(isMatch('a.b', '*!(.a|.b|.c)*'));
+    assert(isMatch('a.c', '*!(.a|.b|.c)*'));
+    assert(isMatch('a.c.d', '*!(.a|.b|.c)*'));
+    assert(isMatch('c.c', '*!(.a|.b|.c)*'));
+    assert(isMatch('a.', '*!(.a|.b|.c)*'));
+    assert(isMatch('d.d', '*!(.a|.b|.c)*'));
+    assert(isMatch('e.e', '*!(.a|.b|.c)*'));
+    assert(isMatch('f.f', '*!(.a|.b|.c)*'));
+    assert(isMatch('a.abcd', '*!(.a|.b|.c)*'));
 
-    // assert.deepEqual(pm.match(arr, '*.!(a|b|c)*'), arr);
-    // assert(!isMatch('a.a', '*.!(a|b|c)*'));
-    // assert(!isMatch('a.b', '*.!(a|b|c)*'));
-    // assert(!isMatch('a.c', '*.!(a|b|c)*'));
-    // assert(isMatch('a.c.d', '*.!(a|b|c)*'));
-    // assert(!isMatch('c.c', '*.!(a|b|c)*'));
-    // assert(isMatch('a.', '*.!(a|b|c)*'));
-    // assert(isMatch('d.d', '*.!(a|b|c)*'));
-    // assert(isMatch('e.e', '*.!(a|b|c)*'));
-    // assert(isMatch('f.f', '*.!(a|b|c)*'));
-    // assert(!isMatch('a.abcd', '*.!(a|b|c)*'));
+    assert(!isMatch('a.a', '*.!(a|b|c)*'));
+    assert(!isMatch('a.b', '*.!(a|b|c)*'));
+    assert(!isMatch('a.c', '*.!(a|b|c)*'));
+    assert(isMatch('a.c.d', '*.!(a|b|c)*'));
+    assert(!isMatch('c.c', '*.!(a|b|c)*'));
+    assert(isMatch('a.', '*.!(a|b|c)*'));
+    assert(isMatch('d.d', '*.!(a|b|c)*'));
+    assert(isMatch('e.e', '*.!(a|b|c)*'));
+    assert(isMatch('f.f', '*.!(a|b|c)*'));
+    assert(!isMatch('a.abcd', '*.!(a|b|c)*'));
   });
 
   it('should correctly match empty parens', () => {
-    // assert.deepEqual(pm.match(['def', 'ef'], '@()ef'), ['ef']);
     assert(!isMatch('def', '@()ef'));
     assert(isMatch('ef', '@()ef'));
 
-    // assert.deepEqual(pm.match(['def', 'ef'], '()ef'), []);
     assert(!isMatch('def', '()ef'));
-    // assert(!isMatch('ef', '()ef'));
+    assert(isMatch('ef', '()ef'));
   });
 
   it('should match escaped parens', () => {
-    let arr = ['a(b', 'a\\(b', 'a((b', 'a((((b', 'ab'];
-
-    // assert.deepEqual(pm.match(arr, 'a(b'), []);
     assert(isMatch('a(b', 'a(b'));
-    // assert(isMatch('a\\(b', 'a(b'));
+    assert(isMatch('a(b', 'a\\(b'));
+    assert(isMatch('a\\(b', 'a\\\\\\(b'));
     assert(!isMatch('a((b', 'a(b'));
     assert(!isMatch('a((((b', 'a(b'));
     assert(!isMatch('ab', 'a(b'));
 
-    // assert.deepEqual(pm.match(arr, 'a\\(b'), []);
     assert(isMatch('a(b', 'a\\(b'));
-    // assert(isMatch('a\\(b', 'a\\(b'));
     assert(!isMatch('a((b', 'a\\(b'));
     assert(!isMatch('a((((b', 'a\\(b'));
     assert(!isMatch('ab', 'a\\(b'));
 
-    // assert.deepEqual(pm.match(arr, 'a(*b'), []);
     assert(isMatch('a(b', 'a(*b'));
-    // assert(isMatch('a\\(b', 'a(*b'));
+    assert(isMatch('a(ab', 'a\\(*b'));
     assert(isMatch('a((b', 'a(*b'));
     assert(isMatch('a((((b', 'a(*b'));
     assert(!isMatch('ab', 'a(*b'));
   });
 
   it('should match escaped backslashes', () => {
-    // assert.deepEqual(pm.match(['a(b', 'a\\(b', 'a((b', 'a((((b', 'ab'], 'a\\\\(b'), []);
     assert(!isMatch('a(b', 'a\\\\(b'));
     assert(isMatch('a\\(b', 'a\\\\(b'));
     assert(!isMatch('a((b', 'a\\\\(b'));
     assert(!isMatch('a((((b', 'a\\\\(b'));
     assert(!isMatch('ab', 'a\\\\(b'));
 
-    // assert.deepEqual(pm.match(['a\\b', 'a/b', 'ab'], 'a\\\\b'), ['ab', 'ab']);
     assert(isMatch('a\\b', 'a\\\\b'));
     assert(!isMatch('a/b', 'a\\\\b'));
     assert(!isMatch('ab', 'a\\\\b'));
   });
 
   // these are not extglobs, and do not need to pass, but they are included
-  // to test integration with expand-brackets
-  it.skip('should match common regex patterns', () => {
-    let fixtures = [
-      'a c',
-      'a1c',
-      'a123c',
-      'a.c',
-      'a.xy.zc',
-      'a.zc',
-      'abbbbc',
-      'abbbc',
-      'abbc',
-      'abc',
-      'abq',
-      'axy zc',
-      'axy',
-      'axy.zc',
-      'axyzc'
-    ];
+  // to test integration with other features
+  it('should match common regex patterns', () => {
+    let fixtures = ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'abq', 'axy zc', 'axy', 'axy.zc', 'axyzc'];
 
     assert.deepEqual(pm.match(['a\\b', 'a/b', 'ab'], 'a/b'), ['a/b']);
     assert.deepEqual(pm.match(fixtures, 'ab?bc'), ['abbbc']);
     assert.deepEqual(pm.match(fixtures, 'ab*c'), ['abbbbc', 'abbbc', 'abbc', 'abc']);
     assert.deepEqual(pm.match(fixtures, 'a+(b)bc'), ['abbbbc', 'abbbc', 'abbc']);
-    assert.deepEqual(pm.match(fixtures, '^abc$'), ['abc']);
+    assert.deepEqual(pm.match(fixtures, '^abc$'), []);
     assert.deepEqual(pm.match(fixtures, 'a.c'), ['a.c']);
     assert.deepEqual(pm.match(fixtures, 'a.*c'), ['a.c', 'a.xy.zc', 'a.zc']);
-    assert.deepEqual(
-      pm.match(fixtures, 'a*c'), [
-        'a c',
-        'a.c',
-        'a1c',
-        'a123c',
-        'abbbbc',
-        'abbbc',
-        'abbc',
-        'abc',
-        'axyzc',
-        'axy zc',
-        'axy.zc',
-        'a.xy.zc',
-        'a.zc'
-      ]);
-    assert.deepEqual(
-      pm.match(
-        fixtures,
-        'a\\w+c'),
-        ['a1c', 'a123c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axyzc'],
-        'Should match word characters'
-      );
-    assert.deepEqual(pm.match(fixtures, 'a\\W+c'), ['a.c', 'a c'], 'Should match non-word characters');
-    assert.deepEqual(pm.match(fixtures, 'a\\d+c'), ['a1c', 'a123c'], 'Should match numbers');
-    assert.deepEqual(pm.match(['foo@#$%123ASD #$$%^&', 'foo!@#$asdfl;', '123'], '\\d+'), ['123']);
-    assert.deepEqual(pm.match(['a123c', 'abbbc'], 'a\\D+c'), ['abbbc'], 'Should match non-numbers');
+    assert.deepEqual(pm.match(fixtures, 'a*c'), ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axy zc', 'axy.zc', 'axyzc']);
+    assert.deepEqual(pm.match(fixtures, 'a[\\w]+c'), ['a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axyzc'], 'Should match word characters');
+    assert.deepEqual(pm.match(fixtures, 'a[\\W]+c'), ['a c', 'a.c'], 'Should match non-word characters');
+    assert.deepEqual(pm.match(fixtures, 'a[\\d]+c'), ['a123c', 'a1c'], 'Should match numbers');
+    assert.deepEqual(pm.match(['foo@#$%123ASD #$$%^&', 'foo!@#$asdfl;', '123'], '[\\d]+'), ['123']);
+    assert.deepEqual(pm.match(['a123c', 'abbbc'], 'a[\\D]+c'), ['abbbc'], 'Should match non-numbers');
     assert.deepEqual(pm.match(['foo', ' foo '], '(f|o)+\\b'), ['foo'], 'Should match word boundaries');
   });
 });
 
 describe('bash unit tests', () => {
-  let fixtures = (pattern, matches) => {
-    let arr = ['ffffffo', 'fffooofoooooffoofffooofff', 'ffo', 'fofo', 'fofoofoofofoo', 'foo', 'foob', 'foobb', 'foofoofo', 'fooofoofofooo', 'foooofo', 'foooofof', 'foooofofx', 'foooxfooxfoxfooox', 'foooxfooxfxfooox', 'foooxfooxofoxfooox', 'foot', 'foox', 'ofoofo', 'ofooofoofofooo', 'ofoooxoofxo', 'ofoooxoofxoofoooxoofxo', 'ofoooxoofxoofoooxoofxofo', 'ofoooxoofxoofoooxoofxoo', 'ofoooxoofxoofoooxoofxooofxofxo', 'ofxoofxo', 'oofooofo', 'ooo', 'oxfoxfox', 'oxfoxoxfox', 'xfoooofof'];
-    for (let i = 0; i < arr.length; i++) {
-      assert(isMatch(arr[i], pattern) === matches.includes(arr[i]));
-    }
-  };
-
   it('should match extended globs from the bash spec:', () => {
-    let f2 = (pattern, matches) => {
-      let arr = ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foo/bar', 'foobar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx'];
-      for (let i = 0; i < arr.length; i++) {
-        assert(isMatch(arr[i], pattern) === matches.includes(arr[i]));
-      }
-    };
-
-
-    f2('!(foo)', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', /* 'foo/bar', */ 'foobar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
     assert(isMatch('bar', '!(foo)'));
     assert(isMatch('f', '!(foo)'));
     assert(isMatch('fa', '!(foo)'));
@@ -682,7 +604,7 @@ describe('bash unit tests', () => {
     assert(isMatch('fff', '!(foo)'));
     assert(isMatch('fo', '!(foo)'));
     assert(!isMatch('foo', '!(foo)'));
-    // assert(isMatch('foo/bar', '!(foo)'));
+    assert(isMatch('foo/bar', '!(foo)'));
     assert(isMatch('foobar', '!(foo)'));
     assert(isMatch('foot', '!(foo)'));
     assert(isMatch('foox', '!(foo)'));
@@ -693,67 +615,61 @@ describe('bash unit tests', () => {
     assert(isMatch('x', '!(foo)'));
     assert(isMatch('xx', '!(foo)'));
 
-    // f2('!(!(foo))', ['foo']);
-    // assert(!isMatch('bar', '!(!(foo))'));
-    // assert(!isMatch('f', '!(!(foo))'));
-    // assert(!isMatch('fa', '!(!(foo))'));
-    // assert(!isMatch('fb', '!(!(foo))'));
-    // assert(!isMatch('ff', '!(!(foo))'));
-    // assert(!isMatch('fff', '!(!(foo))'));
-    // assert(!isMatch('fo', '!(!(foo))'));
-    // assert(isMatch('foo', '!(!(foo))'));
-    // assert(!isMatch('foo/bar', '!(!(foo))'));
-    // assert(!isMatch('foobar', '!(!(foo))'));
-    // assert(!isMatch('foot', '!(!(foo))'));
-    // assert(!isMatch('foox', '!(!(foo))'));
-    // assert(!isMatch('o', '!(!(foo))'));
-    // assert(!isMatch('of', '!(!(foo))'));
-    // assert(!isMatch('ooo', '!(!(foo))'));
-    // assert(!isMatch('ox', '!(!(foo))'));
-    // assert(!isMatch('x', '!(!(foo))'));
-    // assert(!isMatch('xx', '!(!(foo))'));
+    assert(!isMatch('bar', '!(!(foo))'));
+    assert(!isMatch('f', '!(!(foo))'));
+    assert(!isMatch('fa', '!(!(foo))'));
+    assert(!isMatch('fb', '!(!(foo))'));
+    assert(!isMatch('ff', '!(!(foo))'));
+    assert(!isMatch('fff', '!(!(foo))'));
+    assert(!isMatch('fo', '!(!(foo))'));
+    assert(isMatch('foo', '!(!(foo))'));
+    assert(!isMatch('foo/bar', '!(!(foo))'));
+    assert(!isMatch('foobar', '!(!(foo))'));
+    assert(!isMatch('foot', '!(!(foo))'));
+    assert(!isMatch('foox', '!(!(foo))'));
+    assert(!isMatch('o', '!(!(foo))'));
+    assert(!isMatch('of', '!(!(foo))'));
+    assert(!isMatch('ooo', '!(!(foo))'));
+    assert(!isMatch('ox', '!(!(foo))'));
+    assert(!isMatch('x', '!(!(foo))'));
+    assert(!isMatch('xx', '!(!(foo))'));
 
-    // f2('!(!(!(foo)))', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo/bar', 'foobar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
-    // assert(isMatch('bar', '!(!(!(foo)))'));
-    // assert(isMatch('f', '!(!(!(foo)))'));
-    // assert(isMatch('fa', '!(!(!(foo)))'));
-    // assert(isMatch('fb', '!(!(!(foo)))'));
-    // assert(isMatch('ff', '!(!(!(foo)))'));
-    // assert(isMatch('fff', '!(!(!(foo)))'));
-    // assert(isMatch('fo', '!(!(!(foo)))'));
-    // assert(!isMatch('foo', '!(!(!(foo)))'));
-    // assert(isMatch('foo/bar', '!(!(!(foo)))'));
-    // assert(isMatch('foobar', '!(!(!(foo)))'));
-    // assert(isMatch('foot', '!(!(!(foo)))'));
-    // assert(isMatch('foox', '!(!(!(foo)))'));
-    // assert(isMatch('o', '!(!(!(foo)))'));
-    // assert(isMatch('of', '!(!(!(foo)))'));
-    // assert(isMatch('ooo', '!(!(!(foo)))'));
-    // assert(isMatch('ox', '!(!(!(foo)))'));
-    // assert(isMatch('x', '!(!(!(foo)))'));
-    // assert(isMatch('xx', '!(!(!(foo)))'));
+    assert(isMatch('bar', '!(!(!(foo)))'));
+    assert(isMatch('f', '!(!(!(foo)))'));
+    assert(isMatch('fa', '!(!(!(foo)))'));
+    assert(isMatch('fb', '!(!(!(foo)))'));
+    assert(isMatch('ff', '!(!(!(foo)))'));
+    assert(isMatch('fff', '!(!(!(foo)))'));
+    assert(isMatch('fo', '!(!(!(foo)))'));
+    assert(!isMatch('foo', '!(!(!(foo)))'));
+    assert(isMatch('foo/bar', '!(!(!(foo)))'));
+    assert(isMatch('foobar', '!(!(!(foo)))'));
+    assert(isMatch('foot', '!(!(!(foo)))'));
+    assert(isMatch('foox', '!(!(!(foo)))'));
+    assert(isMatch('o', '!(!(!(foo)))'));
+    assert(isMatch('of', '!(!(!(foo)))'));
+    assert(isMatch('ooo', '!(!(!(foo)))'));
+    assert(isMatch('ox', '!(!(!(foo)))'));
+    assert(isMatch('x', '!(!(!(foo)))'));
+    assert(isMatch('xx', '!(!(!(foo)))'));
 
-    // f2('!(!(!(!(foo))))', ['foo']);
-    // assert(!isMatch('bar', '!(!(!(!(foo))))'));
-    // assert(!isMatch('f', '!(!(!(!(foo))))'));
-    // assert(!isMatch('fa', '!(!(!(!(foo))))'));
-    // assert(!isMatch('fb', '!(!(!(!(foo))))'));
-    // assert(!isMatch('ff', '!(!(!(!(foo))))'));
-    // assert(!isMatch('fff', '!(!(!(!(foo))))'));
-    // assert(!isMatch('fo', '!(!(!(!(foo))))'));
-    // assert(isMatch('foo', '!(!(!(!(foo))))'));
+    assert(!isMatch('bar', '!(!(!(!(foo))))'));
+    assert(!isMatch('f', '!(!(!(!(foo))))'));
+    assert(!isMatch('fa', '!(!(!(!(foo))))'));
+    assert(!isMatch('fb', '!(!(!(!(foo))))'));
+    assert(!isMatch('ff', '!(!(!(!(foo))))'));
+    assert(!isMatch('fff', '!(!(!(!(foo))))'));
+    assert(!isMatch('fo', '!(!(!(!(foo))))'));
+    assert(isMatch('foo', '!(!(!(!(foo))))'));
     // assert(!isMatch('foo/bar', '!(!(!(!(foo))))'));
-    // assert(!isMatch('foobar', '!(!(!(!(foo))))'));
     // assert(!isMatch('foot', '!(!(!(!(foo))))'));
-    // assert(!isMatch('foox', '!(!(!(!(foo))))'));
-    // assert(!isMatch('o', '!(!(!(!(foo))))'));
-    // assert(!isMatch('of', '!(!(!(!(foo))))'));
-    // assert(!isMatch('ooo', '!(!(!(!(foo))))'));
-    // assert(!isMatch('ox', '!(!(!(!(foo))))'));
-    // assert(!isMatch('x', '!(!(!(!(foo))))'));
-    // assert(!isMatch('xx', '!(!(!(!(foo))))'));
+    assert(!isMatch('o', '!(!(!(!(foo))))'));
+    assert(!isMatch('of', '!(!(!(!(foo))))'));
+    assert(!isMatch('ooo', '!(!(!(!(foo))))'));
+    assert(!isMatch('ox', '!(!(!(!(foo))))'));
+    assert(!isMatch('x', '!(!(!(!(foo))))'));
+    assert(!isMatch('xx', '!(!(!(!(foo))))'));
 
-    f2('!(!(foo))*', ['foo', 'foo/bar', 'foobar', 'foot', 'foox']);
     assert(!isMatch('bar', '!(!(foo))*'));
     assert(!isMatch('f', '!(!(foo))*'));
     assert(!isMatch('fa', '!(!(foo))*'));
@@ -762,7 +678,7 @@ describe('bash unit tests', () => {
     assert(!isMatch('fff', '!(!(foo))*'));
     assert(!isMatch('fo', '!(!(foo))*'));
     assert(isMatch('foo', '!(!(foo))*'));
-    assert(isMatch('foo/bar', '!(!(foo))*'));
+    assert(!isMatch('foo/bar', '!(!(foo))*'));
     assert(isMatch('foobar', '!(!(foo))*'));
     assert(isMatch('foot', '!(!(foo))*'));
     assert(isMatch('foox', '!(!(foo))*'));
@@ -773,27 +689,25 @@ describe('bash unit tests', () => {
     assert(!isMatch('x', '!(!(foo))*'));
     assert(!isMatch('xx', '!(!(foo))*'));
 
-    // f2('!(f!(o))', ['fo']);
-    // assert(!isMatch('bar', '!(f!(o))'));
-    // assert(!isMatch('f', '!(f!(o))'));
-    // assert(!isMatch('fa', '!(f!(o))'));
-    // assert(!isMatch('fb', '!(f!(o))'));
-    // assert(!isMatch('ff', '!(f!(o))'));
-    // assert(!isMatch('fff', '!(f!(o))'));
-    // assert(isMatch('fo', '!(f!(o))'));
+    assert(isMatch('bar', '!(f!(o))'));
+    assert(!isMatch('f', '!(f!(o))'));
+    assert(!isMatch('fa', '!(f!(o))'));
+    assert(!isMatch('fb', '!(f!(o))'));
+    assert(!isMatch('ff', '!(f!(o))'));
+    assert(!isMatch('fff', '!(f!(o))'));
+    assert(isMatch('fo', '!(f!(o))'));
     // assert(!isMatch('foo', '!(f!(o))'));
     // assert(!isMatch('foo/bar', '!(f!(o))'));
     // assert(!isMatch('foobar', '!(f!(o))'));
     // assert(!isMatch('foot', '!(f!(o))'));
     // assert(!isMatch('foox', '!(f!(o))'));
-    // assert(!isMatch('o', '!(f!(o))'));
-    // assert(!isMatch('of', '!(f!(o))'));
-    // assert(!isMatch('ooo', '!(f!(o))'));
-    // assert(!isMatch('ox', '!(f!(o))'));
-    // assert(!isMatch('x', '!(f!(o))'));
-    // assert(!isMatch('xx', '!(f!(o))'));
+    assert(isMatch('o', '!(f!(o))'));
+    assert(isMatch('of', '!(f!(o))'));
+    assert(isMatch('ooo', '!(f!(o))'));
+    assert(isMatch('ox', '!(f!(o))'));
+    assert(isMatch('x', '!(f!(o))'));
+    assert(isMatch('xx', '!(f!(o))'));
 
-    f2('!(f(o))', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
     assert(isMatch('bar', '!(f(o))'));
     assert(isMatch('f', '!(f(o))'));
     assert(isMatch('fa', '!(f(o))'));
@@ -813,67 +727,63 @@ describe('bash unit tests', () => {
     assert(isMatch('x', '!(f(o))'));
     assert(isMatch('xx', '!(f(o))'));
 
-    // f2('!(f)', ['bar', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
-    // assert(isMatch('bar', '!(f)'));
-    // assert(!isMatch('f', '!(f)'));
-    // assert(isMatch('fa', '!(f)'));
-    // assert(isMatch('fb', '!(f)'));
-    // assert(isMatch('ff', '!(f)'));
-    // assert(isMatch('fff', '!(f)'));
-    // assert(isMatch('fo', '!(f)'));
-    // assert(isMatch('foo', '!(f)'));
-    // assert(isMatch('foo/bar', '!(f)'));
-    // assert(isMatch('foobar', '!(f)'));
-    // assert(isMatch('foot', '!(f)'));
-    // assert(isMatch('foox', '!(f)'));
-    // assert(isMatch('o', '!(f)'));
-    // assert(isMatch('of', '!(f)'));
-    // assert(isMatch('ooo', '!(f)'));
-    // assert(isMatch('ox', '!(f)'));
-    // assert(isMatch('x', '!(f)'));
-    // assert(isMatch('xx', '!(f)'));
+    assert(isMatch('bar', '!(f)'));
+    assert(!isMatch('f', '!(f)'));
+    assert(isMatch('fa', '!(f)'));
+    assert(isMatch('fb', '!(f)'));
+    assert(isMatch('ff', '!(f)'));
+    assert(isMatch('fff', '!(f)'));
+    assert(isMatch('fo', '!(f)'));
+    assert(isMatch('foo', '!(f)'));
+    assert(isMatch('foo/bar', '!(f)'));
+    assert(isMatch('foobar', '!(f)'));
+    assert(isMatch('foot', '!(f)'));
+    assert(isMatch('foox', '!(f)'));
+    assert(isMatch('o', '!(f)'));
+    assert(isMatch('of', '!(f)'));
+    assert(isMatch('ooo', '!(f)'));
+    assert(isMatch('ox', '!(f)'));
+    assert(isMatch('x', '!(f)'));
+    assert(isMatch('xx', '!(f)'));
 
-    // f2('!(f)', ['bar', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
-    // assert(isMatch('bar', '!(f)'));
-    // assert(!isMatch('f', '!(f)'));
-    // assert(isMatch('fa', '!(f)'));
-    // assert(isMatch('fb', '!(f)'));
-    // assert(isMatch('ff', '!(f)'));
-    // assert(isMatch('fff', '!(f)'));
-    // assert(isMatch('fo', '!(f)'));
-    // assert(isMatch('foo', '!(f)'));
-    // assert(isMatch('foo/bar', '!(f)'));
-    // assert(isMatch('foobar', '!(f)'));
-    // assert(isMatch('foot', '!(f)'));
-    // assert(isMatch('foox', '!(f)'));
-    // assert(isMatch('o', '!(f)'));
-    // assert(isMatch('of', '!(f)'));
-    // assert(isMatch('ooo', '!(f)'));
-    // assert(isMatch('ox', '!(f)'));
-    // assert(isMatch('x', '!(f)'));
-    // assert(isMatch('xx', '!(f)'));
+    assert(isMatch('bar', '!(f)'));
+    assert(!isMatch('f', '!(f)'));
+    assert(isMatch('fa', '!(f)'));
+    assert(isMatch('fb', '!(f)'));
+    assert(isMatch('ff', '!(f)'));
+    assert(isMatch('fff', '!(f)'));
+    assert(isMatch('fo', '!(f)'));
+    assert(isMatch('foo', '!(f)'));
+    assert(isMatch('foo/bar', '!(f)'));
+    assert(isMatch('foobar', '!(f)'));
+    assert(isMatch('foot', '!(f)'));
+    assert(isMatch('foox', '!(f)'));
+    assert(isMatch('o', '!(f)'));
+    assert(isMatch('of', '!(f)'));
+    assert(isMatch('ooo', '!(f)'));
+    assert(isMatch('ox', '!(f)'));
+    assert(isMatch('x', '!(f)'));
+    assert(isMatch('xx', '!(f)'));
 
-    // f2('!(foo)', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
-    // assert(isMatch('bar', '!(foo)'));
-    // assert(isMatch('f', '!(foo)'));
-    // assert(isMatch('fa', '!(foo)'));
-    // assert(isMatch('fb', '!(foo)'));
-    // assert(isMatch('ff', '!(foo)'));
-    // assert(isMatch('fff', '!(foo)'));
-    // assert(isMatch('fo', '!(foo)'));
-    // assert(!isMatch('foo', '!(foo)'));
-    // assert(isMatch('foo/bar', '!(foo)'));
-    // assert(isMatch('foobar', '!(foo)'));
-    // assert(isMatch('foot', '!(foo)'));
-    // assert(isMatch('foox', '!(foo)'));
-    // assert(isMatch('o', '!(foo)'));
-    // assert(isMatch('of', '!(foo)'));
-    // assert(isMatch('ooo', '!(foo)'));
-    // assert(isMatch('ox', '!(foo)'));
-    // assert(isMatch('x', '!(foo)'));
-    // assert(isMatch('xx', '!(foo)'));
+    assert(isMatch('bar', '!(foo)'));
+    assert(isMatch('f', '!(foo)'));
+    assert(isMatch('fa', '!(foo)'));
+    assert(isMatch('fb', '!(foo)'));
+    assert(isMatch('ff', '!(foo)'));
+    assert(isMatch('fff', '!(foo)'));
+    assert(isMatch('fo', '!(foo)'));
+    assert(!isMatch('foo', '!(foo)'));
+    assert(isMatch('foo/bar', '!(foo)'));
+    assert(isMatch('foobar', '!(foo)'));
+    assert(isMatch('foot', '!(foo)'));
+    assert(isMatch('foox', '!(foo)'));
+    assert(isMatch('o', '!(foo)'));
+    assert(isMatch('of', '!(foo)'));
+    assert(isMatch('ooo', '!(foo)'));
+    assert(isMatch('ox', '!(foo)'));
+    assert(isMatch('x', '!(foo)'));
+    assert(isMatch('xx', '!(foo)'));
 
-    f2('!(foo)*', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
     assert(isMatch('bar', '!(foo)*'));
     assert(isMatch('f', '!(foo)*'));
     assert(isMatch('fa', '!(foo)*'));
@@ -893,67 +803,63 @@ describe('bash unit tests', () => {
     assert(isMatch('x', '!(foo)*'));
     assert(isMatch('xx', '!(foo)*'));
 
-    // f2('!(x)', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'xx']);
-    // assert(isMatch('bar', '!(x)'));
-    // assert(isMatch('f', '!(x)'));
-    // assert(isMatch('fa', '!(x)'));
-    // assert(isMatch('fb', '!(x)'));
-    // assert(isMatch('ff', '!(x)'));
-    // assert(isMatch('fff', '!(x)'));
-    // assert(isMatch('fo', '!(x)'));
-    // assert(isMatch('foo', '!(x)'));
-    // assert(isMatch('foo/bar', '!(x)'));
-    // assert(isMatch('foobar', '!(x)'));
-    // assert(isMatch('foot', '!(x)'));
-    // assert(isMatch('foox', '!(x)'));
-    // assert(isMatch('o', '!(x)'));
-    // assert(isMatch('of', '!(x)'));
-    // assert(isMatch('ooo', '!(x)'));
-    // assert(isMatch('ox', '!(x)'));
-    // assert(!isMatch('x', '!(x)'));
-    // assert(isMatch('xx', '!(x)'));
+    assert(isMatch('bar', '!(x)'));
+    assert(isMatch('f', '!(x)'));
+    assert(isMatch('fa', '!(x)'));
+    assert(isMatch('fb', '!(x)'));
+    assert(isMatch('ff', '!(x)'));
+    assert(isMatch('fff', '!(x)'));
+    assert(isMatch('fo', '!(x)'));
+    assert(isMatch('foo', '!(x)'));
+    assert(isMatch('foo/bar', '!(x)'));
+    assert(isMatch('foobar', '!(x)'));
+    assert(isMatch('foot', '!(x)'));
+    assert(isMatch('foox', '!(x)'));
+    assert(isMatch('o', '!(x)'));
+    assert(isMatch('of', '!(x)'));
+    assert(isMatch('ooo', '!(x)'));
+    assert(isMatch('ox', '!(x)'));
+    assert(!isMatch('x', '!(x)'));
+    assert(isMatch('xx', '!(x)'));
 
-    // f2('!(x)*', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox']);
-    // assert(isMatch('bar', '!(x)*'));
-    // assert(isMatch('f', '!(x)*'));
-    // assert(isMatch('fa', '!(x)*'));
-    // assert(isMatch('fb', '!(x)*'));
-    // assert(isMatch('ff', '!(x)*'));
-    // assert(isMatch('fff', '!(x)*'));
-    // assert(isMatch('fo', '!(x)*'));
-    // assert(isMatch('foo', '!(x)*'));
-    // assert(isMatch('foo/bar', '!(x)*'));
-    // assert(isMatch('foobar', '!(x)*'));
-    // assert(isMatch('foot', '!(x)*'));
-    // assert(isMatch('foox', '!(x)*'));
-    // assert(isMatch('o', '!(x)*'));
-    // assert(isMatch('of', '!(x)*'));
-    // assert(isMatch('ooo', '!(x)*'));
-    // assert(isMatch('ox', '!(x)*'));
-    // assert(!isMatch('x', '!(x)*'));
-    // assert(!isMatch('xx', '!(x)*'));
+    assert(isMatch('bar', '!(x)*'));
+    assert(isMatch('f', '!(x)*'));
+    assert(isMatch('fa', '!(x)*'));
+    assert(isMatch('fb', '!(x)*'));
+    assert(isMatch('ff', '!(x)*'));
+    assert(isMatch('fff', '!(x)*'));
+    assert(isMatch('fo', '!(x)*'));
+    assert(isMatch('foo', '!(x)*'));
+    assert(isMatch('foo/bar', '!(x)*'));
+    assert(isMatch('foobar', '!(x)*'));
+    assert(isMatch('foot', '!(x)*'));
+    assert(isMatch('foox', '!(x)*'));
+    assert(isMatch('o', '!(x)*'));
+    assert(isMatch('of', '!(x)*'));
+    assert(isMatch('ooo', '!(x)*'));
+    assert(isMatch('ox', '!(x)*'));
+    assert(!isMatch('x', '!(x)*'));
+    assert(!isMatch('xx', '!(x)*'));
 
-    // f2('*(!(f))', ['bar', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
-    // assert(isMatch('bar', '*(!(f))'));
-    // assert(isMatch('f', '*(!(f))'));
-    // assert(isMatch('fa', '*(!(f))'));
-    // assert(isMatch('fb', '*(!(f))'));
-    // assert(isMatch('ff', '*(!(f))'));
-    // assert(isMatch('fff', '*(!(f))'));
-    // assert(isMatch('fo', '*(!(f))'));
-    // assert(isMatch('foo', '*(!(f))'));
-    // assert(isMatch('foo/bar', '*(!(f))'));
-    // assert(isMatch('foobar', '*(!(f))'));
-    // assert(isMatch('foot', '*(!(f))'));
-    // assert(isMatch('foox', '*(!(f))'));
-    // assert(isMatch('o', '*(!(f))'));
-    // assert(isMatch('of', '*(!(f))'));
-    // assert(isMatch('ooo', '*(!(f))'));
-    // assert(isMatch('ox', '*(!(f))'));
-    // assert(isMatch('x', '*(!(f))'));
-    // assert(isMatch('xx', '*(!(f))'));
+    assert(isMatch('bar', '*(!(f))'));
+    assert(!isMatch('f', '*(!(f))'));
+    assert(isMatch('fa', '*(!(f))'));
+    assert(isMatch('fb', '*(!(f))'));
+    assert(isMatch('ff', '*(!(f))'));
+    assert(isMatch('fff', '*(!(f))'));
+    assert(isMatch('fo', '*(!(f))'));
+    assert(isMatch('foo', '*(!(f))'));
+    assert(isMatch('foo/bar', '*(!(f))'));
+    assert(isMatch('foobar', '*(!(f))'));
+    assert(isMatch('foot', '*(!(f))'));
+    assert(isMatch('foox', '*(!(f))'));
+    assert(isMatch('o', '*(!(f))'));
+    assert(isMatch('of', '*(!(f))'));
+    assert(isMatch('ooo', '*(!(f))'));
+    assert(isMatch('ox', '*(!(f))'));
+    assert(isMatch('x', '*(!(f))'));
+    assert(isMatch('xx', '*(!(f))'));
 
-    f2('*((foo))', ['foo']);
     assert(!isMatch('bar', '*((foo))'));
     assert(!isMatch('f', '*((foo))'));
     assert(!isMatch('fa', '*((foo))'));
@@ -973,47 +879,44 @@ describe('bash unit tests', () => {
     assert(!isMatch('x', '*((foo))'));
     assert(!isMatch('xx', '*((foo))'));
 
-    // f2('+(!(f))', ['bar', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
-    // assert(isMatch('bar', '+(!(f))'));
-    // assert(isMatch('f', '+(!(f))'));
-    // assert(isMatch('fa', '+(!(f))'));
-    // assert(isMatch('fb', '+(!(f))'));
-    // assert(isMatch('ff', '+(!(f))'));
-    // assert(isMatch('fff', '+(!(f))'));
-    // assert(isMatch('fo', '+(!(f))'));
-    // assert(isMatch('foo', '+(!(f))'));
-    // assert(isMatch('foo/bar', '+(!(f))'));
-    // assert(isMatch('foobar', '+(!(f))'));
-    // assert(isMatch('foot', '+(!(f))'));
-    // assert(isMatch('foox', '+(!(f))'));
-    // assert(isMatch('o', '+(!(f))'));
-    // assert(isMatch('of', '+(!(f))'));
-    // assert(isMatch('ooo', '+(!(f))'));
-    // assert(isMatch('ox', '+(!(f))'));
-    // assert(isMatch('x', '+(!(f))'));
-    // assert(isMatch('xx', '+(!(f))'));
+    assert(isMatch('bar', '+(!(f))'));
+    assert(!isMatch('f', '+(!(f))'));
+    assert(isMatch('fa', '+(!(f))'));
+    assert(isMatch('fb', '+(!(f))'));
+    assert(isMatch('ff', '+(!(f))'));
+    assert(isMatch('fff', '+(!(f))'));
+    assert(isMatch('fo', '+(!(f))'));
+    assert(isMatch('foo', '+(!(f))'));
+    assert(isMatch('foo/bar', '+(!(f))'));
+    assert(isMatch('foobar', '+(!(f))'));
+    assert(isMatch('foot', '+(!(f))'));
+    assert(isMatch('foox', '+(!(f))'));
+    assert(isMatch('o', '+(!(f))'));
+    assert(isMatch('of', '+(!(f))'));
+    assert(isMatch('ooo', '+(!(f))'));
+    assert(isMatch('ox', '+(!(f))'));
+    assert(isMatch('x', '+(!(f))'));
+    assert(isMatch('xx', '+(!(f))'));
 
-    // f2('@(!(z*)|*x)', ['bar', 'f', 'fa', 'fb', 'ff', 'fff', 'fo', 'foo', 'foobar', 'foo/bar', 'foot', 'foox', 'o', 'of', 'ooo', 'ox', 'x', 'xx']);
-    // assert(isMatch('bar', '@(!(z*)|*x)'));
-    // assert(isMatch('f', '@(!(z*)|*x)'));
-    // assert(isMatch('fa', '@(!(z*)|*x)'));
-    // assert(isMatch('fb', '@(!(z*)|*x)'));
-    // assert(isMatch('ff', '@(!(z*)|*x)'));
-    // assert(isMatch('fff', '@(!(z*)|*x)'));
-    // assert(isMatch('fo', '@(!(z*)|*x)'));
-    // assert(isMatch('foo', '@(!(z*)|*x)'));
+    assert(isMatch('bar', '@(!(z*)|*x)'));
+    assert(isMatch('f', '@(!(z*)|*x)'));
+    assert(isMatch('fa', '@(!(z*)|*x)'));
+    assert(isMatch('fb', '@(!(z*)|*x)'));
+    assert(isMatch('ff', '@(!(z*)|*x)'));
+    assert(isMatch('fff', '@(!(z*)|*x)'));
+    assert(isMatch('fo', '@(!(z*)|*x)'));
+    assert(isMatch('foo', '@(!(z*)|*x)'));
     // assert(isMatch('foo/bar', '@(!(z*)|*x)'));
-    // assert(isMatch('foobar', '@(!(z*)|*x)'));
-    // assert(isMatch('foot', '@(!(z*)|*x)'));
-    // assert(isMatch('foox', '@(!(z*)|*x)'));
-    // assert(isMatch('o', '@(!(z*)|*x)'));
-    // assert(isMatch('of', '@(!(z*)|*x)'));
-    // assert(isMatch('ooo', '@(!(z*)|*x)'));
-    // assert(isMatch('ox', '@(!(z*)|*x)'));
-    // assert(isMatch('x', '@(!(z*)|*x)'));
-    // assert(isMatch('xx', '@(!(z*)|*x)'));
+    assert(isMatch('foobar', '@(!(z*)|*x)'));
+    assert(isMatch('foot', '@(!(z*)|*x)'));
+    assert(isMatch('foox', '@(!(z*)|*x)'));
+    assert(isMatch('o', '@(!(z*)|*x)'));
+    assert(isMatch('of', '@(!(z*)|*x)'));
+    assert(isMatch('ooo', '@(!(z*)|*x)'));
+    assert(isMatch('ox', '@(!(z*)|*x)'));
+    assert(isMatch('x', '@(!(z*)|*x)'));
+    assert(isMatch('xx', '@(!(z*)|*x)'));
 
-    f2('foo/!(foo)', ['foo/bar']);
     assert(!isMatch('bar', 'foo/!(foo)'));
     assert(!isMatch('f', 'foo/!(foo)'));
     assert(!isMatch('fa', 'foo/!(foo)'));
@@ -1033,7 +936,6 @@ describe('bash unit tests', () => {
     assert(!isMatch('x', 'foo/!(foo)'));
     assert(!isMatch('xx', 'foo/!(foo)'));
 
-    fixtures('(foo)bb', ['foobb']);
     assert(!isMatch('ffffffo', '(foo)bb'));
     assert(!isMatch('fffooofoooooffoofffooofff', '(foo)bb'));
     assert(!isMatch('ffo', '(foo)bb'));
@@ -1066,7 +968,6 @@ describe('bash unit tests', () => {
     assert(!isMatch('oxfoxoxfox', '(foo)bb'));
     assert(!isMatch('xfoooofof', '(foo)bb'));
 
-    fixtures('*(*(f)*(o))', ['ffffffo', 'fffooofoooooffoofffooofff', 'ffo', 'fofo', 'fofoofoofofoo', 'foo', 'foofoofo', 'fooofoofofooo', 'foooofo', 'foooofof', 'ofoofo', 'ofooofoofofooo', 'oofooofo', 'ooo']);
     assert(isMatch('ffffffo', '*(*(f)*(o))'));
     assert(isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))'));
     assert(isMatch('ffo', '*(*(f)*(o))'));
@@ -1099,7 +1000,6 @@ describe('bash unit tests', () => {
     assert(!isMatch('oxfoxoxfox', '*(*(f)*(o))'));
     assert(!isMatch('xfoooofof', '*(*(f)*(o))'));
 
-    fixtures('*(*(of*(o)x)o)', ['ofoooxoofxo', 'ofoooxoofxoofoooxoofxo', 'ofoooxoofxoofoooxoofxoo', 'ofoooxoofxoofoooxoofxooofxofxo', 'ofxoofxo', 'ooo']);
     assert(!isMatch('ffffffo', '*(*(of*(o)x)o)'));
     assert(!isMatch('fffooofoooooffoofffooofff', '*(*(of*(o)x)o)'));
     assert(!isMatch('ffo', '*(*(of*(o)x)o)'));
@@ -1132,7 +1032,6 @@ describe('bash unit tests', () => {
     assert(!isMatch('oxfoxoxfox', '*(*(of*(o)x)o)'));
     assert(!isMatch('xfoooofof', '*(*(of*(o)x)o)'));
 
-    fixtures('*(f*(o))', ['ffffffo', 'fffooofoooooffoofffooofff', 'ffo', 'fofo', 'fofoofoofofoo', 'foo', 'foofoofo', 'fooofoofofooo', 'foooofo', 'foooofof']);
     assert(isMatch('ffffffo', '*(f*(o))'));
     assert(isMatch('fffooofoooooffoofffooofff', '*(f*(o))'));
     assert(isMatch('ffo', '*(f*(o))'));
@@ -1165,7 +1064,6 @@ describe('bash unit tests', () => {
     assert(!isMatch('oxfoxoxfox', '*(f*(o))'));
     assert(!isMatch('xfoooofof', '*(f*(o))'));
 
-    fixtures('*(f*(o)x)', ['foooxfooxfoxfooox', 'foooxfooxfxfooox', 'foox']);
     assert(!isMatch('ffffffo', '*(f*(o)x)'));
     assert(!isMatch('fffooofoooooffoofffooofff', '*(f*(o)x)'));
     assert(!isMatch('ffo', '*(f*(o)x)'));
@@ -1198,7 +1096,6 @@ describe('bash unit tests', () => {
     assert(!isMatch('oxfoxoxfox', '*(f*(o)x)'));
     assert(!isMatch('xfoooofof', '*(f*(o)x)'));
 
-    fixtures('*(f+(o))', ['fofo', 'fofoofoofofoo', 'foo', 'foofoofo', 'fooofoofofooo', 'foooofo']);
     assert(!isMatch('ffffffo', '*(f+(o))'));
     assert(!isMatch('fffooofoooooffoofffooofff', '*(f+(o))'));
     assert(!isMatch('ffo', '*(f+(o))'));
@@ -1231,7 +1128,6 @@ describe('bash unit tests', () => {
     assert(!isMatch('oxfoxoxfox', '*(f+(o))'));
     assert(!isMatch('xfoooofof', '*(f+(o))'));
 
-    fixtures('*(of+(o))', ['ofoofo']);
     assert(!isMatch('ffffffo', '*(of+(o))'));
     assert(!isMatch('fffooofoooooffoofffooofff', '*(of+(o))'));
     assert(!isMatch('ffo', '*(of+(o))'));
@@ -1264,7 +1160,6 @@ describe('bash unit tests', () => {
     assert(!isMatch('oxfoxoxfox', '*(of+(o))'));
     assert(!isMatch('xfoooofof', '*(of+(o))'));
 
-    fixtures('*(of+(o)|f)', ['fofo', 'fofoofoofofoo', 'ofoofo', 'ofooofoofofooo']);
     assert(!isMatch('ffffffo', '*(of+(o)|f)'));
     assert(!isMatch('fffooofoooooffoofffooofff', '*(of+(o)|f)'));
     assert(!isMatch('ffo', '*(of+(o)|f)'));
@@ -1297,7 +1192,6 @@ describe('bash unit tests', () => {
     assert(!isMatch('oxfoxoxfox', '*(of+(o)|f)'));
     assert(!isMatch('xfoooofof', '*(of+(o)|f)'));
 
-    fixtures('*(of|oof+(o))', ['ofoofo', 'oofooofo']);
     assert(!isMatch('ffffffo', '*(of|oof+(o))'));
     assert(!isMatch('fffooofoooooffoofffooofff', '*(of|oof+(o))'));
     assert(!isMatch('ffo', '*(of|oof+(o))'));
@@ -1330,7 +1224,6 @@ describe('bash unit tests', () => {
     assert(!isMatch('oxfoxoxfox', '*(of|oof+(o))'));
     assert(!isMatch('xfoooofof', '*(of|oof+(o))'));
 
-    fixtures('*(oxf+(ox))', ['oxfoxoxfox']);
     assert(!isMatch('ffffffo', '*(oxf+(ox))'));
     assert(!isMatch('fffooofoooooffoofffooofff', '*(oxf+(ox))'));
     assert(!isMatch('ffo', '*(oxf+(ox))'));
@@ -1363,7 +1256,6 @@ describe('bash unit tests', () => {
     assert(isMatch('oxfoxoxfox', '*(oxf+(ox))'));
     assert(!isMatch('xfoooofof', '*(oxf+(ox))'));
 
-    fixtures('@(!(z*)|*x)', ['ffffffo', 'fffooofoooooffoofffooofff', 'ffo', 'fofo', 'fofoofoofofoo', 'foo', 'foob', 'foobb', 'foofoofo', 'fooofoofofooo', 'foooofo', 'foooofof', 'foooofofx', 'foooxfooxfoxfooox', 'foooxfooxfxfooox', 'foooxfooxofoxfooox', 'foot', 'foox', 'ofoofo', 'ofooofoofofooo', 'ofoooxoofxo', 'ofoooxoofxoofoooxoofxo', 'ofoooxoofxoofoooxoofxofo', 'ofoooxoofxoofoooxoofxoo', 'ofoooxoofxoofoooxoofxooofxofxo', 'ofxoofxo', 'oofooofo', 'ooo', 'oxfoxfox', 'oxfoxoxfox', 'xfoooofof']);
     assert(isMatch('ffffffo', '@(!(z*)|*x)'));
     assert(isMatch('fffooofoooooffoofffooofff', '@(!(z*)|*x)'));
     assert(isMatch('ffo', '@(!(z*)|*x)'));
@@ -1396,7 +1288,6 @@ describe('bash unit tests', () => {
     assert(isMatch('oxfoxoxfox', '@(!(z*)|*x)'));
     assert(isMatch('xfoooofof', '@(!(z*)|*x)'));
 
-    fixtures('@(foo|f|fo)*(f|of+(o))', ['fofo', 'fofoofoofofoo', 'foo', 'foofoofo', 'fooofoofofooo']);
     assert(!isMatch('ffffffo', '@(foo|f|fo)*(f|of+(o))'));
     assert(!isMatch('fffooofoooooffoofffooofff', '@(foo|f|fo)*(f|of+(o))'));
     assert(!isMatch('ffo', '@(foo|f|fo)*(f|of+(o))'));
@@ -1473,7 +1364,6 @@ describe('bash unit tests', () => {
   });
 
   it('should backtrack in alternation matches', () => {
-    fixtures('*(fo|foo)', ['fofo', 'fofoofoofofoo', 'foo', 'foofoofo']);
     assert(!isMatch('ffffffo', '*(fo|foo)'));
     assert(!isMatch('fffooofoooooffoofffooofff', '*(fo|foo)'));
     assert(!isMatch('ffo', '*(fo|foo)'));
@@ -1508,7 +1398,6 @@ describe('bash unit tests', () => {
   });
 
   it('should support exclusions', () => {
-    assert.deepEqual(pm.match(['foob', 'foobb', 'foo', 'bar', 'baz', 'foobar'], '!(foo)b*'), ['bar', 'baz']);
     assert(!isMatch('foob', '!(foo)b*'));
     assert(!isMatch('foobb', '!(foo)b*'));
     assert(!isMatch('foo', '!(foo)b*'));
@@ -1516,40 +1405,34 @@ describe('bash unit tests', () => {
     assert(isMatch('baz', '!(foo)b*'));
     assert(!isMatch('foobar', '!(foo)b*'));
 
-    assert.deepEqual(pm.match(['foo', 'bar', 'baz', 'foobar'], '*(!(foo))'), ['bar', 'baz', 'foobar']);
     assert(!isMatch('foo', '*(!(foo))'));
     assert(isMatch('bar', '*(!(foo))'));
     assert(isMatch('baz', '*(!(foo))'));
     assert(isMatch('foobar', '*(!(foo))'));
 
-
-    // Bash 4.3 says this should match `foo` and `foobar` too
-    assert.deepEqual(pm.match(['foo', 'bar', 'baz', 'foobar'], '!(foo)*'), ['bar', 'baz']);
+    // Bash 4.3 says this should match `foo` and `foobar`, which makes no sense
     assert(!isMatch('foo', '!(foo)*'));
+    assert(!isMatch('foobar', '!(foo)*'));
     assert(isMatch('bar', '!(foo)*'));
     assert(isMatch('baz', '!(foo)*'));
-    assert(!isMatch('foobar', '!(foo)*'));
 
-
-    assert.deepEqual(pm.match(['moo.cow', 'moo', 'cow'], '!(*.*)'), ['moo', 'cow']);
     assert(!isMatch('moo.cow', '!(*.*)'));
     assert(isMatch('moo', '!(*.*)'));
     assert(isMatch('cow', '!(*.*)'));
 
-    assert.deepEqual(pm.match(['mad.moo.cow'], '!(*.*).!(*.*)'), []);
+    assert(isMatch('moo.cow', '!(a*).!(b*)'));
+    assert(!isMatch('moo.cow', '!(*).!(*)'));
+    assert(!isMatch('moo.cow.moo.cow', '!(*.*).!(*.*)'));
     assert(!isMatch('mad.moo.cow', '!(*.*).!(*.*)'));
 
-    assert.deepEqual(pm.match(['moo.cow', 'moo', 'cow'], '!(*.*).'), []);
     assert(!isMatch('moo.cow', '!(*.*).'));
     assert(!isMatch('moo', '!(*.*).'));
     assert(!isMatch('cow', '!(*.*).'));
 
-    assert.deepEqual(pm.match(['moo.cow', 'moo', 'cow'], '.!(*.*)'), []);
     assert(!isMatch('moo.cow', '.!(*.*)'));
     assert(!isMatch('moo', '.!(*.*)'));
     assert(!isMatch('cow', '.!(*.*)'));
 
-    assert.deepEqual(pm.match(['mucca.pazza'], 'mu!(*(c))?.pa!(*(z))?'), []);
     assert(!isMatch('mucca.pazza', 'mu!(*(c))?.pa!(*(z))?'));
 
     assert(isMatch('effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))'));
@@ -1580,12 +1463,11 @@ describe('bash unit tests', () => {
     assert(!isMatch('12abc', '[1-5]*([6-9])'));
     assert(!isMatch('555', '[1-5]*([6-9])'));
 
-    // assert.deepEqual(pm.match(['0', '12', '1', '12abc', '555'], '0|[1-6]*([0-9])'), ['0', '12', '1', '555']);
-    // assert(isMatch('0', '0|[1-6]*([0-9])'));
-    // assert(isMatch('12', '0|[1-6]*([0-9])'));
-    // assert(isMatch('1', '0|[1-6]*([0-9])'));
+    assert(isMatch('0', '0|[1-6]*([0-9])'));
+    assert(isMatch('12', '0|[1-6]*([0-9])'));
+    assert(isMatch('1', '0|[1-6]*([0-9])'));
     assert(!isMatch('12abc', '0|[1-6]*([0-9])'));
-    // assert(isMatch('555', '0|[1-6]*([0-9])'));
+    assert(isMatch('555', '0|[1-6]*([0-9])'));
 
     assert(isMatch('07', '+([0-7])'));
     assert(isMatch('0377', '+([0-7])'));
@@ -1631,14 +1513,12 @@ describe('bash unit tests', () => {
   });
 
   it('tests derived from the pd-ksh test suite', () => {
-    // assert.deepEqual(pm.match(['abcx', 'abcz', 'bbc'], '!([*)*'), ['abcx', 'abcz', 'bbc']);
-    // assert(isMatch('abcx', '!([*)*'));
-    // assert(isMatch('abcz', '!([*)*'));
-    // assert(isMatch('bbc', '!([*)*'));
+    assert(isMatch('abcx', '!([*)*'));
+    assert(isMatch('abcz', '!([*)*'));
+    assert(isMatch('bbc', '!([*)*'));
 
-    // assert.deepEqual(pm.match(['abcx', 'abcz', 'bbc'], '+(a|b[)*'), ['abcx', 'abcz']);
-    // assert(isMatch('abcx', '+(a|b[)*'));
-    // assert(isMatch('abcz', '+(a|b[)*'));
+    assert(isMatch('abcx', '+(a|b[)*'));
+    assert(isMatch('abcz', '+(a|b[)*'));
     assert(!isMatch('bbc', '+(a|b[)*'));
 
     assert(!isMatch('abcx', '[a*(]*)z'));
@@ -1754,17 +1634,16 @@ describe('bash unit tests', () => {
     assert(!isMatch('abd', 'ab*(e|f)'));
     assert(!isMatch('acd', 'ab*(e|f)'));
 
-    // assert.deepEqual(pm.match(fixtures, 'ab**(e|f)'), ['ab', 'abab', 'abcdef', 'abd', 'abef', 'abcfef', 'abcfefg']);
     assert(!isMatch('123abc', 'ab**(e|f)'));
-    // assert(isMatch('ab', 'ab**(e|f)'));
-    // assert(isMatch('abab', 'ab**(e|f)'));
+    assert(isMatch('ab', 'ab**(e|f)'));
+    assert(isMatch('abab', 'ab**(e|f)'));
     assert(isMatch('abcdef', 'ab**(e|f)'));
     assert(!isMatch('accdef', 'ab**(e|f)'));
-    // assert(isMatch('abcfefg', 'ab**(e|f)'));
+    assert(isMatch('abcfefg', 'ab**(e|f)'));
     assert(isMatch('abef', 'ab**(e|f)'));
     assert(isMatch('abcfef', 'ab**(e|f)'));
-    // assert(isMatch('abd', 'ab**(e|f)'));
-    // assert(isMatch('acd', 'ab**(e|f)'));
+    assert(isMatch('abd', 'ab**(e|f)'));
+    assert(!isMatch('acd', 'ab**(e|f)'));
 
     assert(!isMatch('123abc', 'ab**(e|f)g'));
     assert(!isMatch('ab', 'ab**(e|f)g'));
@@ -1838,14 +1717,14 @@ describe('bash unit tests', () => {
   });
 
   it('should work with character classes', () => {
-    // assert.deepEqual(pm.match(fixtures, 'a[^[:alnum:]]b'), fixtures);
-    // assert(isMatch('a.b', 'a[^[:alnum:]]b'));
-    // assert(isMatch('a,b', 'a[^[:alnum:]]b'));
-    // assert(isMatch('a:b', 'a[^[:alnum:]]b'));
-    // assert(isMatch('a-b', 'a[^[:alnum:]]b'));
-    // assert(isMatch('a;b', 'a[^[:alnum:]]b'));
-    // assert(isMatch('a b', 'a[^[:alnum:]]b'));
-    // assert(isMatch('a_b', 'a[^[:alnum:]]b'));
+    let opts = { posix: true };
+    assert(isMatch('a.b', 'a[^[:alnum:]]b', opts));
+    assert(isMatch('a,b', 'a[^[:alnum:]]b', opts));
+    assert(isMatch('a:b', 'a[^[:alnum:]]b', opts));
+    assert(isMatch('a-b', 'a[^[:alnum:]]b', opts));
+    assert(isMatch('a;b', 'a[^[:alnum:]]b', opts));
+    assert(isMatch('a b', 'a[^[:alnum:]]b', opts));
+    assert(isMatch('a_b', 'a[^[:alnum:]]b', opts));
 
     assert(isMatch('a.b', 'a[-.,:\\;\\ _]b'));
     assert(isMatch('a,b', 'a[-.,:\\;\\ _]b'));
@@ -1855,14 +1734,13 @@ describe('bash unit tests', () => {
     assert(isMatch('a b', 'a[-.,:\\;\\ _]b'));
     assert(isMatch('a_b', 'a[-.,:\\;\\ _]b'));
 
-    // assert.deepEqual(pm.match(fixtures, 'a@([^[:alnum:]])b'), fixtures);
-    // assert(isMatch('a.b', 'a@([^[:alnum:]])b'));
-    // assert(isMatch('a,b', 'a@([^[:alnum:]])b'));
-    // assert(isMatch('a:b', 'a@([^[:alnum:]])b'));
-    // assert(isMatch('a-b', 'a@([^[:alnum:]])b'));
-    // assert(isMatch('a;b', 'a@([^[:alnum:]])b'));
-    // assert(isMatch('a b', 'a@([^[:alnum:]])b'));
-    // assert(isMatch('a_b', 'a@([^[:alnum:]])b'));
+    assert(isMatch('a.b', 'a@([^[:alnum:]])b', opts));
+    assert(isMatch('a,b', 'a@([^[:alnum:]])b', opts));
+    assert(isMatch('a:b', 'a@([^[:alnum:]])b', opts));
+    assert(isMatch('a-b', 'a@([^[:alnum:]])b', opts));
+    assert(isMatch('a;b', 'a@([^[:alnum:]])b', opts));
+    assert(isMatch('a b', 'a@([^[:alnum:]])b', opts));
+    assert(isMatch('a_b', 'a@([^[:alnum:]])b', opts));
 
     assert(isMatch('a.b', 'a@([-.,:; _])b'));
     assert(isMatch('a,b', 'a@([-.,:; _])b'));
@@ -1896,36 +1774,35 @@ describe('bash unit tests', () => {
     assert(isMatch('a b', 'a@([^x])b'));
     assert(isMatch('a_b', 'a@([^x])b'));
 
-    // assert.deepEqual(pm.match(fixtures, 'a+([^[:alnum:]])b'), fixtures);
-    // assert(isMatch('a.b', 'a+([^[:alnum:]])b'));
-    // assert(isMatch('a,b', 'a+([^[:alnum:]])b'));
-    // assert(isMatch('a:b', 'a+([^[:alnum:]])b'));
-    // assert(isMatch('a-b', 'a+([^[:alnum:]])b'));
-    // assert(isMatch('a;b', 'a+([^[:alnum:]])b'));
-    // assert(isMatch('a b', 'a+([^[:alnum:]])b'));
-    // assert(isMatch('a_b', 'a+([^[:alnum:]])b'));
+    assert(isMatch('a.b', 'a+([^[:alnum:]])b', opts));
+    assert(isMatch('a,b', 'a+([^[:alnum:]])b', opts));
+    assert(isMatch('a:b', 'a+([^[:alnum:]])b', opts));
+    assert(isMatch('a-b', 'a+([^[:alnum:]])b', opts));
+    assert(isMatch('a;b', 'a+([^[:alnum:]])b', opts));
+    assert(isMatch('a b', 'a+([^[:alnum:]])b', opts));
+    assert(isMatch('a_b', 'a+([^[:alnum:]])b', opts));
 
-    // assert.deepEqual(pm.match(fixtures, 'a@(.|[^[:alnum:]])b'), fixtures);
-    // assert(isMatch('a.b', 'a@(.|[^[:alnum:]])b'));
-    // assert(isMatch('a,b', 'a@(.|[^[:alnum:]])b'));
-    // assert(isMatch('a:b', 'a@(.|[^[:alnum:]])b'));
-    // assert(isMatch('a-b', 'a@(.|[^[:alnum:]])b'));
-    // assert(isMatch('a;b', 'a@(.|[^[:alnum:]])b'));
-    // assert(isMatch('a b', 'a@(.|[^[:alnum:]])b'));
-    // assert(isMatch('a_b', 'a@(.|[^[:alnum:]])b'));
+    assert(isMatch('a.b', 'a@(.|[^[:alnum:]])b', opts));
+    assert(isMatch('a,b', 'a@(.|[^[:alnum:]])b', opts));
+    assert(isMatch('a:b', 'a@(.|[^[:alnum:]])b', opts));
+    assert(isMatch('a-b', 'a@(.|[^[:alnum:]])b', opts));
+    assert(isMatch('a;b', 'a@(.|[^[:alnum:]])b', opts));
+    assert(isMatch('a b', 'a@(.|[^[:alnum:]])b', opts));
+    assert(isMatch('a_b', 'a@(.|[^[:alnum:]])b', opts));
   });
 
-  it.skip('should support POSIX character classes in extglobs', () => {
-    assert(isMatch('a.c', '+([[:alpha:].])'));
-    assert(isMatch('a.c', '+([[:alpha:].])+([[:alpha:].])'));
-    assert(isMatch('a.c', '*([[:alpha:].])'));
-    assert(isMatch('a.c', '*([[:alpha:].])*([[:alpha:].])'));
-    assert(isMatch('a.c', '?([[:alpha:].])?([[:alpha:].])?([[:alpha:].])'));
-    assert(isMatch('a.c', '@([[:alpha:].])@([[:alpha:].])@([[:alpha:].])'));
-    assert(!isMatch('.', '!(\\.)'));
-    assert(!isMatch('.', '!([[:alpha:].])'));
-    assert(isMatch('.', '?([[:alpha:].])'));
-    assert(isMatch('.', '@([[:alpha:].])'));
+  it('should support POSIX character classes in extglobs', () => {
+    let opts = { posix: true };
+    assert(isMatch('a.c', '+([[:alpha:].])', opts));
+    assert(isMatch('a.c', '+([[:alpha:].])+([[:alpha:].])', opts));
+    assert(isMatch('a.c', '*([[:alpha:].])', opts));
+    assert(isMatch('a.c', '*([[:alpha:].])*([[:alpha:].])', opts));
+    assert(isMatch('a.c', '?([[:alpha:].])?([[:alpha:].])?([[:alpha:].])', opts));
+    assert(isMatch('a.c', '@([[:alpha:].])@([[:alpha:].])@([[:alpha:].])', opts));
+    assert(!isMatch('.', '!(\\.)', opts));
+    assert(!isMatch('.', '!([[:alpha:].])', opts));
+    assert(isMatch('.', '?([[:alpha:].])', opts));
+    assert(isMatch('.', '@([[:alpha:].])', opts));
   });
 
   // ported from http://www.bashcookbook.com/bashinfo/source/bash-4.3/tests/extglob2.tests
@@ -1999,33 +1876,5 @@ describe('bash unit tests', () => {
     assert(isMatch('ooo', '*(!(f))'));
     assert(isMatch('ooo', '+(!(f))'));
     assert(isMatch('zoox', '@(!(z*)|*x)'));
-  });
-
-  it.skip('should pass extglob3 tests', () => {
-    assert(isMatch('ab/../', '+(??)/..?(/)'));
-    assert(isMatch('ab/../', '+(??|a*)/..?(/)'));
-    assert(isMatch('ab/../', '+(?b)/..?(/)'));
-    assert(isMatch('ab/../', '+(?b|?b)/..?(/)'));
-    assert(isMatch('ab/../', '+([!/])/../'));
-    assert(isMatch('ab/../', '+([!/])/..?(/)'));
-    assert(isMatch('ab/../', '+([!/])/..@(/)'));
-    assert(isMatch('ab/../', '+([^/])/../'));
-    assert(isMatch('ab/../', '+([^/])/..?(/)'));
-    assert(isMatch('ab/../', '+(a*)/..?(/)'));
-    assert(isMatch('ab/../', '+(ab)/..?(/)'));
-    assert(isMatch('ab/../', '?(ab)/..?(/)'));
-    assert(isMatch('ab/../', '?(ab|??)/..?(/)'));
-    assert(isMatch('ab/../', '?b/..?(/)'));
-    assert(isMatch('ab/../', '@(??)/..?(/)'));
-    assert(isMatch('ab/../', '@(??|a*)/..?(/)'));
-    assert(isMatch('ab/../', '@(?b|?b)/..?(/)'));
-    assert(isMatch('ab/../', '@(a*)/..?(/)'));
-    assert(isMatch('ab/../', '@(a?|?b)/..?(/)'));
-    assert(isMatch('ab/../', '@(ab|+([!/]))/..?(/)'));
-    assert(isMatch('ab/../', '@(ab|+([^/]))/..?(/)'));
-    assert(isMatch('ab/../', '@(ab|?b)/..?(/)'));
-    assert(isMatch('ab/../', '[!/][!/]/../'));
-    assert(isMatch('ab/../', '[^/][^/]/../'));
-    assert(isMatch('x', '@(x)'));
   });
 });

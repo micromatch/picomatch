@@ -117,8 +117,10 @@ module.exports = (input, options = {}) => {
     state.isGlob = true;
     paren = options.capture === true ? '(' : '(?:';
     node = { type: 'paren', extglob: true, prefix: value, stash: [], nodes: [] };
+    if (node.prefix === '!') node.negated = true;
     node.stash = value === '!' ? [`${paren}(?!(?:`] : [paren];
     Reflect.defineProperty(node, 'parent', { value: block });
+    block.length = block.stash.length;
     block.nodes.push(node);
     extglobs.push(node);
     stack.push(node);
@@ -246,8 +248,15 @@ module.exports = (input, options = {}) => {
         }
 
         paren = stack.pop();
-        inner = paren.stash.join('');
         block = lookbehind(1);
+
+        if (paren.negated && !paren.nodes.length && block.negated && block.length === 1 && next === ')') {
+          block.converted = true;
+          paren.stash[0] = block.stash[0] = '(?:';
+          paren.prefix = block.prefix = '@';
+        }
+
+        inner = paren.stash.join('');
 
         if (paren.prefix) {
           state.isGlob = true;
@@ -262,7 +271,11 @@ module.exports = (input, options = {}) => {
 
         switch (paren.prefix) {
           case '!':
-            star = (options.bash || paren.stash.includes('\\/') || paren.nodes.length) ? '.*?' : STAR;
+            star = (options.bash || paren.stash.includes('\\/') || block.nodes.length) ? '.*?' : STAR;
+            if (inner.endsWith(STAR)) {
+              star = STAR;
+            }
+
             append(`${inner})${boundary})${star})`);
             break;
           case '*':
@@ -592,6 +605,7 @@ module.exports = (input, options = {}) => {
   state.source = prepend + ast.stash.join('');
   state.output = state.wrap(state.source);
   ast = void 0;
+  console.log(state.output)
   return state;
 };
 
