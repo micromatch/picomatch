@@ -1,5 +1,7 @@
 'use strict';
 
+const path = require('path');
+const scan = require('./scan');
 const GLOBSTAR_DOT = '(?:(?!(?:\\/|^)(?:\\.{1,2})($|\\/)).)*?';
 const GLOBSTAR_NO_DOT = '(?:(?!(?:\\/|^)\\.).)*?';
 const QMARK_NO_DOT = '[^/.]';
@@ -7,6 +9,7 @@ const QMARK = '[^/]';
 const STAR = `${QMARK}*?`;
 const NO_DOT = '(?!\\.)';
 const ONE_CHAR = '(?=.)';
+const DOT_SLASH = '(^|\\./)';
 const MAX_LENGTH = 1024 * 64;
 const POSIX = {
   alnum: 'a-zA-Z0-9',
@@ -36,7 +39,7 @@ module.exports = (input, options = {}) => {
     throw new RangeError(`input string must not be longer than ${max} bytes`);
   }
 
-  let ast = { type: 'root', isGlob: false, nodes: [], stash: [] };
+  let ast = { type: 'root', nodes: [], stash: [] };
   let wrap = str => `^(?:${str})$`;
   let negate = str => `^(?!^(?:${str})$).*$`;
   let orig = input;
@@ -44,7 +47,6 @@ module.exports = (input, options = {}) => {
   let state = {
     ast,
     input,
-    glob: { path: '', pattern: '' },
     posix: options.posix === true,
     dot: options.dot === true,
     wrap
@@ -57,25 +59,40 @@ module.exports = (input, options = {}) => {
 
   let after, args, block, boundary, brace, bracket, charClass, idx, inner, left, next, node, noglobstar, paren, posix, prev, qmark, quoted, relaxSlash, star, stars, stash, value;
 
-  // let { base = [], glob } = scan(input);
+  if (typeof options.base === 'string') {
+    ast.stash.push(options.base);
+    if (options.base.slice(-1) !== '/') {
+      ast.stash.push('\\/');
+    }
+  }
 
-  // if (typeof options.base === 'string') {
-  //   base = options.base.split(/[\\/]+/).concat(base);
-  // }
+  // optionally pre-scan/tokenize the pattern
+  if (options.scan === true) {
+    let token = scan(input, options);
+    let base = token.parts;
+    let glob = token.glob;
 
-  // if (base.length && glob) {
-  //   ast.stash = [base.join('\\/') + '\\/'];
-  //   input = glob;
+    if (!glob) {
+      state.output = state.negated ? negate(input) : wrap(input);
+      return state;
+    }
 
-  //   if (options.dot !== true && input[0] !== '.') {
-  //     ast.stash.push(NO_DOT);
-  //   }
-  // }
+    state.scanned = token;
+    state.isGlob = token.isGlob;
+    state.negated = token.negated;
+    state.prefix = token.prefix;
 
-  // if (!glob) {
-  //   state.output = state.negated ? negate(input) : wrap(input);
-  //   return state;
-  // }
+    let prefix = base.join('\\/');
+    if (prefix && glob) {
+      if (!prefix.endsWith('/')) prefix += '\\/';
+      ast.stash = [prefix];
+      input = glob;
+
+      if (options.dot !== true && input[0] !== '.') {
+        ast.stash.push(NO_DOT);
+      }
+    }
+  }
 
   const lookbehind = (n = 1) => stack[stack.length - n];
   const rest = () => input.slice(i + 1);
@@ -83,8 +100,8 @@ module.exports = (input, options = {}) => {
   const advance = () => input[++i];
   const eos = () => i === input.length - 1;
 
-
   const append = (value, node, text) => {
+    if (!block) block = lookbehind();
     block.stash.push(value);
     if (node && block.nodes) {
       block.nodes.push(node);
@@ -473,6 +490,16 @@ module.exports = (input, options = {}) => {
 
         break;
       case '.':
+        if (i === start && next === '/') {
+          start += 2;
+          state.prefix = './';
+          advance();
+          if (!options.prepend) {
+            append(DOT_SLASH);
+          }
+          break;
+        }
+
         if (block.type === 'bracket') {
           append(value);
           break;
@@ -535,12 +562,7 @@ module.exports = (input, options = {}) => {
     state.prev = value;
   }
 
-  idx = ast.stash.indexOf('\\/');
-
-  if (idx === -1) {
-    idx === ast.stash.length;
-  }
-
+  // escape unclosed brackets
   while (stack.length > 1) {
     node = stack.pop();
 
@@ -554,6 +576,11 @@ module.exports = (input, options = {}) => {
     append(node.stash.join('').replace(/\W/g, '\\$&'), null, false);
   }
 
+  idx = ast.stash.indexOf('\\/');
+  if (idx === -1) {
+    idx === ast.stash.length;
+  }
+
   if (!ast.stash.slice(0, idx).includes(ONE_CHAR) && isSpecialChar(orig[0])) {
     ast.stash.unshift(ONE_CHAR);
   }
@@ -565,7 +592,6 @@ module.exports = (input, options = {}) => {
   state.source = prepend + ast.stash.join('');
   state.output = state.wrap(state.source);
   ast = void 0;
-  console.log(state.output);
   return state;
 };
 

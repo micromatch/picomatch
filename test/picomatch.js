@@ -10,6 +10,13 @@ const { isMatch } = require('./support');
 describe('picomatch', () => {
   beforeEach(() => picomatch.clearCache());
 
+  describe('validation', () => {
+    it('should throw an error when invalid arguments are given', () => {
+      assert.throws(() => isMatch('foo', null), /expected input to be a string/);
+      assert.throws(() => isMatch('foo', '*'.repeat(65537)), /must not be longer than/);
+    });
+  });
+
   describe('non-glob support', () => {
     it('should match literal strings (non-glob patterns)', () => {
       assert(!isMatch('aaa\\bbb', 'aaa/bbb', { nocache: true }));
@@ -48,6 +55,11 @@ describe('picomatch', () => {
       assert(!isMatch('ab', ''));
       assert(!isMatch('a', ''));
       assert(!isMatch('.', ''));
+    });
+
+    it('should handle escaped characters as literals', () => {
+      assert(!isMatch('abc', 'abc\\*'));
+      assert(isMatch('abc*', 'abc\\*'));
     });
   });
 
@@ -1487,19 +1499,6 @@ describe('picomatch', () => {
       assert(isMatch('a [bc]', 'a \\[bc\\]*'));
       assert(!isMatch('a [b]', 'a \\[b\\].*'));
       assert(isMatch('a [b].js', 'a \\[b\\].*'));
-    });
-  });
-
-  describe('error handling:', () => {
-    it('should throw on bad args', () => {
-      assert.throws(() => isMatch({}), /expected a string/);
-    });
-  });
-
-  describe('escaping', () => {
-    it('should support escaped characters', () => {
-      assert(!isMatch('abc', 'abc\\*'));
-      assert(isMatch('abc*', 'abc\\*'));
     });
   });
 

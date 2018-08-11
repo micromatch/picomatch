@@ -1,20 +1,26 @@
 'use strict';
 
-const fill = require('fill-range');
-const mm = require('minimatch');
-const bash = require('bash-match');
+// const fill = require('fill-range');
+// const mm = require('minimatch');
+// const bash = require('bash-match');
 const pm = require('./');
 
+console.log(pm.makeRe('*'))
+
+// console.log(pm.scan('./!foo/bar/*.js'));
+// console.log(pm.scan('!./foo/bar/*.js'));
+// { isGlob: true, input: 'foo/bar/*.js', path: 'foo/bar', parts: [ 'foo', 'bar' ], glob: '*.js' }
+
 // console.log(pm.isMatch('.', ''))
-// console.log(mm.makeRe('c*3.txt'))
+console.log(pm.makeRe('c*3.txt', { base: 'foo/bar/baz' }))
 // console.log(pm.makeRe('c*3.txt', { strictSlashes: true }))
 
 // console.log(mm.makeRe('!**/a.js'))
 // console.log(pm.makeRe('!**/a.js'))
 // console.log(pm.makeRe('ab**(e|f)'))
 // console.log(pm.isMatch('ab', 'ab**(e|f)'))
-console.log(pm.makeRe('@(foo|f|fo)*(f|of+(o))'))
-console.log(pm.isMatch('.foofoofo', '@(foo|f|fo)*(f|of+(o))'))
+// console.log(pm.makeRe('@(foo|f|fo)*(f|of+(o))'))
+// console.log(pm.isMatch('.foofoofo', '@(foo|f|fo)*(f|of+(o))'))
 
 // console.log(mm.makeRe('!c*3.txt'))
 // console.log(pm.makeRe('!c*3.txt'))
@@ -49,3 +55,5 @@ console.log(pm.isMatch('.foofoofo', '@(foo|f|fo)*(f|of+(o))'))
 // console.log(regex.test('ORDER - 0025')) // true
 // console.log(regex.test('ORDER - 0026')) // false
 
+// console.log(pm.isMatch('foo/bar/baz/qux', 'foo/bar/baz/*', { scan: true }));
+// console.log(/^(?=(?!\.)(?=.)[^\/]*?\/?)/.test('abc.txt'))

@@ -3,7 +3,7 @@
 require('mocha');
 const isWindows = process.platform === 'win32';
 const assert = require('assert');
-const scan = require('../scan');
+const { scan } = require('..');
 const base = (...args) => scan(...args).path;
 const both = (...args) => {
   let { path, glob } = scan(...args);
@@ -17,13 +17,57 @@ const both = (...args) => {
  * and both libraries use path.dirname. Picomatch does not.
  */
 
-describe('glob base', () => {
+describe('scan', () => {
   it('should get the "base" and "glob" from a pattern', () => {
     assert.deepEqual(both('foo/bar'), ['foo/bar', '']);
     assert.deepEqual(both('foo/@bar'), ['foo/@bar', '']);
     assert.deepEqual(both('foo/@bar\\+'), ['foo/@bar\\+', '']);
     assert.deepEqual(both('foo/bar+'), ['foo', 'bar+']);
     assert.deepEqual(both('foo/bar*'), ['foo', 'bar*']);
+  });
+
+  it('should handle leading "./"', () => {
+    assert.deepEqual(scan('./foo/bar/*.js'), {
+      glob: '*.js',
+      input: './foo/bar/*.js',
+      isGlob: true,
+      parts: ['foo', 'bar'],
+      path: 'foo/bar',
+      prefix: './'
+    });
+  });
+
+  it('should handle leading "!"', () => {
+    assert.deepEqual(scan('!foo/bar/*.js'), {
+      glob: '*.js',
+      input: '!foo/bar/*.js',
+      isGlob: true,
+      negated: true,
+      parts: ['foo', 'bar'],
+      path: 'foo/bar'
+    });
+  });
+
+  it('should handle leading "./" when negated', () => {
+    assert.deepEqual(scan('./!foo/bar/*.js'), {
+      glob: '*.js',
+      input: './!foo/bar/*.js',
+      isGlob: true,
+      negated: true,
+      parts: ['foo', 'bar'],
+      path: 'foo/bar',
+      prefix: './'
+    });
+
+    assert.deepEqual(scan('!./foo/bar/*.js'), {
+      glob: '*.js',
+      input: '!./foo/bar/*.js',
+      isGlob: true,
+      negated: true,
+      parts: ['foo', 'bar'],
+      path: 'foo/bar',
+      prefix: './'
+    });
   });
 
   it('should strip glob magic to return parent path', () => {

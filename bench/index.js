@@ -4,7 +4,7 @@ const { Suite } = require('benchmark');
 const { cyan, red, green } = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2));
 const longList = require('./fixtures/long-list');
-const { micro, mini, pico } = require('./load-time');
+const { mini, pico } = require('./load-time');
 
 /**
  * Setup
@@ -43,10 +43,10 @@ function bench(name, options) {
   return suite;
 }
 
-const pOpts = { strictSlashes: true, strict: true };
-const pOpts2 = { strictSlashes: true, strict: true, nocache: true };
+const picoOpts = { strictSlashes: true, strict: true };
+const noCacheOpts = { ...picoOpts, nocache: true };
 
-const miOpts = { nodupes: false };
+const miniOpts = { nodupes: false };
 const miOpts2 = { nodupes: false, cache: false };
 
 /**
@@ -54,105 +54,95 @@ const miOpts2 = { nodupes: false, cache: false };
  */
 
 bench(red('.makeRe') + ' star (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('abc.txt', '*', miOpts2))
   .add('minimatch', () => mini.makeRe('*'))
-  .add('picomatch', () => pico.makeRe('*', pOpts2))
+  .add('picomatch', () => pico.makeRe('*', noCacheOpts))
+  .run();
+bench(cyan('.isMatch') + ' star (caching disabled)')
+  .add('minimatch', () => mini('abc.txt', '*'))
+  .add('picomatch', () => pico.isMatch('abc.txt', '*', noCacheOpts))
   .run();
 
+bench(red('.makeRe') + ' no-glob (caching disabled)')
+  .add('minimatch', () => mini.makeRe('abc.txt'))
+  .add('picomatch', () => pico.makeRe('abc.txt', noCacheOpts))
+  .run();
 bench(cyan('.isMatch') + ' no-glob (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('abc.txt', 'abc.txt', miOpts2))
   .add('minimatch', () => mini('abc.txt', 'abc.txt'))
-  .add('picomatch', () => pico.isMatch('abc.txt', 'abc.txt', pOpts2))
+  .add('picomatch', () => pico.isMatch('abc.txt', 'abc.txt', noCacheOpts))
   .run();
 
 bench(red('.makeRe') + ' with star (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('abc.txt', 'c*3.txt', miOpts2))
   .add('minimatch', () => mini.makeRe('c*3.txt'))
-  .add('picomatch', () => pico.makeRe('c*3.txt', pOpts2))
+  .add('picomatch', () => pico.makeRe('c*3.txt', noCacheOpts))
   .run();
-
 bench(cyan('.isMatch') + ' with star (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('abc.txt', 'c*3.txt', miOpts2))
   .add('minimatch', () => mini('abc.txt', 'c*3.txt'))
-  .add('picomatch', () => pico.isMatch('abc.txt', 'c*3.txt', pOpts2))
+  .add('picomatch', () => pico.isMatch('abc.txt', 'c*3.txt', noCacheOpts))
   .run();
 
 bench(red('.makeRe') + ' - negated (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('abc.txt', '!c*3.txt', miOpts2))
   .add('minimatch', () => mini.makeRe('!c*3.txt'))
-  .add('picomatch', () => pico.makeRe('!c*3.txt', pOpts2))
+  .add('picomatch', () => pico.makeRe('!c*3.txt', noCacheOpts))
   .run();
-
 bench(cyan('.isMatch') + ' - negated (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('abc.txt', '!c*3.txt', miOpts2))
   .add('minimatch', () => mini('abc.txt', '!c*3.txt'))
-  .add('picomatch', () => pico.isMatch('abc.txt', '!c*3.txt', pOpts2))
+  .add('picomatch', () => pico.isMatch('abc.txt', '!c*3.txt', noCacheOpts))
   .run();
 
 bench(red('.makeRe') + ' - globstar (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('foo/bar.txt', '**/bar.txt', miOpts2))
   .add('minimatch', () => mini.makeRe('foo/bar/**/bar.txt'))
-  .add('picomatch', () => pico.makeRe('foo/bar/**/bar.txt', pOpts2))
+  .add('picomatch', () => pico.makeRe('foo/bar/**/bar.txt', noCacheOpts))
   .run();
-
 bench(cyan('.isMatch') + ' - globstar (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('foo/bar.txt', '**/bar.txt', miOpts2))
   .add('minimatch', () => mini('foo/bar.txt', '**/bar.txt'))
-  .add('picomatch', () => pico.isMatch('foo/bar.txt', '**/bar.txt', pOpts2))
+  .add('picomatch', () => pico.isMatch('foo/bar.txt', '**/bar.txt', noCacheOpts))
   .run();
 
 bench(red('.makeRe') + ' - globstar_negated (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('foo/bar.txt', '!**/bar.txt', miOpts2))
   .add('minimatch', () => mini.makeRe('!**/bar.txt'))
-  .add('picomatch', () => pico.makeRe('!**/bar.txt', pOpts2))
+  .add('picomatch', () => pico.makeRe('!**/bar.txt', noCacheOpts))
   .run();
-
 bench(cyan('.isMatch') + ' - globstar_negated (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('foo/bar.txt', '!**/bar.txt', miOpts2))
   .add('minimatch', () => mini('foo/bar.txt', '!**/bar.txt'))
-  .add('picomatch', () => pico.isMatch('foo/bar.txt', '!**/bar.txt', pOpts2))
+  .add('picomatch', () => pico.isMatch('foo/bar.txt', '!**/bar.txt', noCacheOpts))
   .run();
 
 bench(red('.makeRe') + ' - braces (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('abc.txt', '{a,b,c}*.txt', miOpts2))
   .add('minimatch', () => mini.makeRe('{a,b,c}*.txt'))
-  .add('picomatch', () => pico.makeRe('{a,b,c}*.txt', pOpts2))
+  .add('picomatch', () => pico.makeRe('{a,b,c}*.txt', noCacheOpts))
   .run();
-
 bench(cyan('.isMatch') + ' - braces (caching disabled)')
-  // .add('micromatch', () => micro.isMatch('abc.txt', '{a,b,c}*.txt', miOpts2))
   .add('minimatch', () => mini('abc.txt', '{a,b,c}*.txt'))
-  .add('picomatch', () => pico.isMatch('abc.txt', '{a,b,c}*.txt', pOpts2))
+  .add('picomatch', () => pico.isMatch('abc.txt', '{a,b,c}*.txt', noCacheOpts))
   .run();
 
 bench(red('.makeRe') + ' - multiple stars (caching disabled)')
-  // .add('micromatch', () => micro.match(longList, '**/*c09.*', miOpts2))
   .add('minimatch', () => mini.makeRe('**/*c09.*'))
-  .add('picomatch', () => pico.makeRe('**/*c09.*', pOpts2))
+  .add('picomatch', () => pico.makeRe('**/*c09.*', noCacheOpts))
+  .run();
+bench(cyan('.isMatch') + ' - multiple stars (caching disabled)')
+  .add('minimatch', () => mini('foo/bar/ac09b.txt', '**/*c09.*'))
+  .add('picomatch', () => pico.isMatch('foo/bar/ac09b.txt', '**/*c09.*', noCacheOpts))
   .run();
 
 bench(green('.match') + ' - long_list (caching disabled)')
-  // .add('micromatch', () => micro.match(longList, '**/*c09.*', miOpts2))
   .add('minimatch', () => mini.match(longList, '**/*c09.*'))
-  .add('picomatch', () => pico.match(longList, '**/*c09.*', pOpts2))
+  .add('picomatch', () => pico.match(longList, '**/*c09.*', noCacheOpts))
   .run();
 
 bench(green('.match') + ' - long_list_globstars_and_stars (caching disabled)')
-  // .add('micromatch', () => micro.match(longList, 'a/**/*c09.txt', miOpts2))
   .add('minimatch', () => mini.match(longList, 'a/**/*c09.txt'))
-  .add('picomatch', () => pico.match(longList, 'a/**/*c09.txt', pOpts2))
+  .add('picomatch', () => pico.match(longList, 'a/**/*c09.txt', noCacheOpts))
   .run();
 
 bench(green('.match') + ' - long_list_multiple_globstars (caching disabled)')
-  // .add('micromatch', () => micro.match(longList, 'a/**/f/**/*c09.*', miOpts2))
   .add('minimatch', () => mini.match(longList, 'a/**/f/**/*c09.*'))
-  .add('picomatch', () => pico.match(longList, 'a/**/f/**/*c09.*', pOpts2))
+  .add('picomatch', () => pico.match(longList, 'a/**/f/**/*c09.*', noCacheOpts))
   .run();
 
 bench(green('.match') + ' - long_list_single_globstars (caching disabled)')
-  // .add('micromatch', () => micro.match(longList, '**', miOpts2))
   .add('minimatch', () => mini.match(longList, '**'))
-  .add('picomatch', () => pico.match(longList, '**', pOpts2))
+  .add('picomatch', () => pico.match(longList, '**', noCacheOpts))
   .run();
 
 // /**
@@ -160,55 +150,47 @@ bench(green('.match') + ' - long_list_single_globstars (caching disabled)')
 //  */
 
 // bench('.isMatch - star')
-//   // .add('micromatch', () => micro.isMatch('abc.txt', '*'), miOpts)
+//   .add('comparison', () => isMatch('abc.txt'))
 //   .add('minimatch', () => mini('abc.txt', '*'))
-//   .add('picomatch', () => pico.isMatch('abc.txt', '*'), pOpts)
+//   .add('picomatch', () => pico.isMatch('abc.txt', '*'), picoOpts)
 //   .run();
 
 // bench('.isMatch')
-//   // .add('micromatch', () => micro.isMatch('abc.txt', 'c*3.txt'), miOpts)
 //   .add('minimatch', () => mini('abc.txt', 'c*3.txt'))
-//   .add('picomatch', () => pico.isMatch('abc.txt', 'c*3.txt'), pOpts)
+//   .add('picomatch', () => pico.isMatch('abc.txt', 'c*3.txt'), picoOpts)
 //   .run();
 
 // bench('.isMatch - negated')
-//   // .add('micromatch', () => micro.isMatch('abc.txt', '!c*3.txt'), miOpts)
 //   .add('minimatch', () => mini('abc.txt', '!c*3.txt'))
-//   .add('picomatch', () => pico.isMatch('abc.txt', '!c*3.txt'), pOpts)
+//   .add('picomatch', () => pico.isMatch('abc.txt', '!c*3.txt'), picoOpts)
 //   .run();
 
 // bench('.isMatch - globstar')
-//   // .add('micromatch', () => micro.isMatch('foo/bar.txt', '**/bar.txt'), miOpts)
 //   .add('minimatch', () => mini('foo/bar.txt', '**/bar.txt'))
-//   .add('picomatch', () => pico.isMatch('foo/bar.txt', '**/bar.txt'), pOpts)
+//   .add('picomatch', () => pico.isMatch('foo/bar.txt', '**/bar.txt'), picoOpts)
 //   .run();
 
 // bench('.isMatch - globstar_negated')
-//   // .add('micromatch', () => micro.isMatch('foo/bar.txt', '!**/bar.txt'), miOpts)
 //   .add('minimatch', () => mini('foo/bar.txt', '!**/bar.txt'))
-//   .add('picomatch', () => pico.isMatch('foo/bar.txt', '!**/bar.txt'), pOpts)
+//   .add('picomatch', () => pico.isMatch('foo/bar.txt', '!**/bar.txt'), picoOpts)
 //   .run();
 
 // bench('.isMatch - braces')
-//   // .add('micromatch', () => micro.isMatch('abc.txt', '{a,b,c}*.txt'), miOpts)
 //   .add('minimatch', () => mini('abc.txt', '{a,b,c}*.txt'))
-//   .add('picomatch', () => pico.isMatch('abc.txt', '{a,b,c}*.txt'), pOpts)
+//   .add('picomatch', () => pico.isMatch('abc.txt', '{a,b,c}*.txt'), picoOpts)
 //   .run();
 
 // bench('.match - long_list')
-//   // .add('micromatch', () => micro.match(longList, '**/*c09.*', miOpts))
 //   .add('minimatch', () => mini.match(longList, '**/*c09.*'))
-//   .add('picomatch', () => pico.match(longList, '**/*c09.*', pOpts))
+//   .add('picomatch', () => pico.match(longList, '**/*c09.*', picoOpts))
 //   .run();
 
 // bench('.match - long_list_multiple_globstars')
-//   // .add('micromatch', () => micro.match(longList, '**', miOpts))
 //   .add('minimatch', () => mini.match(longList, '**'))
-//   .add('picomatch', () => pico.match(longList, 'a/**/*c09.txt', pOpts))
+//   .add('picomatch', () => pico.match(longList, 'a/**/*c09.txt', picoOpts))
 //   .run();
 
 // bench('.match - long_list_single_globstars')
-//   // .add('micromatch', () => micro.match(longList, 'a/**/f/**/*c09.*', miOpts))
 //   .add('minimatch', () => mini.match(longList, 'a/**/f/**/*c09.*'))
-//   .add('picomatch', () => pico.match(longList, '**', pOpts))
+//   .add('picomatch', () => pico.match(longList, '**', picoOpts))
 //   .run();

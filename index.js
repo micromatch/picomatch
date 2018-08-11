@@ -4,6 +4,7 @@ const path = require('path');
 const windows = () => process.platform === 'windows' || path.sep === '\\';
 const unixify = str => str.replace(/\\+/g, '/');
 const parse = require('./parse');
+const scan = require('./scan');
 
 /**
  * Returns an array of strings that match one or more glob patterns.
@@ -107,8 +108,8 @@ picomatch.match = (list = [], pattern, options) => {
     unix.push(res);
 
     if (isMatch(ele, true)) {
-      if (opts.normalize === true && res.length > 2 && res.startsWith('./') || res.startsWith('.\\')) {
-        res = res.slice(2);
+      if (typeof opts.onMatch === 'function') {
+        res = opts.onMatch(res);
       }
 
       if (opts.nounique === true) {
@@ -130,7 +131,7 @@ picomatch.match = (list = [], pattern, options) => {
 
   // if no options were passed, or nounique is not true,
   // then we have a Set that needs to be converted to an array
-  if (options === void 0 || options.nounique !== true) {
+  if (opts.nounique !== true) {
     matches = [...matches];
   }
 
@@ -188,28 +189,29 @@ picomatch.matcher = (input, options) => {
   }
 
   if (typeof input !== 'string') {
-    throw new TypeError('expected a string');
+    throw new TypeError('expected input to be a string');
   }
 
-  let opts = options || {};
-  if (input === '') {
-    return str => opts.bash ? str === input : false;
-  }
-
-  let ignore = opts.ignore
-    ? picomatch.matcher(options.ignore, { ...options, ignore: null })
-    : void 0;
-
-  let regex = memoize('matcher', input, options, picomatch.makeRe);
-  let isWin = isWindows(options);
-
-  return (str, unixified) => {
-    let ele = unixified === void 0 && isWin ? unixify(str) : str;
-    if (regex.prefix === './' && ele.startsWith('./')) {
-      ele = ele.slice(2);
+  let matcher = (glob, options = {}) => {
+    if (glob === '') {
+      return str => options.bash ? str === glob : false;
     }
-    return (ignore === void 0 || ignore(ele, true) === false) && regex.test(ele);
+
+    let regex = picomatch.makeRe(glob, options);
+    let isWin = isWindows(options);
+    let ignore;
+
+    if (options.ignore) {
+      ignore = picomatch.matcher(options.ignore, { ...options, ignore: null });
+    }
+
+    return (str, unixified) => {
+      let ele = (unixified !== true && isWin) ? unixify(str) : str;
+      return (!ignore || ignore(ele, true) === false) && regex.test(ele);
+    };
   };
+
+  return memoize('matcher', input, options, matcher);
 };
 
 picomatch.join = (...args) => {
@@ -243,21 +245,34 @@ picomatch.resolve = (...args) => {
 picomatch.makeRe = (pattern, options) => {
   const makeRe = (input, opts = {}) => {
     let flags = opts.flags || opts.nocase ? 'i' : '';
-    let prefix;
-
-    if (input.startsWith('./')) {
-      input = input.slice(2);
-      prefix = './';
-    }
-
     let state = picomatch.parse(input, options);
     let regex = new RegExp(state.output, flags);
-    if (prefix) {
-      Reflect.defineProperty(regex, 'prefix', { value: prefix });
+    if (state.prefix) {
+      Reflect.defineProperty(regex, 'prefix', { value: state.prefix });
     }
     return regex;
   };
   return memoize('makeRe', pattern, options, makeRe);
+};
+
+/**
+ * Quickly scans a glob pattern and returns an object with a handful of
+ * useful properties, like `isGlob`, `path` (the leading non-glob, if it exists),
+ * `glob` (the actual pattern), and `negated` (true if the path starts with `!`).
+ *
+ * ```js
+ * const pm = require('picomatch');
+ * console.log(pm.scan('foo/bar/*.js'));
+ * { isGlob: true, input: 'foo/bar/*.js', path: 'foo/bar', parts: [ 'foo', 'bar' ], glob: '*.js' }
+ * ```
+ * @param {String} `str`
+ * @param {Object} `options`
+ * @return {Object} Returns an object with tokens and regex source string.
+ * @api public
+ */
+
+picomatch.scan = (input, options) => {
+  return memoize('scan', input, options, scan);
 };
 
 /**

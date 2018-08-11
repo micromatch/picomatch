@@ -11,11 +11,20 @@ const equal = (actual, expected, msg) => {
   assert.deepEqual(actual, expected, msg);
 };
 
-describe('options.prepend', () => {
+describe('options.onMatch', () => {
   beforeEach(() => picomatch.clearCache());
 
-  it('should normalize returned paths to remove leading "./"', () => {
-    const opts = { prepend: '(\\.\\/(?=.))?', normalize: true };
+  it('should call options.onMatch on each matching string', () => {
+    const opts = {
+      prepend: '(\\.\\/(?=.))?',
+      onMatch(str) {
+        if (str.length > 2 && str.startsWith('./') || str.startsWith('.\\')) {
+          return str.slice(2);
+        }
+        return str;
+      }
+    };
+
     const fixtures = ['a', './a', 'b', 'a/a', './a/b', 'a/c', './a/x', './a/a/a', 'a/a/b', './a/a/a/a', './a/a/a/a/a', 'x/y', './z/z'];
 
     assert(!pm.isMatch('./.a', '*.a', opts));

@@ -304,7 +304,7 @@ describe('special characters', () => {
       assert(!isMatch('my/folder - copy (1)', '*/*1'));
     });
 
-    it('should match dollary signs', () => {
+    it('should match dollar signs', () => {
       assert(!isMatch('$', '!($)'));
       assert(!isMatch('$', '!$'));
       assert(isMatch('$$', '!$'));

@@ -1,7 +1,4 @@
 console.log('# Load time');
-// console.time('micromatch');
-// exports.micro = require('micromatch');
-// console.timeEnd('micromatch');
 console.time('minimatch');
 exports.mini = require('minimatch');
 console.timeEnd('minimatch');

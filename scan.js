@@ -1,11 +1,11 @@
 'use strict';
 
 module.exports = (input, options = {}) => {
-  let state = { isGlob: false, input, path: '', glob: '' };
-  let pair = { '[': ']', '(': ')', '{': '}' };
+  let state = { isGlob: false, input, path: '', parts: [''], glob: '' };
   let string = input;
   let slash = false;
   let stash = [''];
+  let start = 0;
   let i = -1;
 
   let append = value => (stash[stash.length - 1] += value);
@@ -19,10 +19,12 @@ module.exports = (input, options = {}) => {
       state.glob = stash.pop() + '/' + state.glob;
     }
     state.path = stash.join('/');
+    state.parts = stash;
     i = string.length;
   };
 
   let closeIndex = (value, start) => {
+    let pair = { '[': ']', '(': ')', '{': '}' };
     let idx = string.indexOf(pair[value], start);
     if (idx > -1 && string[idx - 1] === '\\') {
       idx = closeIndex(value, idx + 1);
@@ -39,7 +41,7 @@ module.exports = (input, options = {}) => {
         append(value + next());
         break;
       case '/':
-        if (i === 0) slash = true;
+        if (i === start) slash = true;
         stash.push('');
         break;
       case '[':
@@ -53,9 +55,10 @@ module.exports = (input, options = {}) => {
         break;
       case '.':
         char = peek();
-        if (i === 0) {
+        if (i === start) {
           if (char === '/') {
             state.prefix = './';
+            start += 2;
             next();
             break;
           }
@@ -72,7 +75,8 @@ module.exports = (input, options = {}) => {
         terminate();
         break;
       case '!':
-        if (i === 0 && options.nonegate !== true) {
+        if (i === start && options.nonegate !== true) {
+          start++;
           state.negated = true;
           break;
         }
@@ -94,6 +98,7 @@ module.exports = (input, options = {}) => {
 
   if (!state.glob) state.path = stash.join('/');
   if (state.path === '' && slash === true) {
+    state.parts[state.parts.length - 1] += '/';
     state.path = '/';
   }
   return state;
