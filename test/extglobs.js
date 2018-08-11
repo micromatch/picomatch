@@ -4,6 +4,17 @@ const assert = require('assert');
 const { isMatch } = require('./support');
 const pm = require('..');
 
+const match = (list, pattern, options = {}) => {
+  let isMatch = pm.matcher(pattern, options);
+  let matches = new Set();
+  for (let ele of list) {
+    if (isMatch(ele)) {
+      matches.add(ele);
+    }
+  }
+  return [...matches];
+};
+
 /**
  * Most of these tests were converted directly from bash 4.3 and 4.4 unit tests.
  */
@@ -297,10 +308,6 @@ describe('extglobs', () => {
     assert(isMatch('az', 'a@(z)'));
   });
 
-  it('should support multiple @(...) extglobs in one expression', () => {
-    assert(isMatch('moo.cow', '@(*).@(*)'));
-  });
-
   it('should support qmark matching', () => {
     assert(isMatch('a', '?'));
     assert(!isMatch('aa', '?'));
@@ -341,24 +348,7 @@ describe('extglobs', () => {
     assert(isMatch('b.a', '@(b|a).@(a)'));
   });
 
-  it("stuff from korn's book", () => {
-    assert(!isMatch('para', 'para+([0-9])'));
-    assert(!isMatch('para381', 'para?([345]|99)1'));
-    assert(!isMatch('paragraph', 'para*([0-9])'));
-    assert(!isMatch('paragraph', 'para*([0-9])'));
-    assert(!isMatch('paramour', 'para@(chute|graph)'));
-    assert(isMatch('para', 'para*([0-9])'));
-    assert(isMatch('para.38', 'para!(*.[00-09])'));
-    assert(isMatch('para.graph', 'para!(*.[0-9])'));
-    assert(isMatch('para13829383746592', 'para*([0-9])'));
-    assert(isMatch('para39', 'para!(*.[0-9])'));
-    assert(isMatch('para987346523', 'para+([0-9])'));
-    assert(isMatch('para991', 'para?([345]|99)1'));
-    assert(isMatch('paragraph', 'para!(*.[0-9])'));
-    assert(isMatch('paragraph', 'para@(chute|graph)'));
-  });
-
-  it("tests derived from those in rosenblatt's korn shell book", () => {
+  it('should pass tests from rosenblatt\'s korn shell book', () => {
     assert(!isMatch('', '*(0|1|3|5|7|9)')); // only one that disagrees, since we don't match empty strings
     assert(isMatch('137577991', '*(0|1|3|5|7|9)'));
     assert(!isMatch('2468', '*(0|1|3|5|7|9)'));
@@ -381,6 +371,10 @@ describe('extglobs', () => {
   });
 
   it('tests derived from the pd-ksh test suite', () => {
+    assert(isMatch('abcx', '!([*)*'));
+    assert(isMatch('abcz', '!([*)*'));
+    assert(isMatch('bbc', '!([*)*'));
+
     assert(isMatch('abcx', '!([[*])*'));
     assert(isMatch('abcz', '!([[*])*'));
     assert(isMatch('bbc', '!([[*])*'));
@@ -389,28 +383,75 @@ describe('extglobs', () => {
     assert(isMatch('abcz', '+(a|b\\[)*'));
     assert(!isMatch('bbc', '+(a|b\\[)*'));
 
-    assert(isMatch('abd', 'a+(b|c)d'));
-    assert(isMatch('acd', 'a+(b|c)d'));
-
-    assert(isMatch('abd', 'a!(@(b|B))'));
-    assert(isMatch('acd', 'a!(@(b|B))'));
-    assert(isMatch('ac', 'a!(@(b|B))'));
-    assert(!isMatch('ab', 'a!(@(b|B))'));
-
-    assert(!isMatch('abd', 'a!(@(b|B))d'));
-    assert(isMatch('acd', 'a!(@(b|B))d'));
-
-    assert(isMatch('abd', 'a[b*(foo|bar)]d'));
-    assert(!isMatch('acd', 'a[b*(foo|bar)]d'));
+    assert(isMatch('abcx', '+(a|b[)*'));
+    assert(isMatch('abcz', '+(a|b[)*'));
+    assert(!isMatch('bbc', '+(a|b[)*'));
 
     assert(!isMatch('abcx', '[a*(]*z'));
     assert(isMatch('abcz', '[a*(]*z'));
     assert(!isMatch('bbc', '[a*(]*z'));
     assert(isMatch('aaz', '[a*(]*z'));
     assert(isMatch('aaaz', '[a*(]*z'));
+
+    assert(!isMatch('abcx', '[a*(]*)z'));
+    assert(!isMatch('abcz', '[a*(]*)z'));
+    assert(!isMatch('bbc', '[a*(]*)z'));
+
+    assert(!isMatch('abc', '+()c'));
+    assert(!isMatch('abc', '+()x'));
+    assert(isMatch('abc', '+(*)c'));
+    assert(!isMatch('abc', '+(*)x'));
+    assert(!isMatch('abc', 'no-file+(a|b)stuff'));
+    assert(!isMatch('abc', 'no-file+(a*(c)|b)stuff'));
+
+    assert(isMatch('abd', 'a+(b|c)d'));
+    assert(isMatch('acd', 'a+(b|c)d'));
+
+    assert(!isMatch('abc', 'a+(b|c)d'));
+
+    assert(isMatch('abd', 'a!(@(b|B))'));
+    assert(isMatch('acd', 'a!(@(b|B))'));
+    assert(isMatch('ac', 'a!(@(b|B))'));
+    assert(!isMatch('ab', 'a!(@(b|B))'));
+
+    assert(!isMatch('abc', 'a!(@(b|B))d'));
+    assert(!isMatch('abd', 'a!(@(b|B))d'));
+    assert(isMatch('acd', 'a!(@(b|B))d'));
+
+    assert(isMatch('abd', 'a[b*(foo|bar)]d'));
+    assert(!isMatch('abc', 'a[b*(foo|bar)]d'));
+    assert(!isMatch('acd', 'a[b*(foo|bar)]d'));
+  });
+
+  it('stuff from korn\'s book', () => {
+    assert(!isMatch('para', 'para+([0-9])'));
+    assert(!isMatch('para381', 'para?([345]|99)1'));
+    assert(!isMatch('paragraph', 'para*([0-9])'));
+    assert(!isMatch('paramour', 'para@(chute|graph)'));
+    assert(isMatch('para', 'para*([0-9])'));
+    assert(isMatch('para.38', 'para!(*.[0-9])'));
+    assert(isMatch('para.38', 'para!(*.[00-09])'));
+    assert(isMatch('para.graph', 'para!(*.[0-9])'));
+    assert(isMatch('para13829383746592', 'para*([0-9])'));
+    assert(isMatch('para39', 'para!(*.[0-9])'));
+    assert(isMatch('para987346523', 'para+([0-9])'));
+    assert(isMatch('para991', 'para?([345]|99)1'));
+    assert(isMatch('paragraph', 'para!(*.[0-9])'));
+    assert(isMatch('paragraph', 'para@(chute|graph)'));
   });
 
   it('simple kleene star tests', () => {
+    assert(!isMatch('foo', '*(a|b[)'));
+    assert(!isMatch('(', '*(a|b[)'));
+    assert(!isMatch(')', '*(a|b[)'));
+    assert(!isMatch('|', '*(a|b[)'));
+    assert(isMatch('a', '*(a|b)'));
+    assert(isMatch('b', '*(a|b)'));
+    assert(isMatch('b[', '*(a|b\\[)'));
+    assert(isMatch('ab[', '+(a|b\\[)'));
+    assert(!isMatch('ab[cde', '+(a|b\\[)'));
+    assert(isMatch('ab[cde', '+(a|b\\[)*'));
+
     assert(isMatch('foo', '*(a|b|f)*'));
     assert(isMatch('foo', '*(a|b|o)*'));
     assert(isMatch('foo', '*(a|b|f|o)'));
@@ -421,6 +462,7 @@ describe('extglobs', () => {
   });
 
   it('should support multiple extglobs:', () => {
+    assert(isMatch('moo.cow', '@(*).@(*)'));
     assert(isMatch('a.a', '*.@(a|b|@(ab|a*@(b))*@(c)d)'));
     assert(isMatch('a.b', '*.@(a|b|@(ab|a*@(b))*@(c)d)'));
     assert(!isMatch('a.c', '*.@(a|b|@(ab|a*@(b))*@(c)d)'));
@@ -574,23 +616,23 @@ describe('extglobs', () => {
 
   // these are not extglobs, and do not need to pass, but they are included
   // to test integration with other features
-  it('should match common regex patterns', () => {
+  it('should support regex characters', () => {
     let fixtures = ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'abq', 'axy zc', 'axy', 'axy.zc', 'axyzc'];
 
-    assert.deepEqual(pm.match(['a\\b', 'a/b', 'ab'], 'a/b'), ['a/b']);
-    assert.deepEqual(pm.match(fixtures, 'ab?bc'), ['abbbc']);
-    assert.deepEqual(pm.match(fixtures, 'ab*c'), ['abbbbc', 'abbbc', 'abbc', 'abc']);
-    assert.deepEqual(pm.match(fixtures, 'a+(b)bc'), ['abbbbc', 'abbbc', 'abbc']);
-    assert.deepEqual(pm.match(fixtures, '^abc$'), []);
-    assert.deepEqual(pm.match(fixtures, 'a.c'), ['a.c']);
-    assert.deepEqual(pm.match(fixtures, 'a.*c'), ['a.c', 'a.xy.zc', 'a.zc']);
-    assert.deepEqual(pm.match(fixtures, 'a*c'), ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axy zc', 'axy.zc', 'axyzc']);
-    assert.deepEqual(pm.match(fixtures, 'a[\\w]+c'), ['a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axyzc'], 'Should match word characters');
-    assert.deepEqual(pm.match(fixtures, 'a[\\W]+c'), ['a c', 'a.c'], 'Should match non-word characters');
-    assert.deepEqual(pm.match(fixtures, 'a[\\d]+c'), ['a123c', 'a1c'], 'Should match numbers');
-    assert.deepEqual(pm.match(['foo@#$%123ASD #$$%^&', 'foo!@#$asdfl;', '123'], '[\\d]+'), ['123']);
-    assert.deepEqual(pm.match(['a123c', 'abbbc'], 'a[\\D]+c'), ['abbbc'], 'Should match non-numbers');
-    assert.deepEqual(pm.match(['foo', ' foo '], '(f|o)+\\b'), ['foo'], 'Should match word boundaries');
+    assert.deepEqual(match(['a\\b', 'a/b', 'ab'], 'a/b'), ['a/b']);
+    assert.deepEqual(match(fixtures, 'ab?bc'), ['abbbc']);
+    assert.deepEqual(match(fixtures, 'ab*c'), ['abbbbc', 'abbbc', 'abbc', 'abc']);
+    assert.deepEqual(match(fixtures, 'a+(b)bc'), ['abbbbc', 'abbbc', 'abbc']);
+    assert.deepEqual(match(fixtures, '^abc$'), []);
+    assert.deepEqual(match(fixtures, 'a.c'), ['a.c']);
+    assert.deepEqual(match(fixtures, 'a.*c'), ['a.c', 'a.xy.zc', 'a.zc']);
+    assert.deepEqual(match(fixtures, 'a*c'), ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axy zc', 'axy.zc', 'axyzc']);
+    assert.deepEqual(match(fixtures, 'a[\\w]+c'), ['a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axyzc'], 'Should match word characters');
+    assert.deepEqual(match(fixtures, 'a[\\W]+c'), ['a c', 'a.c'], 'Should match non-word characters');
+    assert.deepEqual(match(fixtures, 'a[\\d]+c'), ['a123c', 'a1c'], 'Should match numbers');
+    assert.deepEqual(match(['foo@#$%123ASD #$$%^&', 'foo!@#$asdfl;', '123'], '[\\d]+'), ['123']);
+    assert.deepEqual(match(['a123c', 'abbbc'], 'a[\\D]+c'), ['abbbc'], 'Should match non-numbers');
+    assert.deepEqual(match(['foo', ' foo '], '(f|o)+\\b'), ['foo'], 'Should match word boundaries');
   });
 });
 
@@ -1472,92 +1514,6 @@ describe('bash unit tests', () => {
     assert(isMatch('07', '+([0-7])'));
     assert(isMatch('0377', '+([0-7])'));
     assert(!isMatch('09', '+([0-7])'));
-  });
-
-  it("stuff from korn's book", () => {
-    assert(!isMatch('para', 'para+([0-9])'));
-    assert(!isMatch('para381', 'para?([345]|99)1'));
-    assert(!isMatch('paragraph', 'para*([0-9])'));
-    assert(!isMatch('paragraph', 'para*([0-9])'));
-    assert(!isMatch('paramour', 'para@(chute|graph)'));
-    assert(isMatch('para', 'para*([0-9])'));
-    assert(isMatch('para.38', 'para!(*.[0-9])'));
-    assert(isMatch('para.graph', 'para!(*.[0-9])'));
-    assert(isMatch('para13829383746592', 'para*([0-9])'));
-    assert(isMatch('para39', 'para!(*.[0-9])'));
-    assert(isMatch('para987346523', 'para+([0-9])'));
-    assert(isMatch('para991', 'para?([345]|99)1'));
-    assert(isMatch('paragraph', 'para!(*.[0-9])'));
-    assert(isMatch('paragraph', 'para@(chute|graph)'));
-  });
-
-  it("tests derived from those in rosenblatt's korn shell book", () => {
-    // assert(isMatch('', '*(0|1|3|5|7|9)'));
-    assert(isMatch('137577991', '*(0|1|3|5|7|9)'));
-    assert(!isMatch('2468', '*(0|1|3|5|7|9)'));
-
-    assert(!isMatch('file.C', '*.c?(c)'));
-    assert(!isMatch('file.ccc', '*.c?(c)'));
-    assert(isMatch('file.c', '*.c?(c)'));
-    assert(isMatch('file.cc', '*.c?(c)'));
-
-    assert(isMatch('parse.y', '!(*.c|*.h|Makefile.in|config*|README)'));
-    assert(isMatch('Makefile', '!(*.c|*.h|Makefile.in|config*|README)'));
-    assert(!isMatch('shell.c', '!(*.c|*.h|Makefile.in|config*|README)'));
-
-    assert(!isMatch('VMS.FILE;', '*\\;[1-9]*([0-9])'));
-    assert(!isMatch('VMS.FILE;0', '*\\;[1-9]*([0-9])'));
-    assert(!isMatch('VMS.FILE;1N', '*\\;[1-9]*([0-9])'));
-    assert(isMatch('VMS.FILE;1', '*\\;[1-9]*([0-9])'));
-    assert(isMatch('VMS.FILE;139', '*\\;[1-9]*([0-9])'));
-  });
-
-  it('tests derived from the pd-ksh test suite', () => {
-    assert(isMatch('abcx', '!([*)*'));
-    assert(isMatch('abcz', '!([*)*'));
-    assert(isMatch('bbc', '!([*)*'));
-
-    assert(isMatch('abcx', '+(a|b[)*'));
-    assert(isMatch('abcz', '+(a|b[)*'));
-    assert(!isMatch('bbc', '+(a|b[)*'));
-
-    assert(!isMatch('abcx', '[a*(]*)z'));
-    assert(!isMatch('abcz', '[a*(]*)z'));
-    assert(!isMatch('bbc', '[a*(]*)z'));
-
-    assert(!isMatch('abc', '+()c'));
-    assert(!isMatch('abc', '+()x'));
-    assert(isMatch('abc', '+(*)c'));
-    assert(!isMatch('abc', '+(*)x'));
-    assert(!isMatch('abc', 'no-file+(a|b)stuff'));
-    assert(!isMatch('abc', 'no-file+(a*(c)|b)stuff'));
-
-    assert(isMatch('abd', 'a+(b|c)d'));
-    assert(isMatch('acd', 'a+(b|c)d'));
-
-    assert(!isMatch('abc', 'a+(b|c)d'));
-
-    assert(isMatch('acd', 'a!(@(b|B))d'));
-
-    assert(!isMatch('abc', 'a!(@(b|B))d'));
-    assert(!isMatch('abd', 'a!(@(b|B))d'));
-
-    assert(isMatch('abd', 'a[b*(foo|bar)]d'));
-    assert(!isMatch('abc', 'a[b*(foo|bar)]d'));
-    assert(!isMatch('acd', 'a[b*(foo|bar)]d'));
-  });
-
-  it('simple kleene star tests', () => {
-    assert(!isMatch('foo', '*(a|b[)'));
-    assert(!isMatch('(', '*(a|b[)'));
-    assert(!isMatch(')', '*(a|b[)'));
-    assert(!isMatch('|', '*(a|b[)'));
-    assert(isMatch('a', '*(a|b)'));
-    assert(isMatch('b', '*(a|b)'));
-    assert(isMatch('b[', '*(a|b\\[)'));
-    assert(isMatch('ab[', '+(a|b\\[)'));
-    assert(!isMatch('ab[cde', '+(a|b\\[)'));
-    assert(isMatch('ab[cde', '+(a|b\\[)*'));
   });
 
   it('check extended globbing in pattern removal', () => {

@@ -6,7 +6,7 @@ const picomatch = require('..');
 const pm = require('./support');
 
 describe('qmarks and stars', () => {
-  beforeEach(() => picomatch.clearCache());
+  beforeEach(() => pm.clearCache());
 
   it('should support Kleene stars', () => {
     assert(pm.isMatch('ab', '{ab,c}*'));

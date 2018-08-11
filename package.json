@@ -50,8 +50,5 @@
     "lint": {
       "reflinks": true
     }
-  },
-  "dependencies": {
-    "is-glob": "^4.0.0"
   }
 }

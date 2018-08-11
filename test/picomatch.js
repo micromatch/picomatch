@@ -1796,7 +1796,7 @@ describe('picomatch', () => {
       assert(isMatch('z.js', '**/z*.js'));
       assert(isMatch('z.js', '**/*.js'));
       assert(isMatch('foo', '**/foo'));
-      assert(isMatch('z.js', '**/z*')); //<= differs from issue
+      assert(isMatch('z.js', '**/z*'));
 
       assert(isMatch('a/b-c/z.js', 'a/b-*/**/z.js'));
       assert(isMatch('a/b-c/d/e/z.js', 'a/b-*/**/z.js'));

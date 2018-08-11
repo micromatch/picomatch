@@ -1,18 +1,24 @@
 'use strict';
 
 // const fill = require('fill-range');
-// const mm = require('minimatch');
-// const bash = require('bash-match');
+const mm = require('minimatch');
+const bash = require('bash-match');
 const pm = require('./');
 
-console.log(pm.makeRe('*'))
-
+// console.log(pm.makeRe('*'))
+// console.log(bash.isMatch('foo/bar', '!(foo)'))
+// console.log(bash.isMatch('cc.d', '!(!(a|b)c.!(d|e))'))
+console.log(bash.isMatch('foo/bar/baz', '*'))
+// console.log(bash.isMatch('moo.cow', '!(*.*).!(*.*)'))
+// console.log(pm.isMatch('moo.cow', '!(*.*).!(*.*)'))
+// console.log(mm('moo.cow', '!(*.*).!(*.*)'))
+// console.log(pm.makeRe('[[:word:]]+', { posix: true }));
 // console.log(pm.scan('./!foo/bar/*.js'));
 // console.log(pm.scan('!./foo/bar/*.js'));
 // { isGlob: true, input: 'foo/bar/*.js', path: 'foo/bar', parts: [ 'foo', 'bar' ], glob: '*.js' }
 
 // console.log(pm.isMatch('.', ''))
-console.log(pm.makeRe('c*3.txt', { base: 'foo/bar/baz' }))
+// console.log(pm.makeRe('c*3.txt', { base: 'foo/bar/baz' }))
 // console.log(pm.makeRe('c*3.txt', { strictSlashes: true }))
 
 // console.log(mm.makeRe('!**/a.js'))

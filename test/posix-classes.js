@@ -5,15 +5,15 @@ const assert = require('assert');
 const pm = require('..');
 const opts = { strictSlashes: true, posix: true };
 const isMatch = (...args) => {
-  console.log(pm.makeRe(...args.slice(1), opts));
+  // console.log(pm.makeRe(...args.slice(1), opts));
   return pm.isMatch(...args, opts);
 };
 const convert = (...args) => {
-  let state = pm.parse(...args, opts);
+  let state = pm(...args, opts);
   return state.source;
 };
 
-describe('pm', () => {
+describe('posix classes', () => {
   beforeEach(() => pm.clearCache());
 
   describe('posix bracket type conversion', () => {
