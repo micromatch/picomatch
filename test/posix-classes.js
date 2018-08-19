@@ -9,7 +9,7 @@ const isMatch = (...args) => {
   return pm.isMatch(...args, opts);
 };
 const convert = (...args) => {
-  let state = pm(...args, opts);
+  let state = pm.parse(...args, opts);
   return state.source;
 };
 

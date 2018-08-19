@@ -6,7 +6,7 @@ const assert = require('assert');
 const pm = require('..');
 const { isMatch } = require('./support');
 
-describe('api', () => {
+describe('regex features', () => {
   beforeEach(() => pm.clearCache());
 
   describe('back-references', () => {
@@ -31,11 +31,48 @@ describe('api', () => {
     });
   });
 
+  describe('character classes', () => {
+    it('should match regex character classes', () => {
+      assert(!isMatch('foo/bar', '**/[c-k]*'));
+      assert(isMatch('foo/jar', '**/[c-k]*'));
+
+      assert(isMatch('foo/bar', '**/[^c-k]*'));
+      assert(!isMatch('foo/jar', '**/[^c-k]*'));
+
+      assert(isMatch('foo/bar', '**/[a-i]*'));
+      assert(!isMatch('foo/jar', '**/[a-i]*'));
+
+      assert(!isMatch('foo/bar', '**/[^a-i]*'));
+      assert(isMatch('foo/jar', '**/[^a-i]*'));
+
+      assert(isMatch('foo/bar', '**/[a-i]ar'));
+      assert(!isMatch('foo/jar', '**/[a-i]ar'));
+
+      assert(!isMatch('a/a', 'a/[b-c]'));
+      assert(!isMatch('a/z', 'a/[b-c]'));
+      assert(isMatch('a/b', 'a/[b-c]'));
+      assert(isMatch('a/c', 'a/[b-c]'));
+      assert(isMatch('a/b', '[a-z]/[a-z]'));
+      assert(isMatch('a/z', '[a-z]/[a-z]'));
+      assert(isMatch('z/z', '[a-z]/[a-z]'));
+      assert(!isMatch('a/x/y', 'a/[a-z]'));
+    });
+  });
+
   describe('capture groups', () => {
     it('should support regex capture groups', () => {
       assert(isMatch('a/bb/c/dd/e.md', 'a/??/?/(dd)/e.md'));
       assert(isMatch('a/b/c/d/e.md', 'a/?/c/?/(e|f).md'));
       assert(isMatch('a/b/c/d/f.md', 'a/?/c/?/(e|f).md'));
+    });
+
+    it('should support regex capture groups with slashes', () => {
+      assert(!isMatch('a/a', '(a/b)'));
+      assert(isMatch('a/b', '(a/b)'));
+      assert(!isMatch('a/c', '(a/b)'));
+      assert(!isMatch('b/a', '(a/b)'));
+      assert(!isMatch('b/b', '(a/b)'));
+      assert(!isMatch('b/c', '(a/b)'));
     });
 
     it('should support regex non-capture groups', () => {

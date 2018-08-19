@@ -11,7 +11,7 @@ const equal = (actual, expected, msg) => {
 };
 
 const match = (list, pattern, options = {}) => {
-  let isMatch = pm.matcher(pattern, options);
+  let isMatch = pm(pattern, options);
   let matches = new Set();
   for (let ele of list) {
     if (isMatch(ele)) {

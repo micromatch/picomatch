@@ -1,8 +1,8 @@
 console.log('# Load time');
 console.time('minimatch');
-exports.mini = require('minimatch');
+exports.mm = require('minimatch');
 console.timeEnd('minimatch');
 console.time('picomatch');
-exports.pico = require('..');
+exports.pm = require('..');
 console.timeEnd('picomatch');
 console.log();

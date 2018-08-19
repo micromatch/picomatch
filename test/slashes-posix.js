@@ -5,8 +5,362 @@ const assert = require('assert');
 const picomatch = require('..');
 const { isMatch } = require('./support');
 
-describe('filepaths', () => {
+describe('slash handling - posix', () => {
   beforeEach(() => picomatch.clearCache());
+
+  it('should match a literal string', () => {
+    assert(!isMatch('a/a', '(a/b)'));
+    assert(isMatch('a/b', '(a/b)'));
+    assert(!isMatch('a/c', '(a/b)'));
+    assert(!isMatch('b/a', '(a/b)'));
+    assert(!isMatch('b/b', '(a/b)'));
+    assert(!isMatch('b/c', '(a/b)'));
+
+    assert(!isMatch('a/a', 'a/b'));
+    assert(isMatch('a/b', 'a/b'));
+    assert(!isMatch('a/c', 'a/b'));
+    assert(!isMatch('b/a', 'a/b'));
+    assert(!isMatch('b/b', 'a/b'));
+    assert(!isMatch('b/c', 'a/b'));
+  });
+
+  it('should match an array of literal strings', () => {
+    assert(!isMatch('a/a', 'a/b'));
+    assert(isMatch('a/b', 'a/b'));
+    assert(!isMatch('a/c', 'a/b'));
+    assert(!isMatch('b/a', 'a/b'));
+    assert(!isMatch('b/b', 'a/b'));
+    assert(isMatch('b/b', 'b/b'));
+    assert(!isMatch('b/c', 'a/b'));
+  });
+
+  it('should support regex logical or', () => {
+    assert(isMatch('a/a', ['a/(a|c)']));
+    assert(!isMatch('a/b', ['a/(a|c)']));
+    assert(isMatch('a/c', ['a/(a|c)']));
+
+    assert(isMatch('a/a', ['a/(a|b|c)', 'a/b']));
+    assert(isMatch('a/b', ['a/(a|b|c)', 'a/b']));
+    assert(isMatch('a/c', ['a/(a|b|c)', 'a/b']));
+  });
+
+  it('should support regex ranges', () => {
+    assert(!isMatch('a/a', 'a/[b-c]'));
+    assert(isMatch('a/b', 'a/[b-c]'));
+    assert(isMatch('a/c', 'a/[b-c]'));
+
+    assert(isMatch('a/a', 'a/[a-z]'));
+    assert(isMatch('a/b', 'a/[a-z]'));
+    assert(isMatch('a/c', 'a/[a-z]'));
+    assert(!isMatch('a/x/y', 'a/[a-z]'));
+    assert(isMatch('a/x', 'a/[a-z]'));
+  });
+
+  it('should support single globs (*)', () => {
+    assert(isMatch('a', ['*']));
+    assert(isMatch('b', ['*']));
+    assert(!isMatch('a/a', ['*']));
+    assert(!isMatch('a/b', ['*']));
+    assert(!isMatch('a/c', ['*']));
+    assert(!isMatch('a/x', ['*']));
+    assert(!isMatch('a/a/a', ['*']));
+    assert(!isMatch('a/a/b', ['*']));
+    assert(!isMatch('a/a/a/a', ['*']));
+    assert(!isMatch('a/a/a/a/a', ['*']));
+    assert(!isMatch('x/y', ['*']));
+    assert(!isMatch('z/z', ['*']));
+
+    assert(!isMatch('a', ['*/*']));
+    assert(!isMatch('b', ['*/*']));
+    assert(isMatch('a/a', ['*/*']));
+    assert(isMatch('a/b', ['*/*']));
+    assert(isMatch('a/c', ['*/*']));
+    assert(isMatch('a/x', ['*/*']));
+    assert(!isMatch('a/a/a', ['*/*']));
+    assert(!isMatch('a/a/b', ['*/*']));
+    assert(!isMatch('a/a/a/a', ['*/*']));
+    assert(!isMatch('a/a/a/a/a', ['*/*']));
+    assert(isMatch('x/y', ['*/*']));
+    assert(isMatch('z/z', ['*/*']));
+
+    assert(!isMatch('a', ['*/*/*']));
+    assert(!isMatch('b', ['*/*/*']));
+    assert(!isMatch('a/a', ['*/*/*']));
+    assert(!isMatch('a/b', ['*/*/*']));
+    assert(!isMatch('a/c', ['*/*/*']));
+    assert(!isMatch('a/x', ['*/*/*']));
+    assert(isMatch('a/a/a', ['*/*/*']));
+    assert(isMatch('a/a/b', ['*/*/*']));
+    assert(!isMatch('a/a/a/a', ['*/*/*']));
+    assert(!isMatch('a/a/a/a/a', ['*/*/*']));
+    assert(!isMatch('x/y', ['*/*/*']));
+    assert(!isMatch('z/z', ['*/*/*']));
+
+    assert(!isMatch('a', ['*/*/*/*']));
+    assert(!isMatch('b', ['*/*/*/*']));
+    assert(!isMatch('a/a', ['*/*/*/*']));
+    assert(!isMatch('a/b', ['*/*/*/*']));
+    assert(!isMatch('a/c', ['*/*/*/*']));
+    assert(!isMatch('a/x', ['*/*/*/*']));
+    assert(!isMatch('a/a/a', ['*/*/*/*']));
+    assert(!isMatch('a/a/b', ['*/*/*/*']));
+    assert(isMatch('a/a/a/a', ['*/*/*/*']));
+    assert(!isMatch('a/a/a/a/a', ['*/*/*/*']));
+    assert(!isMatch('x/y', ['*/*/*/*']));
+    assert(!isMatch('z/z', ['*/*/*/*']));
+
+    assert(!isMatch('a', ['*/*/*/*/*']));
+    assert(!isMatch('b', ['*/*/*/*/*']));
+    assert(!isMatch('a/a', ['*/*/*/*/*']));
+    assert(!isMatch('a/b', ['*/*/*/*/*']));
+    assert(!isMatch('a/c', ['*/*/*/*/*']));
+    assert(!isMatch('a/x', ['*/*/*/*/*']));
+    assert(!isMatch('a/a/a', ['*/*/*/*/*']));
+    assert(!isMatch('a/a/b', ['*/*/*/*/*']));
+    assert(!isMatch('a/a/a/a', ['*/*/*/*/*']));
+    assert(isMatch('a/a/a/a/a', ['*/*/*/*/*']));
+    assert(!isMatch('x/y', ['*/*/*/*/*']));
+    assert(!isMatch('z/z', ['*/*/*/*/*']));
+
+    assert(!isMatch('a', ['a/*']));
+    assert(!isMatch('b', ['a/*']));
+    assert(isMatch('a/a', ['a/*']));
+    assert(isMatch('a/b', ['a/*']));
+    assert(isMatch('a/c', ['a/*']));
+    assert(isMatch('a/x', ['a/*']));
+    assert(!isMatch('a/a/a', ['a/*']));
+    assert(!isMatch('a/a/b', ['a/*']));
+    assert(!isMatch('a/a/a/a', ['a/*']));
+    assert(!isMatch('a/a/a/a/a', ['a/*']));
+    assert(!isMatch('x/y', ['a/*']));
+    assert(!isMatch('z/z', ['a/*']));
+
+    assert(!isMatch('a', ['a/*/*']));
+    assert(!isMatch('b', ['a/*/*']));
+    assert(!isMatch('a/a', ['a/*/*']));
+    assert(!isMatch('a/b', ['a/*/*']));
+    assert(!isMatch('a/c', ['a/*/*']));
+    assert(!isMatch('a/x', ['a/*/*']));
+    assert(isMatch('a/a/a', ['a/*/*']));
+    assert(isMatch('a/a/b', ['a/*/*']));
+    assert(!isMatch('a/a/a/a', ['a/*/*']));
+    assert(!isMatch('a/a/a/a/a', ['a/*/*']));
+    assert(!isMatch('x/y', ['a/*/*']));
+    assert(!isMatch('z/z', ['a/*/*']));
+
+    assert(!isMatch('a', ['a/*/*/*']));
+    assert(!isMatch('b', ['a/*/*/*']));
+    assert(!isMatch('a/a', ['a/*/*/*']));
+    assert(!isMatch('a/b', ['a/*/*/*']));
+    assert(!isMatch('a/c', ['a/*/*/*']));
+    assert(!isMatch('a/x', ['a/*/*/*']));
+    assert(!isMatch('a/a/a', ['a/*/*/*']));
+    assert(!isMatch('a/a/b', ['a/*/*/*']));
+    assert(isMatch('a/a/a/a', ['a/*/*/*']));
+    assert(!isMatch('a/a/a/a/a', ['a/*/*/*']));
+    assert(!isMatch('x/y', ['a/*/*/*']));
+    assert(!isMatch('z/z', ['a/*/*/*']));
+
+    assert(!isMatch('a', ['a/*/*/*/*']));
+    assert(!isMatch('b', ['a/*/*/*/*']));
+    assert(!isMatch('a/a', ['a/*/*/*/*']));
+    assert(!isMatch('a/b', ['a/*/*/*/*']));
+    assert(!isMatch('a/c', ['a/*/*/*/*']));
+    assert(!isMatch('a/x', ['a/*/*/*/*']));
+    assert(!isMatch('a/a/a', ['a/*/*/*/*']));
+    assert(!isMatch('a/a/b', ['a/*/*/*/*']));
+    assert(!isMatch('a/a/a/a', ['a/*/*/*/*']));
+    assert(isMatch('a/a/a/a/a', ['a/*/*/*/*']));
+    assert(!isMatch('x/y', ['a/*/*/*/*']));
+    assert(!isMatch('z/z', ['a/*/*/*/*']));
+
+    assert(!isMatch('a', ['a/*/a']));
+    assert(!isMatch('b', ['a/*/a']));
+    assert(!isMatch('a/a', ['a/*/a']));
+    assert(!isMatch('a/b', ['a/*/a']));
+    assert(!isMatch('a/c', ['a/*/a']));
+    assert(!isMatch('a/x', ['a/*/a']));
+    assert(isMatch('a/a/a', ['a/*/a']));
+    assert(!isMatch('a/a/b', ['a/*/a']));
+    assert(!isMatch('a/a/a/a', ['a/*/a']));
+    assert(!isMatch('a/a/a/a/a', ['a/*/a']));
+    assert(!isMatch('x/y', ['a/*/a']));
+    assert(!isMatch('z/z', ['a/*/a']));
+
+    assert(!isMatch('a', ['a/*/b']));
+    assert(!isMatch('b', ['a/*/b']));
+    assert(!isMatch('a/a', ['a/*/b']));
+    assert(!isMatch('a/b', ['a/*/b']));
+    assert(!isMatch('a/c', ['a/*/b']));
+    assert(!isMatch('a/x', ['a/*/b']));
+    assert(!isMatch('a/a/a', ['a/*/b']));
+    assert(isMatch('a/a/b', ['a/*/b']));
+    assert(!isMatch('a/a/a/a', ['a/*/b']));
+    assert(!isMatch('a/a/a/a/a', ['a/*/b']));
+    assert(!isMatch('x/y', ['a/*/b']));
+    assert(!isMatch('z/z', ['a/*/b']));
+  });
+
+  it('should support globstars (**)', () => {
+    assert(isMatch('a', ['a']));
+    assert(isMatch('a/', ['a']));
+    assert(!isMatch('a/a', ['a']));
+    assert(!isMatch('a/b', ['a']));
+    assert(!isMatch('a/c', ['a']));
+    assert(!isMatch('a/x', ['a']));
+    assert(!isMatch('a/x/y', ['a']));
+    assert(!isMatch('a/x/y/z', ['a']));
+
+    assert(isMatch('a', ['*']));
+    assert(isMatch('a/', ['*']));
+    assert(!isMatch('a/a', ['*']));
+    assert(!isMatch('a/b', ['*']));
+    assert(!isMatch('a/c', ['*']));
+    assert(!isMatch('a/x', ['*']));
+    assert(!isMatch('a/x/y', ['*']));
+    assert(!isMatch('a/x/y/z', ['*']));
+
+    assert(!isMatch('a', ['*/']));
+    assert(isMatch('a/', ['*/']));
+    assert(!isMatch('a/a', ['*/']));
+    assert(!isMatch('a/b', ['*/']));
+    assert(!isMatch('a/c', ['*/']));
+    assert(!isMatch('a/x', ['*/']));
+    assert(!isMatch('a/x/y', ['*/']));
+    assert(!isMatch('a/x/y/z', ['*/']));
+
+    assert(!isMatch('a', ['*/*']));
+    assert(!isMatch('a/', ['*/*']));
+    assert(isMatch('a/a', ['*/*']));
+    assert(isMatch('a/b', ['*/*']));
+    assert(isMatch('a/c', ['*/*']));
+    assert(isMatch('a/x', ['*/*']));
+    assert(!isMatch('a/x/y', ['*/*']));
+    assert(!isMatch('a/x/y/z', ['*/*']));
+
+    assert(isMatch('a', ['**']));
+    assert(isMatch('a/', ['**']));
+    assert(isMatch('a/a', ['**']));
+    assert(isMatch('a/b', ['**']));
+    assert(isMatch('a/c', ['**']));
+    assert(isMatch('a/x', ['**']));
+    assert(isMatch('a/x/y', ['**']));
+    assert(isMatch('a/x/y/z', ['**']));
+
+    assert(isMatch('a', ['**/a']));
+    assert(isMatch('a/', ['**/a']));
+    assert(isMatch('a/a', ['**/a']));
+    assert(!isMatch('a/b', ['**/a']));
+    assert(!isMatch('a/c', ['**/a']));
+    assert(!isMatch('a/x', ['**/a']));
+    assert(!isMatch('a/x/y', ['**/a']));
+    assert(!isMatch('a/x/y/z', ['**/a']));
+
+    assert(!isMatch('a', ['a/*']));
+    assert(!isMatch('a/', ['a/*']));
+    assert(isMatch('a/a', ['a/*']));
+    assert(isMatch('a/b', ['a/*']));
+    assert(isMatch('a/c', ['a/*']));
+    assert(isMatch('a/x', ['a/*']));
+    assert(!isMatch('a/x/y', ['a/*']));
+    assert(!isMatch('a/x/y/z', ['a/*']));
+
+    assert(!isMatch('a', ['a/**']));
+    assert(isMatch('a/', ['a/**']));
+    assert(isMatch('a/a', ['a/**']));
+    assert(isMatch('a/b', ['a/**']));
+    assert(isMatch('a/c', ['a/**']));
+    assert(isMatch('a/x', ['a/**']));
+    assert(isMatch('a/x/y', ['a/**']));
+    assert(isMatch('a/x/y/z', ['a/**']));
+
+    assert(!isMatch('a', ['a/**/*']));
+    assert(!isMatch('a/', ['a/**/*']));
+    assert(isMatch('a/a', ['a/**/*']));
+    assert(isMatch('a/b', ['a/**/*']));
+    assert(isMatch('a/c', ['a/**/*']));
+    assert(isMatch('a/x', ['a/**/*']));
+    assert(isMatch('a/x/y', ['a/**/*']));
+    assert(isMatch('a/x/y/z', ['a/**/*']));
+
+    assert(!isMatch('a', ['a/**/**/*']));
+    assert(!isMatch('a/', ['a/**/**/*']));
+    assert(isMatch('a/a', ['a/**/**/*']));
+    assert(isMatch('a/b', ['a/**/**/*']));
+    assert(isMatch('a/c', ['a/**/**/*']));
+    assert(isMatch('a/x', ['a/**/**/*']));
+    assert(isMatch('a/x/y', ['a/**/**/*']));
+    assert(isMatch('a/x/y/z', ['a/**/**/*']));
+
+    assert(isMatch('a/b/foo/bar/baz.qux', 'a/b/**/bar/**/*.*'));
+    assert(isMatch('a/b/bar/baz.qux', 'a/b/**/bar/**/*.*'));
+  });
+
+  it('should support negation patterns', () => {
+    assert(isMatch('a/a', ['!a/b']));
+    assert(!isMatch('a/b', ['!a/b']));
+    assert(isMatch('a/c', ['!a/b']));
+    assert(isMatch('b/a', ['!a/b']));
+    assert(isMatch('b/b', ['!a/b']));
+    assert(isMatch('b/c', ['!a/b']));
+
+    assert(isMatch('a/a', ['*/*', '!a/b', '!*/c']));
+    assert(isMatch('a/b', ['*/*', '!a/b', '!*/c']));
+    assert(isMatch('a/c', ['*/*', '!a/b', '!*/c']));
+    assert(isMatch('b/a', ['*/*', '!a/b', '!*/c']));
+    assert(isMatch('b/b', ['*/*', '!a/b', '!*/c']));
+    assert(isMatch('b/c', ['*/*', '!a/b', '!*/c']));
+
+    assert(isMatch('a/a', ['!a/b', '!*/c']));
+    assert(isMatch('a/b', ['!a/b', '!*/c']));
+    assert(isMatch('a/c', ['!a/b', '!*/c']));
+    assert(isMatch('b/a', ['!a/b', '!*/c']));
+    assert(isMatch('b/b', ['!a/b', '!*/c']));
+    assert(isMatch('b/c', ['!a/b', '!*/c']));
+
+    assert(isMatch('a/a', ['!a/b', '!a/c']));
+    assert(isMatch('a/b', ['!a/b', '!a/c']));
+    assert(isMatch('a/c', ['!a/b', '!a/c']));
+    assert(isMatch('b/a', ['!a/b', '!a/c']));
+    assert(isMatch('b/b', ['!a/b', '!a/c']));
+    assert(isMatch('b/c', ['!a/b', '!a/c']));
+
+    assert(isMatch('a/a', ['!a/(b)']));
+    assert(!isMatch('a/b', ['!a/(b)']));
+    assert(isMatch('a/c', ['!a/(b)']));
+    assert(isMatch('b/a', ['!a/(b)']));
+    assert(isMatch('b/b', ['!a/(b)']));
+    assert(isMatch('b/c', ['!a/(b)']));
+
+    assert(isMatch('a/a', ['!(a/b)']));
+    assert(!isMatch('a/b', ['!(a/b)']));
+    assert(isMatch('a/c', ['!(a/b)']));
+    assert(isMatch('b/a', ['!(a/b)']));
+    assert(isMatch('b/b', ['!(a/b)']));
+    assert(isMatch('b/c', ['!(a/b)']));
+  });
+
+  it('should work with file extensions', () => {
+    assert(!isMatch('a.txt', ['a/**/*.txt']));
+    assert(isMatch('a/b.txt', ['a/**/*.txt']));
+    assert(isMatch('a/x/y.txt', ['a/**/*.txt']));
+    assert(!isMatch('a/x/y/z', ['a/**/*.txt']));
+
+    assert(!isMatch('a.txt', ['a/*.txt']));
+    assert(isMatch('a/b.txt', ['a/*.txt']));
+    assert(!isMatch('a/x/y.txt', ['a/*.txt']));
+    assert(!isMatch('a/x/y/z', ['a/*.txt']));
+
+    assert(isMatch('a.txt', ['a*.txt']));
+    assert(!isMatch('a/b.txt', ['a*.txt']));
+    assert(!isMatch('a/x/y.txt', ['a*.txt']));
+    assert(!isMatch('a/x/y/z', ['a*.txt']));
+
+    assert(isMatch('a.txt', ['*.txt']));
+    assert(!isMatch('a/b.txt', ['*.txt']));
+    assert(!isMatch('a/x/y.txt', ['*.txt']));
+    assert(!isMatch('a/x/y/z', ['*.txt']));
+  });
 
   it('should match one directory level with a single star (*)', () => {
     assert(!isMatch('/a', '*'));

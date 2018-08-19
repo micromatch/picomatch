@@ -30,6 +30,103 @@ const POSIX = {
 };
 
 /**
+ * Returns a matcher function from the given glob `pattern` and `options`.
+ * The returned function takes a string to match as its only argument and returns
+ * true if the string is a match.
+ *
+ * ```js
+ * const pm = require('picomatch');
+ * pm.matcher(pattern[, options]);
+ *
+ * const isMatch = pm.matcher('*.!(*a)');
+ * console.log(isMatch('a.a')); //=> false
+ * console.log(isMatch('a.b')); //=> true
+ * ```
+ * @param {String} `pattern` Glob pattern
+ * @param {Object} `options`
+ * @return {Function} Returns a matcher function.
+ * @api public
+ */
+
+const picomatch = (input, options) => {
+  if (Array.isArray(input)) {
+    let fns = input.map(pattern => picomatch(pattern, options));
+    return (...args) => fns.some(fn => fn(...args));
+  }
+
+  let matcher = (glob, options = {}) => {
+    if (typeof glob !== 'string') {
+      throw new TypeError('expected input to be a string');
+    }
+
+    if (glob === '') {
+      return str => options.bash ? str === glob : false;
+    }
+
+    let regex = picomatch.makeRe(glob, options);
+    let isWin = isWindows(options);
+    let ignore;
+
+    if (options.ignore) {
+      ignore = picomatch(options.ignore, { ...options, ignore: null });
+    }
+
+    return (str, unixified) => {
+      let val = (unixified !== true && isWin) ? unixify(str) : str;
+      return (!ignore || ignore(val, true) === false) && regex.test(val);
+    };
+  };
+
+  return memoize('matcher', input, options, matcher);
+};
+
+/**
+ * Returns true if **any** of the given glob `patterns` match the specified `string`.
+ *
+ * ```js
+ * const pm = require('picomatch');
+ * pm.isMatch(string, patterns[, options]);
+ *
+ * console.log(pm.isMatch('a.a', ['b.*', '*.a'])); //=> true
+ * console.log(pm.isMatch('a.a', 'b.*')); //=> false
+ * ```
+ * @param  {String|Array} str The string to test.
+ * @param {String|Array} patterns One or more glob patterns to use for matching.
+ * @param {Object} [options] See available [options](#options).
+ * @return {Boolean} Returns true if any patterns match `str`
+ * @api public
+ */
+
+picomatch.isMatch = (str, pattern, options, unixified) => {
+  return memoize('isMatch', pattern, options, picomatch)(str, unixified);
+};
+
+/**
+ * Create a regular expression from the given glob `pattern`.
+ *
+ * ```js
+ * const pm = require('picomatch');
+ * pm.makeRe(pattern[, options]);
+ *
+ * console.log(pm.makeRe('*.js'));
+ * //=> /^(?:(\.[\\\/])?(?!\.)(?=.)[^\/]*?\.js)$/
+ * ```
+ * @param {String} `pattern` A glob pattern to convert to regex.
+ * @param {Object} `options`
+ * @return {RegExp} Returns a regex created from the given pattern.
+ * @api public
+ */
+
+picomatch.makeRe = (pattern, options) => {
+  let makeRe = (input, opts = {}) => {
+    let flags = opts.flags || (opts.nocase ? 'i' : '');
+    let state = picomatch.parse(input, options);
+    return new RegExp(state.output, flags);
+  };
+  return memoize('makeRe', pattern, options, makeRe);
+};
+
+/**
  * Parse a glob pattern to create the source string for a regular
  * expression.
  *
@@ -43,7 +140,7 @@ const POSIX = {
  * @api public
  */
 
-const picomatch = (input, options = {}) => {
+picomatch.parse = (input, options = {}) => {
   let max = (options.maxLength) || MAX_LENGTH;
 
   if (typeof input !== 'string') {
@@ -59,7 +156,7 @@ const picomatch = (input, options = {}) => {
   let negate = str => `^(?!^(?:${str})$).*$`;
   let orig = input;
   let prepend = options.prepend || '';
-  let after, args, block, boundary, brace, bracket, charClass, idx, inner, left, next, node, noglobstar, paren, posix, prev, qmark, quoted, relaxSlash, star, stars, stash, value;
+  let after, args, block, boundary, brace, bracket, charClass, idx, inner, left, next, node, noglobstar, paren, posix, prev, qmark, quoted, relaxSlash, slashes, star, stars, stash, value;
 
   let state = { ast, input, posix: options.posix === true, dot: options.dot === true, wrap };
   let stack = [ast];
@@ -113,25 +210,34 @@ const picomatch = (input, options = {}) => {
     let base = token.parts;
     let glob = token.glob;
 
-    if (!glob) {
-      state.output = state.negated ? negate(input) : wrap(input);
-      return state;
-    }
-
     state.scanned = token;
     state.isGlob = token.isGlob;
     state.negated = token.negated;
     state.prefix = token.prefix;
+    if (state.negated) state.wrap = negate;
+    let output = state.scanned.path;
 
-    let prefix = base.join('\\/');
-    if (prefix && glob) {
-      if (!prefix.endsWith('/')) prefix += '\\/';
-      ast.stash = [prefix];
+    if (state.prefix === './' && !options.prepend) {
+      ast.stash.push(DOT_SLASH);
+    }
+
+    let parent = base.join('\\/');
+    if (base[base.length - 1] === '') parent += '\\/';
+
+    if (parent && glob) {
+      if (!parent.endsWith('/')) parent += '\\/';
+      ast.stash.push(parent);
       input = glob;
 
       if (options.dot !== true && input[0] !== '.') {
         ast.stash.push(NO_DOT);
       }
+    }
+
+    if (!glob) {
+      // return early, and escape any imbalanced sets
+      state.output = state.wrap(output.replace(/[[\](){}]/g, '\\$&'));
+      return state;
     }
   }
 
@@ -141,10 +247,32 @@ const picomatch = (input, options = {}) => {
     block = lookbehind(1);
 
     if (value === '\\') {
+      if (options.preserveBackslashes) {
+        append(value);
+        continue;
+      }
+
+      slashes = value;
+      let len = 1;
+
       if (options.bash === true) {
-        append(!isSpecialChar(next) ? '\\\\' : '');
+        append((eos() || !isSpecialChar(next) && !/[bnvrts]/.test(next)) ? '\\\\' : '');
       } else {
-        append((options.unescape ? '' : '\\') + advance());
+        if (options.unixify !== false) {
+          while (peek() === '\\' && !isSpecialChar(peek(2))) {
+            slashes += advance();
+            len++;
+          }
+        }
+
+        if (len > 2) {
+          slashes = (len % 2 === 0 || eos()) ? '\\\\' : ('\\' + advance());
+          append(slashes);
+        } else if (len === 2) {
+          append(slashes);
+        } else {
+          append((options.unescape && len === 1 ? '' : slashes) + (eos() ? '\\' : advance()));
+        }
       }
       state.prev = value;
       continue;
@@ -617,112 +745,6 @@ const picomatch = (input, options = {}) => {
 };
 
 /**
- * Returns true if **any** of the given glob `patterns` match the specified `string`.
- *
- * ```js
- * const pm = require('picomatch');
- * pm.isMatch(string, patterns[, options]);
- *
- * console.log(pm.isMatch('a.a', ['b.*', '*.a'])); //=> true
- * console.log(pm.isMatch('a.a', 'b.*')); //=> false
- * ```
- * @param  {String|Array} str The string to test.
- * @param {String|Array} patterns One or more glob patterns to use for matching.
- * @param {Object} [options] See available [options](#options).
- * @return {Boolean} Returns true if any patterns match `str`
- * @api public
- */
-
-picomatch.isMatch = (str, pattern, options, unixified) => {
-  return memoize('isMatch', pattern, options, picomatch.matcher)(str, unixified);
-};
-
-/**
- * Returns a matcher function from the given glob `pattern` and `options`.
- * The returned function takes a string to match as its only argument and returns
- * true if the string is a match.
- *
- * ```js
- * const pm = require('picomatch');
- * pm.matcher(pattern[, options]);
- *
- * const isMatch = pm.matcher('*.!(*a)');
- * console.log(isMatch('a.a')); //=> false
- * console.log(isMatch('a.b')); //=> true
- * ```
- * @param {String} `pattern` Glob pattern
- * @param {Object} `options`
- * @return {Function} Returns a matcher function.
- * @api public
- */
-
-picomatch.matcher = (input, options) => {
-  if (Array.isArray(input)) {
-    if (input.length > 1) {
-      const fns = input.map(pat => picomatch.matcher(pat, options));
-      return (str, unixified) => fns.some(fn => fn(str, unixified));
-    }
-    input = input[0];
-  }
-
-  if (typeof input !== 'string') {
-    throw new TypeError('expected input to be a string');
-  }
-
-  let matcher = (glob, options = {}) => {
-    if (glob === '') {
-      return str => options.bash ? str === glob : false;
-    }
-
-    let regex = picomatch.makeRe(glob, options);
-    let isWin = isWindows(options);
-    let ignore;
-
-    if (options.ignore) {
-      ignore = picomatch.matcher(options.ignore, { ...options, ignore: null });
-    }
-
-    return (str, unixified) => {
-      let ele = (unixified !== true && isWin) ? unixify(str) : str;
-      return (!ignore || ignore(ele, true) === false) && regex.test(ele);
-    };
-  };
-
-  return memoize('matcher', input, options, matcher);
-};
-
-/**
- * Create a regular expression from the given glob `pattern`.
- *
- * ```js
- * const pm = require('picomatch');
- * pm.makeRe(pattern[, options]);
- *
- * console.log(pm.makeRe('*.js'));
- * //=> /^(?:(\.[\\\/])?(?!\.)(?=.)[^\/]*?\.js)$/
- * ```
- * @param {String} `pattern` A glob pattern to convert to regex.
- * @param {Object} `options`
- * @return {RegExp} Returns a regex created from the given pattern.
- * @api public
- */
-
-// const globrex = require('globrex');
-picomatch.makeRe = (pattern, options) => {
-  // const result = globrex(pattern, options);
-  // return result.regex;
-  return memoize('makeRe', pattern, options, (input, opts = {}) => {
-    let flags = opts.flags || (opts.nocase ? 'i' : '');
-    let state = picomatch(input, options);
-    let regex = new RegExp(state.output, flags);
-    if (state.prefix) {
-      Reflect.defineProperty(regex, 'prefix', { value: state.prefix });
-    }
-    return regex;
-  });
-};
-
-/**
  * Quickly scans a glob pattern and returns an object with a handful of
  * useful properties, like `isGlob`, `path` (the leading non-glob, if it exists),
  * `glob` (the actual pattern), and `negated` (true if the path starts with `!`).
@@ -785,7 +807,7 @@ picomatch.scan = (input, options = {}) => {
       case '[':
       case '{':
       case '(':
-        if (closeIndex(value, i) > -1) {
+        if (closeIndex(value, i + 1) > -1) {
           terminate();
           break;
         }
@@ -813,7 +835,7 @@ picomatch.scan = (input, options = {}) => {
         terminate();
         break;
       case '!':
-        if (i === start && options.nonegate !== true) {
+        if (i === start && options.nonegate !== true && peek() !== '(') {
           start++;
           state.negated = true;
           break;
@@ -857,11 +879,8 @@ picomatch.resolve = (...args) => {
 picomatch.clearCache = () => (picomatch.cache = {});
 
 function memoize(method, pattern, options, fn) {
-  if (options && options.nocache === true) {
-    return fn(pattern, options);
-  }
-
-  if (!picomatch.cache) picomatch.cache = {};
+  if (options && options.nocache === true) return fn(pattern, options);
+  if (!picomatch.cache) picomatch.clearCache();
   let key = createKey(method, pattern, options);
   let res = picomatch.cache[key];
   if (res === void 0) {
@@ -869,17 +888,6 @@ function memoize(method, pattern, options, fn) {
   }
   return res;
 }
-
-// function memoize(method, pattern, options, fn) {
-//   if (options && options.nocache === true) {
-//     picomatch.clearCache();
-//     return fn(pattern, options);
-//   }
-
-//   let key = createKey(method, pattern, options);
-//   if (!picomatch.cache) picomatch.cache = {};
-//   return picomatch.cache[key] || (picomatch.cache[key] = fn(pattern, options));
-// }
 
 function createKey(method, pattern, options) {
   let id = `method="${method}";pattern="${pattern}"`;

@@ -207,6 +207,24 @@ describe('special characters', () => {
       assert.throws(() => picomatch.makeRe('*)', opts), /Missing opening: "\("/);
       assert.throws(() => picomatch.makeRe('*(', opts), /Missing closing: "\)"/);
     });
+
+    it('should support regex logical "or"', () => {
+      assert(isMatch('a/a', ['a/(a|c)']));
+      assert(!isMatch('a/b', ['a/(a|c)']));
+      assert(isMatch('a/c', ['a/(a|c)']));
+
+      assert(isMatch('a/a', ['a/(a|b|c)', 'a/b']));
+      assert(isMatch('a/b', ['a/(a|b|c)', 'a/b']));
+      assert(isMatch('a/c', ['a/(a|b|c)', 'a/b']));
+    });
+
+    it('should support regex character classes inside extglobs', () => {
+      assert(isMatch('foo/bar', '**/!([a-k])*'));
+      assert(isMatch('foo/jar', '**/!([a-k])*'));
+
+      assert(isMatch('foo/bar', '**/!([a-i])*'));
+      assert(isMatch('foo/jar', '**/!([a-i])*'));
+    });
   });
 
   describe('path characters', () => {
@@ -288,7 +306,7 @@ describe('special characters', () => {
       assert(isMatch('foo/bar/baz', '*/*/*'));
     });
 
-    it('should match dashes surrounded by spasces', () => {
+    it('should match dashes surrounded by spaces', () => {
       assert(isMatch('my/folder - 1', '*/*'));
       assert(isMatch('my/folder - copy (1)', '*/*'));
       assert(isMatch('my/folder - copy [1]', '*/*'));
@@ -464,16 +482,7 @@ describe('special characters', () => {
       assert(!isMatch('my/folder - %1.00', '*/*\\**'));
     });
 
-    it('should match square brackets', () => {
-      assert(!isMatch('foo/bar - 1', '**/*\\[*\\]'));
-      assert(!isMatch('foo/bar - copy (1)', '**/*\\[*\\]'));
-      assert(!isMatch('foo/bar (1)', '**/*\\[*\\]'));
-      assert(!isMatch('foo/bar (4)', '**/*\\[*\\]'));
-      assert(!isMatch('foo/bar (7)', '**/*\\[*\\]'));
-      assert(!isMatch('foo/bar (42)', '**/*\\[*\\]'));
-      assert(isMatch('foo/bar - copy [1]', '**/*\\[*\\]'));
-      assert(isMatch('foo/bar - foo + bar - copy [1]', '**/*\\[*\\]'));
-
+    it('should support square brackets in globs', () => {
       assert(isMatch('foo/bar - 1', '**/*[1]'));
       assert(!isMatch('foo/bar - copy (1)', '**/*[1]'));
       assert(!isMatch('foo/bar (1)', '**/*[1]'));
@@ -482,6 +491,23 @@ describe('special characters', () => {
       assert(!isMatch('foo/bar (42)', '**/*[1]'));
       assert(isMatch('foo/bar - copy [1]', '**/*[1]'));
       assert(isMatch('foo/bar - foo + bar - copy [1]', '**/*[1]'));
+    });
+
+    it('should match literal brackets', () => {
+      assert(isMatch('a [b]', 'a \\[b\\]'));
+      assert(isMatch('a [b] c', 'a [b] c'));
+      assert(isMatch('a [b]', 'a \\[b\\]*'));
+      assert(isMatch('a [bc]', 'a \\[bc\\]*'));
+      assert(!isMatch('a [b]', 'a \\[b\\].*'));
+      assert(isMatch('a [b].js', 'a \\[b\\].*'));
+      assert(!isMatch('foo/bar - 1', '**/*\\[*\\]'));
+      assert(!isMatch('foo/bar - copy (1)', '**/*\\[*\\]'));
+      assert(!isMatch('foo/bar (1)', '**/*\\[*\\]'));
+      assert(!isMatch('foo/bar (4)', '**/*\\[*\\]'));
+      assert(!isMatch('foo/bar (7)', '**/*\\[*\\]'));
+      assert(!isMatch('foo/bar (42)', '**/*\\[*\\]'));
+      assert(isMatch('foo/bar - copy [1]', '**/*\\[*\\]'));
+      assert(isMatch('foo/bar - foo + bar - copy [1]', '**/*\\[*\\]'));
 
       assert(!isMatch('foo/bar - 1', '**/*\\[1\\]'));
       assert(!isMatch('foo/bar - copy (1)', '**/*\\[1\\]'));
@@ -500,6 +526,13 @@ describe('special characters', () => {
       assert(!isMatch('foo/bar (42)', '*/*\\[*\\]'));
       assert(isMatch('foo/bar - copy [1]', '*/*\\[*\\]'));
       assert(isMatch('foo/bar - foo + bar - copy [1]', '*/*\\[*\\]'));
+
+      assert(isMatch('a [b]', 'a \\[b\\]'));
+      assert(isMatch('a [b] c', 'a [b] c'));
+      assert(isMatch('a [b]', 'a \\[b\\]*'));
+      assert(isMatch('a [bc]', 'a \\[bc\\]*'));
+      assert(!isMatch('a [b]', 'a \\[b\\].*'));
+      assert(isMatch('a [b].js', 'a \\[b\\].*'));
     });
   });
 
@@ -518,25 +551,53 @@ describe('special characters', () => {
     });
   });
 
-  it('should match literal +', () => {
-    assert(isMatch('+', '*'));
-    assert(isMatch('/+', '/*'));
-    assert(isMatch('+/+', '*/*'));
-    assert(isMatch('+/+/', '*/*/'));
-    assert(isMatch('/+', '/+'));
-    assert(isMatch('/+', '/?'));
-    assert(isMatch('+/+', '?/?'));
-    assert(isMatch('+/+', '+/+'));
-    assert(isMatch('foo+/bar+', '*/*'));
+  describe('literal star - "*"', () => {
+    it('should match literal *', () => {
+      assert(isMatch('*', '*'));
+      assert(isMatch('*/*', '*/*'));
+      assert(isMatch('*/*', '?/?'));
+      assert(isMatch('*/*/', '*/*/'));
+      assert(isMatch('/*', '/*'));
+      assert(isMatch('/*', '/?'));
+      assert(isMatch('foo*/bar*', '*/*'));
+    });
   });
 
-  it('should match literal *', () => {
-    assert(isMatch('*', '*'));
-    assert(isMatch('*/*', '*/*'));
-    assert(isMatch('*/*', '?/?'));
-    assert(isMatch('*/*/', '*/*/'));
-    assert(isMatch('/*', '/*'));
-    assert(isMatch('/*', '/?'));
-    assert(isMatch('foo*/bar*', '*/*'));
+  describe('literal plus - "+"', () => {
+    it('should match literal +', () => {
+      assert(isMatch('+', '*'));
+      assert(isMatch('/+', '/*'));
+      assert(isMatch('+/+', '*/*'));
+      assert(isMatch('+/+/', '*/*/'));
+      assert(isMatch('/+', '/+'));
+      assert(isMatch('/+', '/?'));
+      assert(isMatch('+/+', '?/?'));
+      assert(isMatch('+/+', '+/+'));
+      assert(isMatch('foo+/bar+', '*/*'));
+    });
+
+    it('should escape plus signs to match string literals', () => {
+      assert(isMatch('a+b/src/glimini.js', 'a+b/src/*.js'));
+      assert(isMatch('+b/src/glimini.js', '+b/src/*.js'));
+      assert(isMatch('coffee+/src/glimini.js', 'coffee+/src/*.js'));
+      assert(isMatch('coffee+/src/glimini.js', 'coffee+/src/*.js'));
+      assert(isMatch('coffee+/src/glimini.js', 'coffee+/src/*'));
+    });
+
+    it('should not escape + following brackets', () => {
+      assert(isMatch('a', '[a]+'));
+      assert(isMatch('aa', '[a]+'));
+      assert(isMatch('aaa', '[a]+'));
+      assert(isMatch('az', '[a-z]+'));
+      assert(isMatch('zzz', '[a-z]+'));
+    });
+
+    it('should not escape + following parens', () => {
+      assert(isMatch('a', '(a)+'));
+      assert(isMatch('ab', '(a|b)+'));
+      assert(isMatch('aa', '(a)+'));
+      assert(isMatch('aaab', '(a|b)+'));
+      assert(isMatch('aaabbb', '(a|b)+'));
+    });
   });
 });

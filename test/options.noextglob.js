@@ -5,7 +5,7 @@ const assert = require('assert');
 const picomatch = require('..');
 const pm = require('./support');
 
-describe('options.prepend', () => {
+describe('options.noextglob', () => {
   beforeEach(() => picomatch.clearCache());
 
   it('should disable extglob support when options.noextglob is true', () => {

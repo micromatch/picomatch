@@ -5,7 +5,7 @@ const { isMatch } = require('./support');
 const pm = require('..');
 
 const match = (list, pattern, options = {}) => {
-  let isMatch = pm.matcher(pattern, options);
+  let isMatch = pm(pattern, options);
   let matches = new Set();
   for (let ele of list) {
     if (isMatch(ele)) {
@@ -21,11 +21,6 @@ const match = (list, pattern, options = {}) => {
 
 describe('extglobs', () => {
   beforeEach(() => pm.clearCache());
-
-  it.skip('failing unit tests from bash', () => {
-    assert(isMatch('moo.cow', '!(*.*).!(*.*)'));
-    assert(isMatch('foo.js.js', '*.!(js)*'));
-  });
 
   it('should throw on imbalanced sets when `options.strictErrors` is true', () => {
     assert.throws(() => pm.makeRe('a(b', { strictErrors: true }), /missing closing: "\)"/i);
