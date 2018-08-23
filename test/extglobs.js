@@ -578,9 +578,11 @@ describe('extglobs', () => {
   });
 
   it('should match escaped parens', () => {
+    if (process.platform !== 'win32') {
+      assert(isMatch('a\\(b', 'a\\\\\\(b'));
+    }
     assert(isMatch('a(b', 'a(b'));
     assert(isMatch('a(b', 'a\\(b'));
-    assert(isMatch('a\\(b', 'a\\\\\\(b'));
     assert(!isMatch('a((b', 'a(b'));
     assert(!isMatch('a((((b', 'a(b'));
     assert(!isMatch('ab', 'a(b'));
@@ -598,13 +600,16 @@ describe('extglobs', () => {
   });
 
   it('should match escaped backslashes', () => {
+    if (process.platform !== 'win32') {
+      assert(isMatch('a\\(b', 'a\\\\(b'));
+      assert(isMatch('a\\b', 'a\\\\b'));
+    }
+
     assert(!isMatch('a(b', 'a\\\\(b'));
-    assert(isMatch('a\\(b', 'a\\\\(b'));
     assert(!isMatch('a((b', 'a\\\\(b'));
     assert(!isMatch('a((((b', 'a\\\\(b'));
     assert(!isMatch('ab', 'a\\\\(b'));
 
-    assert(isMatch('a\\b', 'a\\\\b'));
     assert(!isMatch('a/b', 'a\\\\b'));
     assert(!isMatch('ab', 'a\\\\b'));
   });
@@ -614,7 +619,11 @@ describe('extglobs', () => {
   it('should support regex characters', () => {
     let fixtures = ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'abq', 'axy zc', 'axy', 'axy.zc', 'axyzc'];
 
-    assert.deepEqual(match(['a\\b', 'a/b', 'ab'], 'a/b'), ['a/b']);
+    if (process.platform !== 'win32') {
+      assert.deepEqual(match(['a\\b', 'a/b', 'ab'], 'a/b'), ['a/b']);
+    }
+
+    assert.deepEqual(match(['a/b', 'ab'], 'a/b'), ['a/b']);
     assert.deepEqual(match(fixtures, 'ab?bc'), ['abbbc']);
     assert.deepEqual(match(fixtures, 'ab*c'), ['abbbbc', 'abbbc', 'abbc', 'abc']);
     assert.deepEqual(match(fixtures, 'a+(b)bc'), ['abbbbc', 'abbbc', 'abbc']);

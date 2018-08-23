@@ -1,13 +1,14 @@
 'use strict';
 
 require('mocha');
+const path = require('path');
 const isWindows = process.platform === 'win32';
 const assert = require('assert');
 const { scan } = require('..');
-const base = (...args) => scan(...args).path;
+const base = (...args) => scan(...args).parent;
 const both = (...args) => {
-  let { path, glob } = scan(...args);
-  return [path, glob];
+  let { parent, glob } = scan(...args);
+  return [parent, glob];
 };
 
 /**
@@ -17,11 +18,11 @@ const both = (...args) => {
  * and both libraries use path.dirname. Picomatch does not.
  */
 
-describe('scan', () => {
+describe('picomatch.scan', () => {
   it('should get the "base" and "glob" from a pattern', () => {
     assert.deepEqual(both('foo/bar'), ['foo/bar', '']);
     assert.deepEqual(both('foo/@bar'), ['foo/@bar', '']);
-    assert.deepEqual(both('foo/@bar\\+'), ['foo/@bar\\+', '']);
+    assert.deepEqual(both('foo/@bar\\+'), ['foo/@bar+', '']);
     assert.deepEqual(both('foo/bar+'), ['foo', 'bar+']);
     assert.deepEqual(both('foo/bar*'), ['foo', 'bar*']);
   });
@@ -32,7 +33,7 @@ describe('scan', () => {
       input: './foo/bar/*.js',
       isGlob: true,
       parts: ['foo', 'bar'],
-      path: 'foo/bar',
+      parent: 'foo/bar',
       prefix: './'
     });
   });
@@ -44,7 +45,7 @@ describe('scan', () => {
       isGlob: true,
       negated: true,
       parts: ['foo', 'bar'],
-      path: 'foo/bar'
+      parent: 'foo/bar'
     });
   });
 
@@ -55,7 +56,7 @@ describe('scan', () => {
       isGlob: true,
       negated: true,
       parts: ['foo', 'bar'],
-      path: 'foo/bar',
+      parent: 'foo/bar',
       prefix: './'
     });
 
@@ -65,7 +66,7 @@ describe('scan', () => {
       isGlob: true,
       negated: true,
       parts: ['foo', 'bar'],
-      path: 'foo/bar',
+      parent: 'foo/bar',
       prefix: './'
     });
   });
@@ -96,6 +97,8 @@ describe('scan', () => {
     assert.equal(base('/(a|b)'), '/');
     assert.equal(base('./(a|b)'), '');
     assert.equal(base('a/(b c)'), 'a', 'parens must be escaped');
+    assert.equal(base('a/\\+\\(b c)/foo'), 'a/+(b c)/foo', 'parens must be escaped');
+    assert.equal(base('a/\\(b c)'), 'a/(b c)', 'parens must be escaped');
     assert.equal(base('a/(b c)/'), 'a', 'parens must be escaped');
     assert.equal(base('a/(b c)/d'), 'a', 'parens must be escaped');
     assert.equal(base('path/to/*.js'), 'path/to');
@@ -129,58 +132,59 @@ describe('scan', () => {
   });
 
   it('should respect escaped characters', () => {
-    assert.equal(base('path/\\*\\*/subdir/foo.*'), 'path/\\*\\*/subdir');
-    assert.equal(base('path/\\[\\*\\]/subdir/foo.*'), 'path/\\[\\*\\]/subdir');
+    assert.equal(base('path/\\*\\*/subdir/foo.*'), 'path/**/subdir');
+    assert.equal(base('path/\\[\\*\\]/subdir/foo.*'), 'path/[*]/subdir');
     assert.equal(base('path/\\*(a|b)'), 'path');
     assert.equal(base('path/\\*(a|b)/subdir/foo.*'), 'path');
-    assert.equal(base('path/\\*/(a|b)/subdir/foo.*'), 'path/\\*');
-    assert.equal(base('path/\\*\\(a\\|b\\)/subdir/foo.*'), 'path/\\*\\(a\\|b\\)/subdir');
-    assert.equal(base('path/\\[foo bar\\]/subdir/foo.*'), 'path/\\[foo bar\\]/subdir');
-    assert.equal(base('path/\\[bar]/'), 'path/\\[bar]/');
-    assert.equal(base('path/\\[bar]'), 'path/\\[bar]');
+    assert.equal(base('path/\\*/(a|b)/subdir/foo.*'), 'path/*');
+    assert.equal(base('path/\\*\\(a\\|b\\)/subdir/foo.*'), 'path/*(a|b)/subdir');
+    assert.equal(base('path/\\[foo bar\\]/subdir/foo.*'), 'path/[foo bar]/subdir');
+    assert.equal(base('path/\\[bar]/'), 'path/[bar]/');
+    assert.equal(base('path/\\[bar]'), 'path/[bar]');
     assert.equal(base('[bar]'), '');
     assert.equal(base('[bar]/'), '');
-    assert.equal(base('./\\[bar]'), '\\[bar]');
-    assert.equal(base('\\[bar]/'), '\\[bar]/');
-    assert.equal(base('[bar\\]/'), '[bar\\]/');
-    assert.equal(base('path/foo \\[bar]/'), 'path/foo \\[bar]/');
-    assert.equal(base('path/\\{foo,bar}/'), 'path/\\{foo,bar}/');
-    assert.equal(base('\\{foo,bar}/'), '\\{foo,bar}/');
-    assert.equal(base('\\{foo,bar\\}/'), '\\{foo,bar\\}/');
-    assert.equal(base('{foo,bar\\}/'), '{foo,bar\\}/');
+    assert.equal(base('./\\[bar]'), '[bar]');
+    assert.equal(base('\\[bar]/'), '[bar]/');
+    assert.equal(base('\\[bar\\]/'), '[bar]/');
+    assert.equal(base('[bar\\]/'), '[bar]/');
+    assert.equal(base('path/foo \\[bar]/'), 'path/foo [bar]/');
+    assert.equal(base('path/\\{foo,bar}/'), 'path/{foo,bar}/');
+    assert.equal(base('\\{foo,bar}/'), '{foo,bar}/');
+    assert.equal(base('\\{foo,bar\\}/'), '{foo,bar}/');
+    assert.equal(base('{foo,bar\\}/'), '{foo,bar}/');
 
     if (!isWindows) {
-      assert.equal(base('\\[bar]'), '\\[bar]');
-      assert.equal(base('[bar\\]'), '[bar\\]');
-      assert.equal(base('\\{foo,bar\\}'), '\\{foo,bar\\}');
-      assert.equal(base('{foo,bar\\}'), '{foo,bar\\}');
+      assert.equal(base('\\[bar]'), '[bar]');
+      assert.equal(base('[bar\\]'), '[bar]');
+      assert.equal(base('\\{foo,bar\\}'), '{foo,bar}');
+      assert.equal(base('{foo,bar\\}'), '{foo,bar}');
     }
   });
 
   it('should respect glob enclosures with embedded separators', () => {
     assert.equal(base('path/{,/,bar/baz,qux}/'), 'path');
-    assert.equal(base('path/\\{,/,bar/baz,qux}/'), 'path/\\{,/,bar/baz,qux}/');
-    assert.equal(base('path/\\{,/,bar/baz,qux\\}/'), 'path/\\{,/,bar/baz,qux\\}/');
+    assert.equal(base('path/\\{,/,bar/baz,qux}/'), 'path/{,/,bar/baz,qux}/');
+    assert.equal(base('path/\\{,/,bar/baz,qux\\}/'), 'path/{,/,bar/baz,qux}/');
     assert.equal(base('/{,/,bar/baz,qux}/'), '/');
-    assert.equal(base('/\\{,/,bar/baz,qux}/'), '/\\{,/,bar/baz,qux}/');
+    assert.equal(base('/\\{,/,bar/baz,qux}/'), '/{,/,bar/baz,qux}/');
     assert.equal(base('{,/,bar/baz,qux}'), '');
-    assert.equal(base('\\{,/,bar/baz,qux\\}'), '\\{,/,bar/baz,qux\\}');
-    assert.equal(base('\\{,/,bar/baz,qux}/'), '\\{,/,bar/baz,qux}/');
+    assert.equal(base('\\{,/,bar/baz,qux\\}'), '{,/,bar/baz,qux}');
+    assert.equal(base('\\{,/,bar/baz,qux}/'), '{,/,bar/baz,qux}/');
     assert.equal(base('path/foo[a\\\/]/'), 'path');
-    assert.equal(base('path/foo\\[a\\\/]/'), 'path/foo\\[a\\\/]/');
+    assert.equal(base('path/foo\\[a\\\/]/'), 'path/foo[a\/]/');
     assert.equal(base('foo[a\\\/]'), '');
-    assert.equal(base('foo\\[a\\\/]'), 'foo\\[a\\\/]');
+    assert.equal(base('foo\\[a\\\/]'), 'foo[a\/]');
     assert.equal(base('path/(foo/bar|baz)'), 'path');
     assert.equal(base('path/(foo/bar|baz)/'), 'path');
-    assert.equal(base('path/\\(foo/bar|baz)/'), 'path/\\(foo/bar|baz)/');
+    assert.equal(base('path/\\(foo/bar|baz)/'), 'path/(foo/bar|baz)/');
   });
 
-  it('should handle nested braces', () => {
-    assert.equal(base('path/{../,./,{bar,/baz\\},qux\\}/'), 'path/{../,./,{bar,/baz\\},qux\\}/');
+  it('should handle escaped nested braces', () => {
+    assert.equal(base('path/{../,./,{bar,/baz\\},qux\\}/'), 'path/{../,./,{bar,/baz},qux}/');
     assert.equal(base('path/{../,./,\\{bar,/baz},qux}/'), 'path');
-    assert.equal(base('path/\\{../,./,\\{bar,/baz\\},qux\\}/'), 'path/\\{../,./,\\{bar,/baz\\},qux\\}/');
-    assert.equal(base('{../,./,{bar,/baz\\},qux\\}/'), '{../,./,{bar,/baz\\},qux\\}/');
-    assert.equal(base('{../,./,{bar,/baz\\},qux\\}'), '{../,./,{bar,/baz\\},qux\\}');
+    assert.equal(base('path/\\{../,./,\\{bar,/baz\\},qux\\}/'), 'path/{../,./,{bar,/baz},qux}/');
+    assert.equal(base('{../,./,{bar,/baz\\},qux\\}/'), '{../,./,{bar,/baz},qux}/');
+    assert.equal(base('{../,./,{bar,/baz\\},qux\\}'), '{../,./,{bar,/baz},qux}');
     assert.equal(base('path/{,/,bar/{baz,qux\\}}/'), 'path');
     assert.equal(base('path/{,/,bar/{baz,qux}\\}/'), 'path');
     assert.equal(base('path/\\{../,./,{bar,/baz},qux}/'), 'path');
@@ -236,8 +240,15 @@ describe('glob2base test patterns', () => {
 });
 
 describe('technically invalid windows globs', () => {
-  it('should manage simple globs with backslash path separator', function() {
-    assert.equal(base('C:\\path\\*.js'), 'C:\\path\\*.js');
+  it('should support simple globs with backslash path separator', () => {
+    if (process.platform === 'win32') {
+      assert.equal(base('C:\\\\path\\\\*.js'), 'C:/path');
+      assert.equal(base('C:\\\\path\\*.js'), 'C:/path*.js');
+    } else {
+      assert.equal(base('C:\\path\\*.js'), 'C:path*.js');
+      assert.equal(base('C:\\\\path\\\\*.js'), '');
+      assert.equal(base('C:\\\\path\\*.js'), 'C:\\\\path*.js');
+    }
   });
 });
 

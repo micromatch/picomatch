@@ -7,6 +7,7 @@ const pm = require('./support');
 
 describe('dotfiles', () => {
   beforeEach(() => pm.clearCache());
+  afterEach(() => pm.clearCache());
 
   it('should not match dotfiles with single star by default', () => {
     assert(pm.isMatch('foo', '*'));

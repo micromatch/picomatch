@@ -2,7 +2,7 @@
 
 // const mm = require('minimatch');
 // const bash = require('bash-match');
-// const pm = require('./');
+const pm = require('./');
 
 // // console.log(pm.makeRe('*'));
 // // console.log(bash.isMatch('foo/bar', '!(foo)'));
@@ -63,5 +63,18 @@
 // // console.log(pm.isMatch('foo/bar/baz/qux', 'foo/bar/baz/*', { scan: true }));
 // // console.log(/^(?=(?!\.)(?=.)[^\/]*?\/?)/.test('abc.txt'))
 
+const parent = require('glob-parent');
 
-console.log(new RegExp(Buffer.from('foo')))
+console.log(parent('a/\\+\\(b c)/foo'))
+
+console.log(pm.base('foo/bar', 'one/two/*.js'));
+// { base: 'foo/bar/one/two', glob: '*.js' }
+
+console.log(pm.base('foo\\bar\\', '*.js'));
+console.log(pm.join('foo\\bar\\', '\\*.js'));
+console.log(pm.join('foo\\bar', '\\*.js'));
+console.log(pm.join('foo\\bar', '*.js'));
+console.log(pm.resolve('foo\\bar\\', '*.js'));
+console.log(pm.resolve('foo\\bar', '\\*.js'));
+console.log(pm.resolve('foo\\bar\\', '\\*.js'));
+

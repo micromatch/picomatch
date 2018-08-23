@@ -6,9 +6,11 @@ const fill = require('fill-range');
 const assert = require('assert');
 const picomatch = require('..');
 const { isMatch } = require('./support');
+const sep = path.sep;
 
 describe('picomatch', () => {
   beforeEach(() => picomatch.clearCache());
+  afterEach(() => picomatch.clearCache());
 
   describe('validation', () => {
     it('should throw an error when invalid arguments are given', () => {
@@ -19,13 +21,15 @@ describe('picomatch', () => {
 
   describe('non-glob support', () => {
     it('should match literal strings (non-glob patterns)', () => {
-      assert(!isMatch('aaa\\bbb', 'aaa/bbb', { nocache: true }));
+      if (process.platform !== 'win32') {
+        assert(!isMatch('aaa\\bbb', 'aaa/bbb', { nocache: true }));
+      }
       assert(isMatch('aaa/bbb', 'aaa/bbb', { nocache: true }));
 
       path.sep = '\\';
       assert(isMatch('aaa\\bbb', 'aaa/bbb', { nocache: true }));
       assert(isMatch('aaa/bbb', 'aaa/bbb', { nocache: true }));
-      path.sep = '/';
+      path.sep = sep;
 
       assert(!isMatch('/ab', '/a'));
       assert(!isMatch('aaa', 'aa'));
@@ -781,7 +785,6 @@ describe('picomatch', () => {
 
       assert(isMatch('*', '[^a-c]*'));
       assert(isMatch('**', '[^a-c]*'));
-      assert(isMatch('\\*', '[^a-c]*'));
       assert(!isMatch('a', '[^a-c]*'));
       assert(!isMatch('a/*', '[^a-c]*'));
       assert(!isMatch('abc', '[^a-c]*'));
@@ -824,8 +827,11 @@ describe('picomatch', () => {
     });
 
     it('should match escaped characters', () => {
-      assert(isMatch('\\*', '\\\\*'));
-      assert(isMatch('XXX/\\', '[A-Z]+/\\\\'));
+      if (process.platform !== 'win32') {
+        assert(isMatch('\\*', '\\\\*'));
+        assert(isMatch('XXX/\\', '[A-Z]+/\\\\'));
+      }
+
       assert(isMatch('[ab]', '\\[ab]'));
       assert(isMatch('[ab]', '[\\[:]ab]'));
     });

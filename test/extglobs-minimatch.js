@@ -16,6 +16,8 @@ let sep = path.sep;
 describe('extglobs (minimatch)', () => {
   let setup = { before: () => (path.sep = '\\'), after: () => (path.sep = sep) };
   beforeEach(() => picomatch.clearCache());
+  afterEach(() => picomatch.clearCache());
+  after(() => (path.sep = sep));
 
   let offset = 22;
   let fixtures = [

@@ -531,8 +531,8 @@ picomatch.parse = (input, options = {}) => {
 
         if (prev === '!' && i === 2) prev = '';
         noglobstar = options.noglobstar === true
-          || (next && next !== '/' && block.type !== 'paren')
-          || (prev && prev !== '/' && block.type !== 'paren')
+          || (next && next !== '/' && block.type !== 'paren' && block.type !== 'brace')
+          || (prev && prev !== '/' && block.type !== 'paren' && block.type !== 'brace')
           || stars.length > 2;
 
         if (noglobstar) stars = '*';
@@ -761,9 +761,12 @@ picomatch.parse = (input, options = {}) => {
  */
 
 picomatch.scan = (input, options = {}) => {
-  let state = { isGlob: false, input, path: '', parts: [''], glob: '' };
+  let terminated = false;
+  let isWin = isWindows(options);
+  let state = { isGlob: false, input, parent: '', parts: [''], glob: '' };
   let string = input;
   let slash = false;
+  let stack = [];
   let stash = [''];
   let start = 0;
   let i = -1;
@@ -773,14 +776,26 @@ picomatch.scan = (input, options = {}) => {
   let next = () => string[++i];
 
   let terminate = value => {
+    if (terminated) {
+      append(value);
+      return;
+    }
+    let temp = stash.slice();
+    terminated = true;
     state.isGlob = true;
     state.glob = stash.pop() + string.slice(i);
     while (stash.length && stash[stash.length - 1].slice(-1) === '.') {
       state.glob = stash.pop() + '/' + state.glob;
     }
-    state.path = stash.join('/');
+    state.parent = stash.join('/');
     state.parts = stash;
-    i = string.length;
+    stash = temp;
+
+    if (options.segments !== true) {
+      i = string.length;
+    } else {
+      append(value);
+    }
   };
 
   let closeIndex = (value, start) => {
@@ -798,21 +813,38 @@ picomatch.scan = (input, options = {}) => {
 
     switch (value) {
       case '\\':
-        append(value + next());
+        char = next();
+        if (isWin && char === value) {
+          if (i === start) slash = true;
+          stash.push('');
+          break;
+        }
+        append((char === value ? value : '') + char);
         break;
       case '/':
         if (i === start) slash = true;
-        stash.push('');
-        break;
-      case '[':
-      case '{':
-      case '(':
-        if (closeIndex(value, i + 1) > -1) {
-          terminate();
+        if (!stack.length) {
+          stash.push('');
           break;
         }
         append(value);
         break;
+      case '[':
+      case '{':
+      case '(':
+        stack.push({ value });
+        if (closeIndex(value, i + 1) > -1) {
+          terminate(value);
+          break;
+        }
+        append(value);
+        break;
+      case ']':
+      case '}':
+      case ')':
+        stack.pop();
+        append(value);
+        break
       case '.':
         char = peek();
         if (i === start) {
@@ -823,7 +855,7 @@ picomatch.scan = (input, options = {}) => {
             break;
           }
           if (char === void 0) {
-            state.path = string;
+            state.parent = string;
             return state;
           }
         }
@@ -832,7 +864,13 @@ picomatch.scan = (input, options = {}) => {
       case '?':
       case '*':
       case '+':
-        terminate();
+        if (value === '*' && peek() === '*') {
+          let after;
+          if ((stack.length && stack[stack.length - 1] !== '[') || (i === 0 || string[i - 1] === '/') && (!(after = peek(2)) || after === '/')) {
+            state.globstar = true;
+          }
+        }
+        terminate(value);
         break;
       case '!':
         if (i === start && options.nonegate !== true && peek() !== '(') {
@@ -844,7 +882,7 @@ picomatch.scan = (input, options = {}) => {
         break;
       case '@':
         if (peek() === '(') {
-          terminate();
+          terminate(value);
           break;
         }
         append(value);
@@ -856,12 +894,23 @@ picomatch.scan = (input, options = {}) => {
     }
   }
 
-  if (!state.glob) state.path = stash.join('/');
-  if (state.path === '' && slash === true) {
-    state.parts[state.parts.length - 1] += '/';
-    state.path = '/';
+  if (options.segments === true) {
+    state.segs = stash.slice();
   }
+
+  if (!state.glob) state.parent = stash.join('/');
+  if (state.parent === '' && slash === true) {
+    state.parts[state.parts.length - 1] += '/';
+    state.parent = '/';
+  }
+
   return state;
+};
+
+picomatch.base = (...args) => {
+  let result = picomatch.scan(args.pop());
+  let base = unixify(path.posix.join(...args, result.path));
+  return { base, glob: result.glob };
 };
 
 picomatch.join = (...args) => {
@@ -903,7 +952,7 @@ function isWindows(options = {}) {
 }
 
 function isSpecialChar(ch) {
-  return typeof ch === 'string' && ch !== '' && /^["`'$()*+-.?[\]^{|}]$/.test(ch);
+  return ch !== '' && typeof ch === 'string' && /^["`'^$*+-.?[\]{}()|]$/.test(ch);
 }
 
 module.exports = picomatch;
