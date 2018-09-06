@@ -57,13 +57,13 @@ describe('options.prepend', () => {
      */
 
     equal(match(fixtures, '*', opts), ['./a', 'a', 'b']);
-    equal(match(fixtures, '**/a/**', opts), ['a/a', 'a/c', './a/b', './a/x', './a/a/a', 'a/a/b', './a/a/a/a', './a/a/a/a/a']);
+    equal(match(fixtures, '**/a/**', opts), ['./a', 'a', 'a/a', 'a/c', './a/b', './a/x', './a/a/a', 'a/a/b', './a/a/a/a', './a/a/a/a/a']);
     equal(match(fixtures, '*/*', opts), ['a/a', './a/b', 'a/c', './a/x', 'x/y', './z/z']);
     equal(match(fixtures, '*/*/*', opts), ['./a/a/a', 'a/a/b']);
     equal(match(fixtures, '*/*/*/*', opts), ['./a/a/a/a']);
     equal(match(fixtures, '*/*/*/*/*', opts), ['./a/a/a/a/a']);
     equal(match(fixtures, './*', opts), ['./a', 'a', 'b']);
-    equal(match(fixtures, './**/a/**', opts), ['a/a', 'a/c', './a/b', './a/x', './a/a/a', 'a/a/b', './a/a/a/a', './a/a/a/a/a']);
+    equal(match(fixtures, './**/a/**', opts), ['./a', 'a', 'a/a', 'a/c', './a/b', './a/x', './a/a/a', 'a/a/b', './a/a/a/a', './a/a/a/a/a']);
     equal(match(fixtures, './a/*/a', opts), ['./a/a/a']);
     equal(match(fixtures, 'a/*', opts), ['a/a', './a/b', 'a/c', './a/x']);
     equal(match(fixtures, 'a/*/*', opts), ['./a/a/a', 'a/a/b']);

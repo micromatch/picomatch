@@ -345,65 +345,6 @@ describe('stars', () => {
     assert(!isMatch('a/x/y/z', 'a/*'));
   });
 
-  it('should support globstars (**)', () => {
-    assert(isMatch('a', '**'));
-    assert(isMatch('a/', '**'));
-    assert(isMatch('a/a', '**'));
-    assert(isMatch('a/b', '**'));
-    assert(isMatch('a/c', '**'));
-    assert(isMatch('a/x', '**'));
-    assert(isMatch('a/x/y', '**'));
-    assert(isMatch('a/x/y/z', '**'));
-
-    assert(isMatch('a', '**/a'));
-    assert(isMatch('a/', '**/a'));
-    assert(isMatch('a/a', '**/a'));
-    assert(!isMatch('a/b', '**/a'));
-    assert(!isMatch('a/c', '**/a'));
-    assert(!isMatch('a/x', '**/a'));
-    assert(!isMatch('a/x/y', '**/a'));
-    assert(!isMatch('a/x/y/z', '**/a'));
-
-    assert(!isMatch('a', 'a/**'));
-    assert(isMatch('a/', 'a/**'));
-    assert(isMatch('a/a', 'a/**'));
-    assert(isMatch('a/b', 'a/**'));
-    assert(isMatch('a/c', 'a/**'));
-    assert(isMatch('a/x', 'a/**'));
-    assert(isMatch('a/x/y', 'a/**'));
-    assert(isMatch('a/x/y/z', 'a/**'));
-
-    assert(!isMatch('a', 'a/**/*'));
-    assert(!isMatch('a/', 'a/**/*'));
-    assert(isMatch('a/a', 'a/**/*'));
-    assert(isMatch('a/b', 'a/**/*'));
-    assert(isMatch('a/c', 'a/**/*'));
-    assert(isMatch('a/x', 'a/**/*'));
-    assert(isMatch('a/x/y', 'a/**/*'));
-    assert(isMatch('a/x/y/z', 'a/**/*'));
-
-    assert(!isMatch('a', 'a/**/**/*'));
-    assert(!isMatch('a/', 'a/**/**/*'));
-    assert(isMatch('a/a', 'a/**/**/*'));
-    assert(isMatch('a/b', 'a/**/**/*'));
-    assert(isMatch('a/c', 'a/**/**/*'));
-    assert(isMatch('a/x', 'a/**/**/*'));
-    assert(isMatch('a/x/y', 'a/**/**/*'));
-    assert(isMatch('a/x/y/z', 'a/**/**/*'));
-
-    assert(!isMatch('a', 'a/**/**/**/*'));
-    assert(!isMatch('a/', 'a/**/**/**/*'));
-    assert(isMatch('a/a', 'a/**/**/**/*'));
-    assert(isMatch('a/b', 'a/**/**/**/*'));
-    assert(isMatch('a/c', 'a/**/**/**/*'));
-    assert(isMatch('a/x', 'a/**/**/**/*'));
-    assert(isMatch('a/x/y', 'a/**/**/**/*'));
-    assert(isMatch('a/x/y/z', 'a/**/**/**/*'));
-
-    assert(isMatch('a/b/foo/bar/baz.qux', 'a/b/**/bar/**/*.*'));
-    assert(isMatch('a/b/bar/baz.qux', 'a/b/**/bar/**/*.*'));
-  });
-
   it('should work with file extensions', () => {
     assert(!isMatch('a.txt', 'a/**/*.txt'));
     assert(isMatch('a/b.txt', 'a/**/*.txt'));
@@ -427,10 +368,13 @@ describe('stars', () => {
   });
 
   it('should correctly match slashes', () => {
+    assert(isMatch('/home/foo/..', '**/..'));
+    assert(isMatch('a/a', '*/**/a'));
     assert(!isMatch('foo/bar', '**/'));
     assert(!isMatch('foo/bar', '**/*/'));
     assert(!isMatch('foo/bar', '*/*/'));
-    assert(!isMatch('foo/bar/', '**/*'));
+    assert(!isMatch('a/a/bb', 'a/**/b'));
+    assert(!isMatch('a/bb', 'a/**/b'));
     assert(isMatch('foo', '*/**'));
     assert(isMatch('foo/', '*/**'));
     assert(isMatch('foo/bar', '**/*'));
@@ -438,6 +382,7 @@ describe('stars', () => {
     assert(isMatch('foo/bar', '*/**'));
     assert(isMatch('foo/bar/', '**/'));
     assert(isMatch('foo/bar/', '**/*/'));
+    assert(isMatch('foo/bar/', '**/*'));
     assert(isMatch('foo/bar/', '*/**'));
     assert(isMatch('foo/bar/', '*/*/'));
   });

@@ -3,7 +3,6 @@
 const { cyan, blue, green, red, yellow } = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2), { alias: { c: 'compare' } });
 const bash = require('bash-match');
-const mi = require('micromatch');
 const minimatch = require('minimatch');
 const multimatch = require('multimatch');
 const picomatch = require('../..');
@@ -28,7 +27,6 @@ const header = (list, pattern, options) => {
   console.log('--- P ' + format(pattern, cyan));
   console.log('---PR ' + format([].concat(pattern).map(p => picomatch.makeRe(p, options)), blue));
   if (argv.mm || argv.minimatch || argv.compare === 'all' || argv.compare === true) {
-    console.log('---MI ' + format([].concat(pattern).map(p => mi.makeRe(p, options)), red));
     console.log('---MR ' + format([].concat(pattern).map(p => minimatch.makeRe(p, options)), blue));
   }
 };
@@ -37,7 +35,6 @@ compare.all = compare.a = (list, pattern, options) => {
   header(list, pattern, options);
   console.log('      bash', format(bash(list, pattern, options), green));
   console.log(' minimatch', format(mm(list, pattern, options), green));
-  console.log('micromatch', format(mi(list, pattern, options), green));
   console.log(' picomatch', format(picomatch(list, pattern, options), green));
   console.log();
 };
@@ -50,19 +47,6 @@ compare.minimatch = compare.mm = (list, pattern, options) => {
     header(list, pattern, options);
     console.log('---MM ' + format([].concat(pattern).map(p => mm.makeRe(p, options)), blue));
     console.log(' minimatch', format(mmResult, green));
-    console.log(' picomatch', format(pmResult, green));
-    console.log();
-  }
-};
-
-compare.micromatch = compare.mi = (list, pattern, options) => {
-  let miResult = mi(list, pattern, options);
-  let pmResult = picomatch(list, pattern, options);
-
-  if (miResult.join('') !== pmResult.join('') || argv.v) {
-    header(list, pattern, options);
-    console.log('---MI ' + format([].concat(pattern).map(p => mi.makeRe(p, options)), blue));
-    console.log('micromatch', format(miResult, green));
     console.log(' picomatch', format(pmResult, green));
     console.log();
   }
@@ -94,8 +78,6 @@ compare.any = picomatch.any;
 
 if (argv.compare) {
   module.exports = compare;
-} else if (argv.mi) {
-  module.exports = mi;
 } else if (argv.mm) {
   module.exports = mm;
 } else if (argv.bash) {

@@ -4,15 +4,18 @@ require('mocha');
 const assert = require('assert');
 const picomatch = require('..');
 const pm = require('./support');
+picomatch.nocache = true;
 
 describe('dotfiles', () => {
   beforeEach(() => pm.clearCache());
   afterEach(() => pm.clearCache());
 
-  it('should not match dotfiles with single star by default', () => {
+  it('should not match dotfiles with single stars by default', () => {
     assert(pm.isMatch('foo', '*'));
-    assert(!pm.isMatch('.foo', '*'));
     assert(pm.isMatch('foo/bar', '*/*'));
+    assert(!pm.isMatch('.foo', '*'));
+    assert(!pm.isMatch('.foo/bar', '*/*'));
+    assert(!pm.isMatch('.foo/.bar', '*/*'));
     assert(!pm.isMatch('foo/.bar', '*/*'));
     assert(!pm.isMatch('foo/.bar/baz', '*/*/*'));
   });
@@ -31,6 +34,7 @@ describe('dotfiles', () => {
     assert(!pm.isMatch('foo', '**/.*a*'));
     assert(pm.isMatch('.bar', '**/.*a*'));
     assert(pm.isMatch('foo/.bar', '**/.*a*'));
+    assert(pm.isMatch('.foo', '**/.*'));
 
     assert(!pm.isMatch('foo', '.*a*'));
     assert(pm.isMatch('.bar', '.*a*'));
@@ -46,12 +50,11 @@ describe('dotfiles', () => {
   });
 
   it('should not match a dot when the dot is not explicitly defined', () => {
-    assert(!pm.isMatch('.dot', '*dot'));
-    assert(!pm.isMatch('a/.dot', 'a/*dot'));
     assert(!pm.isMatch('.dot', '**/*dot'));
     assert(!pm.isMatch('.dot', '**/?dot'));
     assert(!pm.isMatch('.dot', '*/*dot'));
     assert(!pm.isMatch('.dot', '*/?dot'));
+    assert(!pm.isMatch('.dot', '*dot'));
     assert(!pm.isMatch('.dot', '/*dot'));
     assert(!pm.isMatch('.dot', '/?dot'));
     assert(!pm.isMatch('/.dot', '**/*dot'));
@@ -62,13 +65,9 @@ describe('dotfiles', () => {
     assert(!pm.isMatch('/.dot', '/?dot'));
     assert(!pm.isMatch('a/.dot', '*/*dot'));
     assert(!pm.isMatch('a/.dot', '*/?dot'));
+    assert(!pm.isMatch('a/.dot', 'a/*dot'));
     assert(!pm.isMatch('a/b/.dot', '**/*dot'));
     assert(!pm.isMatch('a/b/.dot', '**/?dot'));
-
-    // related https://github.com/jonschlinkert/micromatch/issues/63
-    assert(!pm.isMatch('/aaa/bbb/.git', '/aaa/bbb/**'));
-    assert(!pm.isMatch('aaa/bbb/.git', 'aaa/bbb/**'));
-    assert(!pm.isMatch('/aaa/bbb/ccc/.git', '/aaa/bbb/**'));
   });
 
   it('should not match leading dots with question marks', () => {
@@ -104,8 +103,10 @@ describe('dotfiles', () => {
   });
 
   it('should match dots in root path when glob is prefixed with **/', () => {
+    assert(!pm.isMatch('.x/.x', '**/.x/**'));
+    assert(pm.isMatch('a/b/.x', '**/.x/**'));
+    assert(pm.isMatch('.x', '**/.x/**'));
     assert(pm.isMatch('.x/', '**/.x/**'));
-    assert(pm.isMatch('.x/.x', '**/.x/**'));
     assert(pm.isMatch('.x/a', '**/.x/**'));
     assert(pm.isMatch('.x/a/b', '**/.x/**'));
     assert(pm.isMatch('a/.x/b', '**/.x/**'));
@@ -113,8 +114,6 @@ describe('dotfiles', () => {
     assert(pm.isMatch('a/b/.x/c', '**/.x/**'));
     assert(pm.isMatch('a/b/.x/c/d', '**/.x/**'));
     assert(pm.isMatch('a/b/.x/c/d/e', '**/.x/**'));
-    assert(!pm.isMatch('.x', '**/.x/**'));
-    assert(!pm.isMatch('a/b/.x', '**/.x/**'));
   });
 
   it('should match a dot when the dot is explicitly defined', () => {

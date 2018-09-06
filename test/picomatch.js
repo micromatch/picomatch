@@ -94,86 +94,6 @@ describe('picomatch', () => {
     });
   });
 
-  describe('ranges', () => {
-    it('should support valid regex ranges', () => {
-      assert(isMatch('a.a', '[a-b].[a-b]'));
-      assert(isMatch('a.b', '[a-b].[a-b]'));
-      assert(!isMatch('a.a.a', '[a-b].[a-b]'));
-      assert(!isMatch('c.a', '[a-b].[a-b]'));
-      assert(!isMatch('d.a.d', '[a-b].[a-b]'));
-      assert(!isMatch('a.bb', '[a-b].[a-b]'));
-      assert(!isMatch('a.ccc', '[a-b].[a-b]'));
-
-      assert(isMatch('a.a', '[a-d].[a-b]'));
-      assert(isMatch('a.b', '[a-d].[a-b]'));
-      assert(!isMatch('a.a.a', '[a-d].[a-b]'));
-      assert(isMatch('c.a', '[a-d].[a-b]'));
-      assert(!isMatch('d.a.d', '[a-d].[a-b]'));
-      assert(!isMatch('a.bb', '[a-d].[a-b]'));
-      assert(!isMatch('a.ccc', '[a-d].[a-b]'));
-
-      assert(isMatch('a.a', '[a-d]*.[a-b]'));
-      assert(isMatch('a.b', '[a-d]*.[a-b]'));
-      assert(isMatch('a.a.a', '[a-d]*.[a-b]'));
-      assert(isMatch('c.a', '[a-d]*.[a-b]'));
-      assert(!isMatch('d.a.d', '[a-d]*.[a-b]'));
-      assert(!isMatch('a.bb', '[a-d]*.[a-b]'));
-      assert(!isMatch('a.ccc', '[a-d]*.[a-b]'));
-    });
-
-    it('should support valid regex ranges with glob negation patterns', () => {
-      assert(!isMatch('a.a', '!*.[a-b]'));
-      assert(!isMatch('a.b', '!*.[a-b]'));
-      assert(!isMatch('a.a.a', '!*.[a-b]'));
-      assert(!isMatch('c.a', '!*.[a-b]'));
-      assert(isMatch('d.a.d', '!*.[a-b]'));
-      assert(isMatch('a.bb', '!*.[a-b]'));
-      assert(isMatch('a.ccc', '!*.[a-b]'));
-
-      assert(!isMatch('a.a', '!*.[a-b]*'));
-      assert(!isMatch('a.b', '!*.[a-b]*'));
-      assert(!isMatch('a.a.a', '!*.[a-b]*'));
-      assert(!isMatch('c.a', '!*.[a-b]*'));
-      assert(!isMatch('d.a.d', '!*.[a-b]*'));
-      assert(!isMatch('a.bb', '!*.[a-b]*'));
-      assert(isMatch('a.ccc', '!*.[a-b]*'));
-
-      assert(!isMatch('a.a', '![a-b].[a-b]'));
-      assert(!isMatch('a.b', '![a-b].[a-b]'));
-      assert(isMatch('a.a.a', '![a-b].[a-b]'));
-      assert(isMatch('c.a', '![a-b].[a-b]'));
-      assert(isMatch('d.a.d', '![a-b].[a-b]'));
-      assert(isMatch('a.bb', '![a-b].[a-b]'));
-      assert(isMatch('a.ccc', '![a-b].[a-b]'));
-
-      assert(!isMatch('a.a', '![a-b]+.[a-b]+'));
-      assert(!isMatch('a.b', '![a-b]+.[a-b]+'));
-      assert(isMatch('a.a.a', '![a-b]+.[a-b]+'));
-      assert(isMatch('c.a', '![a-b]+.[a-b]+'));
-      assert(isMatch('d.a.d', '![a-b]+.[a-b]+'));
-      assert(!isMatch('a.bb', '![a-b]+.[a-b]+'));
-      assert(isMatch('a.ccc', '![a-b]+.[a-b]+'));
-    });
-
-    it('should support valid regex ranges with negation patterns', () => {
-      assert(!isMatch('a.a', '*.[^a-b]'));
-      assert(!isMatch('a.b', '*.[^a-b]'));
-      assert(!isMatch('a.a.a', '*.[^a-b]'));
-      assert(!isMatch('c.a', '*.[^a-b]'));
-      assert(isMatch('d.a.d', '*.[^a-b]'));
-      assert(!isMatch('a.bb', '*.[^a-b]'));
-      assert(!isMatch('a.ccc', '*.[^a-b]'));
-
-      assert(!isMatch('a.a', 'a.[^a-b]*'));
-      assert(!isMatch('a.b', 'a.[^a-b]*'));
-      assert(!isMatch('a.a.a', 'a.[^a-b]*'));
-      assert(!isMatch('c.a', 'a.[^a-b]*'));
-      assert(!isMatch('d.a.d', 'a.[^a-b]*'));
-      assert(!isMatch('a.bb', 'a.[^a-b]*'));
-      assert(isMatch('a.ccc', 'a.[^a-b]*'));
-    });
-  });
-
   // $echo a/{1..3}/b
   describe('bash options and features', () => {
     // from the Bash 4.3 specification/unit tests
@@ -264,8 +184,8 @@ describe('picomatch', () => {
       assert(!isMatch('de', '\\^'));
 
       assert(isMatch('*', '\\*'));
+      assert(isMatch('\\*', '\\*'));
       assert(!isMatch('**', '\\*'));
-      assert(!isMatch('\\*', '\\*'));
       assert(!isMatch('a', '\\*'));
       assert(!isMatch('a/*', '\\*'));
       assert(!isMatch('abc', '\\*'));
@@ -521,7 +441,7 @@ describe('picomatch', () => {
       assert(!isMatch('dd', 'foo/"*"/bar'));
       assert(!isMatch('de', 'foo/"*"/bar'));
       assert(isMatch('foo/*/bar', 'foo/"*"/bar'));
-      assert(!isMatch('foo/"*"/bar', 'foo/"*"/bar'));
+      assert(isMatch('foo/"*"/bar', 'foo/"*"/bar'));
       assert(!isMatch('foo/"a"/bar', 'foo/"*"/bar'));
       assert(!isMatch('foo/"b"/bar', 'foo/"*"/bar'));
       assert(!isMatch('foo/"c"/bar', 'foo/"*"/bar'));
@@ -964,12 +884,12 @@ describe('picomatch', () => {
       assert(!isMatch('deep/foo/bar', '**/bar/*'));
       assert(!isMatch('deep/foo/bar/baz/x', '*/bar/**'));
       assert(!isMatch('ef', '/*'));
-      assert(!isMatch('foo', 'foo/**'));
       assert(!isMatch('foo/bar', 'foo?bar'));
       assert(!isMatch('foo/bar/baz', '**/bar*'));
       assert(!isMatch('foo/bar/baz', '**/bar**'));
       assert(!isMatch('foo/baz/bar', 'foo**bar'));
       assert(!isMatch('foo/baz/bar', 'foo*bar'));
+      assert(isMatch('foo', 'foo/**'));
       assert(isMatch('/ab', '/*'));
       assert(isMatch('/cd', '/*'));
       assert(isMatch('/ef', '/*'));
@@ -1010,13 +930,20 @@ describe('picomatch', () => {
       assert(!isMatch('a/z.js', 'a/b/**/*.js'));
       assert(!isMatch('z.js', 'a/b/**/*.js'));
 
+      // micromatch/#15
+      assert(isMatch('z.js', 'z*'));
+      assert(isMatch('z.js', '**/z*.js'));
+      assert(isMatch('z.js', '**/*.js'));
+      assert(isMatch('foo', '**/foo'));
+      assert(isMatch('z.js', '**/z*'));
+
       // micromatch/#23
       assert(!isMatch('zzjs', 'z*.js'));
       assert(!isMatch('zzjs', '*z.js'));
 
       // micromatch/#24
-      assert(!isMatch('a', 'a/**'));
       assert(!isMatch('a/b/c/d/', 'a/b/**/f'));
+      assert(isMatch('a', 'a/**'));
       assert(isMatch('a', '**'));
       assert(isMatch('a', 'a{,/**}'));
       assert(isMatch('a/', '**'));
@@ -1035,13 +962,6 @@ describe('picomatch', () => {
       assert(isMatch('a/b/c/d/e.f', 'a/b/**/d/**/*.*'));
       assert(isMatch('a/b/c/d/g/e.f', 'a/b/**/d/**/*.*'));
       assert(isMatch('a/b/c/d/g/g/e.f', 'a/b/**/d/**/*.*'));
-
-      // https://github.com/jonschlinkert/micromatch/issues/15
-      assert(isMatch('z.js', 'z*'));
-      assert(isMatch('z.js', '**/z*.js'));
-      assert(isMatch('z.js', '**/*.js'));
-      assert(isMatch('foo', '**/foo'));
-      assert(isMatch('z.js', '**/z*'));
 
       assert(isMatch('a/b-c/z.js', 'a/b-*/**/z.js'));
       assert(isMatch('a/b-c/d/e/z.js', 'a/b-*/**/z.js'));
@@ -1140,75 +1060,12 @@ describe('picomatch', () => {
     });
   });
 
-  describe('qmarks', () => {
-    it('question marks should not match slashes:', () => {
-      assert(!isMatch('aaa/bbb', 'aaa?bbb'));
-    });
-  });
-
-  describe('options.ignore:', () => {
-    it('should not match ignored patterns', () => {
-      assert(isMatch('a+b/src/glimini.js', 'a+b/src/*.js', { ignore: ['**/f*'] }));
-      assert(!isMatch('a+b/src/glimini.js', 'a+b/src/*.js', { ignore: ['**/g*'] }));
-      assert(isMatch('+b/src/glimini.md', '+b/src/*', { ignore: ['**/*.js'] }));
-      assert(!isMatch('+b/src/glimini.js', '+b/src/*', { ignore: ['**/*.js'] }));
-    });
-  });
-
   describe('matching:', () => {
     it('should escape plus signs to match string literals', () => {
       assert(isMatch('a+b/src/glimini.js', 'a+b/src/*.js'));
       assert(isMatch('+b/src/glimini.js', '+b/src/*.js'));
       assert(isMatch('coffee+/src/glimini.js', 'coffee+/src/*.js'));
       assert(isMatch('coffee+/src/glimini.js', 'coffee+/src/*'));
-    });
-
-    it('should not escape plus signs that follow brackets', () => {
-      assert(isMatch('a', '[a]+'));
-      assert(isMatch('aa', '[a]+'));
-      assert(isMatch('aaa', '[a]+'));
-      assert(isMatch('az', '[a-z]+'));
-      assert(isMatch('zzz', '[a-z]+'));
-    });
-
-    it('should support stars following brackets', () => {
-      assert(isMatch('a', '[a]*'));
-      assert(isMatch('aa', '[a]*'));
-      assert(isMatch('aaa', '[a]*'));
-      assert(isMatch('az', '[a-z]*'));
-      assert(isMatch('zzz', '[a-z]*'));
-    });
-
-    it('should not escape plus signs that follow parens', () => {
-      assert(isMatch('a', '(a)+'));
-      assert(isMatch('ab', '(a|b)+'));
-      assert(isMatch('aa', '(a)+'));
-      assert(isMatch('aaab', '(a|b)+'));
-      assert(isMatch('aaabbb', '(a|b)+'));
-    });
-
-    it('should support stars following parens', () => {
-      assert(isMatch('a', '(a)*'));
-      assert(isMatch('ab', '(a|b)*'));
-      assert(isMatch('aa', '(a)*'));
-      assert(isMatch('aaab', '(a|b)*'));
-      assert(isMatch('aaabbb', '(a|b)*'));
-    });
-
-    it('should not match slashes with single stars', () => {
-      assert(!isMatch('a/b', '(a)*'));
-      assert(!isMatch('a/b', '[a]*'));
-      assert(!isMatch('a/b', 'a*'));
-      assert(!isMatch('a/b', '(a|b)*'));
-    });
-
-    it('should not match dots with stars by default', () => {
-      assert(!isMatch('.a', '(a)*'));
-      assert(!isMatch('.a', '*[a]*'));
-      assert(!isMatch('.a', '*[a]'));
-      assert(!isMatch('.a', '*a*'));
-      assert(!isMatch('.a', '*a'));
-      assert(!isMatch('.a', '*(a|b)'));
     });
 
     it('should correctly deal with empty globs', () => {
@@ -1245,8 +1102,6 @@ describe('picomatch', () => {
       assert(isMatch('a-b.c-d', 'a-*.*-d'));
       assert(isMatch('a-b.c-d', '*-b.c-*'));
       assert(isMatch('a-b.c-d', '*-b*c-*'));
-
-      // false
       assert(!isMatch('a-b.c-d', '*-bc-*'));
     });
 
@@ -1261,11 +1116,6 @@ describe('picomatch', () => {
       assert(isMatch('ab', './*'));
       assert(isMatch('ab', 'ab'));
       assert(isMatch('ab/', './*/'));
-    });
-
-    it('should exactly match leading slash', () => {
-      assert(!isMatch('ef', '/*'));
-      assert(isMatch('/ef', '/*'));
     });
 
     it('should match files with the given extension', () => {
@@ -1322,7 +1172,7 @@ describe('picomatch', () => {
 
     it('issue #24', () => {
       assert(isMatch('a', '**'));
-      assert(!isMatch('a', 'a/**'));
+      assert(isMatch('a', 'a/**'));
       assert(isMatch('a/', '**'));
       assert(isMatch('a/b/c/d', '**'));
       assert(isMatch('a/b/c/d/', '**'));
@@ -1347,7 +1197,6 @@ describe('picomatch', () => {
       assert(!isMatch('bar/baz/foo', '*/foo'));
       assert(!isMatch('deep/foo/bar', '**/bar/*'));
       assert(!isMatch('deep/foo/bar/baz/x', '*/bar/**'));
-      assert(!isMatch('foo', 'foo/**'));
       assert(!isMatch('foo/bar', 'foo?bar'));
       assert(!isMatch('foo/bar/baz', '**/bar*'));
       assert(!isMatch('foo/bar/baz', '**/bar**'));
@@ -1355,6 +1204,7 @@ describe('picomatch', () => {
       assert(!isMatch('foo/baz/bar', 'foo*bar'));
       assert(!isMatch('deep/foo/bar/baz/', '**/bar/*'));
       assert(!isMatch('deep/foo/bar/baz', '**/bar/*/'));
+      assert(isMatch('foo', 'foo/**'));
       assert(isMatch('a/b/j/c/z/x.md', 'a/**/j/**/z/*.md'));
       assert(isMatch('a/j/z/x.md', 'a/**/j/**/z/*.md'));
       assert(isMatch('bar/baz/foo', '**/foo'));

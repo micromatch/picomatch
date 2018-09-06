@@ -265,7 +265,7 @@ describe('slash handling - posix', () => {
     assert(!isMatch('a/x/y', ['a/*']));
     assert(!isMatch('a/x/y/z', ['a/*']));
 
-    assert(!isMatch('a', ['a/**']));
+    assert(isMatch('a', ['a/**']));
     assert(isMatch('a/', ['a/**']));
     assert(isMatch('a/a', ['a/**']));
     assert(isMatch('a/b', ['a/**']));
@@ -415,10 +415,10 @@ describe('slash handling - posix', () => {
     assert(!isMatch('z/z', '*/'));
 
     assert(isMatch('/a', '**/*'));
-    assert(!isMatch('/a/', '**/*'));
+    assert(isMatch('/a/', '**/*'));
     assert(isMatch('/b', '**/*'));
     assert(isMatch('a', '**/*'));
-    assert(!isMatch('a/', '**/*'));
+    assert(isMatch('a/', '**/*'));
     assert(isMatch('b', '**/*'));
     assert(isMatch('a/a', '**/*'));
     assert(isMatch('a/b', '**/*'));
@@ -631,7 +631,7 @@ describe('slash handling - posix', () => {
     assert(isMatch('/a/a/', '**/a'));
     assert(isMatch('a/a/a/', '**/a'));
 
-    assert(!isMatch('a', 'a/**'));
+    assert(isMatch('a', 'a/**'));
     assert(isMatch('a/a', 'a/**'));
     assert(isMatch('a/a/a', 'a/**'));
     assert(!isMatch('/a', 'a/**'));
@@ -642,10 +642,10 @@ describe('slash handling - posix', () => {
     assert(!isMatch('/a/a/', 'a/**'));
     assert(isMatch('a/a/a/', 'a/**'));
 
-    assert(!isMatch('a', '**/a/**'));
+    assert(isMatch('a', '**/a/**'));
     assert(isMatch('a/a', '**/a/**'));
     assert(isMatch('a/a/a', '**/a/**'));
-    assert(!isMatch('/a', '**/a/**'));
+    assert(isMatch('/a', '**/a/**'));
     assert(isMatch('a/', '**/a/**'));
     assert(isMatch('/a/', '**/a/**'));
     assert(isMatch('/a/a', '**/a/**'));
@@ -1136,23 +1136,24 @@ describe('slash handling - posix', () => {
   });
 
   it('should match file paths', () => {
-    assert(isMatch('a/b/c/xyz.md', 'a/b/c/*.md'));
-    assert(isMatch('a/bb/c/xyz.md', 'a/*/c/*.md'));
-    assert(isMatch('a/bbbb/c/xyz.md', 'a/*/c/*.md'));
-    assert(isMatch('a/bb.bb/c/xyz.md', 'a/*/c/*.md'));
-    assert(isMatch('a/bb.bb/aa/bb/aa/c/xyz.md', 'a/**/c/*.md'));
-    assert(isMatch('a/bb.bb/aa/b.b/aa/c/xyz.md', 'a/**/c/*.md'));
-  });
-
-  it('should match full file paths', () => {
     assert(!isMatch('a/.b', 'a/**/z/*.md'));
-    assert(isMatch('a/.b', 'a/.*'));
+    assert(!isMatch('a/b/c/j/e/z/c.txt', 'a/**/j/**/z/*.md'));
     assert(!isMatch('a/b/z/.a', 'a/**/z/*.a'));
     assert(!isMatch('a/b/z/.a', 'a/*/z/*.a'));
-    assert(isMatch('a/b/z/.a', 'a/*/z/.a'));
-    assert(isMatch('a/b/c/d/e/z/c.md', 'a/**/z/*.md'));
+    assert(!isMatch('foo.txt', '*/*.txt'));
+    assert(isMatch('a/.b', 'a/.*'));
     assert(isMatch('a/b/c/d/e/j/n/p/o/z/c.md', 'a/**/j/**/z/*.md'));
-    assert(!isMatch('a/b/c/j/e/z/c.txt', 'a/**/j/**/z/*.md'));
+    assert(isMatch('a/b/c/d/e/z/c.md', 'a/**/z/*.md'));
+    assert(isMatch('a/b/c/xyz.md', 'a/b/c/*.md'));
+    assert(isMatch('a/b/z/.a', 'a/*/z/.a'));
+    assert(isMatch('a/bb.bb/aa/b.b/aa/c/xyz.md', 'a/**/c/*.md'));
+    assert(isMatch('a/bb.bb/aa/bb/aa/c/xyz.md', 'a/**/c/*.md'));
+    assert(isMatch('a/bb.bb/c/xyz.md', 'a/*/c/*.md'));
+    assert(isMatch('a/bb/c/xyz.md', 'a/*/c/*.md'));
+    assert(isMatch('a/bbbb/c/xyz.md', 'a/*/c/*.md'));
+    assert(isMatch('foo.txt', '**/foo.txt'));
+    assert(isMatch('foo/bar.txt', '**/*.txt'));
+    assert(isMatch('foo/bar/baz.txt', '**/*.txt'));
   });
 
   it('should match paths with leading `./` when pattern has `./`', () => {
@@ -1164,7 +1165,9 @@ describe('slash handling - posix', () => {
     assert(isMatch('./a/b/z/.a', './a/**/z/.a'));
   });
 
-  it('should ', () => {
+  it('should leading slashes', () => {
+    assert(!isMatch('ef', '/*'));
+    assert(isMatch('/ef', '/*'));
     assert(isMatch('/foo/bar.txt', '/foo/*'));
     assert(isMatch('/foo/bar.txt', '/foo/**'));
     assert(isMatch('/foo/bar.txt', '/foo/**/**/*.txt'));
@@ -1197,10 +1200,9 @@ describe('slash handling - posix', () => {
     assert(isMatch('/.txt', '/*.txt', { dot: true }));
     assert(isMatch('/.txt', '*/*.txt', { dot: true }));
     assert(isMatch('/.txt', '**/*.txt', { dot: true }));
-    assert(isMatch('foo/bar.txt', '**/*.txt'));
-    assert(isMatch('foo/bar/baz.txt', '**/*.txt'));
-    assert(isMatch('foo.txt', '**/foo.txt'));
-    assert(!isMatch('foo.txt', '*/*.txt'));
+  });
+
+  it('should match double slashes', () => {
     assert(!isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*'));
     assert(!isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*'));
     assert(isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**'));

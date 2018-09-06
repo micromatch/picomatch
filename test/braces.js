@@ -4,9 +4,10 @@ require('mocha');
 const assert = require('assert');
 const picomatch = require('..');
 const pm = require('./support');
+picomatch.nocache = true;
 
 describe('braces', () => {
-  beforeEach(() => pm.clearCache());
+  beforeEach(() => picomatch.clearCache());
 
   it('should match with brace patterns', () => {
     assert(pm.isMatch('a/a', 'a/{a,b}'));
@@ -98,29 +99,29 @@ describe('braces', () => {
   });
 
   it('should support regex quantifiers by escaping braces', () => {
-    assert(!pm.isMatch('a  ', '@(!(a) \\{1,2\\})*', { unescape: true }));
-    assert(!pm.isMatch('a ', '@(!(a) \\{1,2\\})*', { unescape: true }));
-    assert(!pm.isMatch('a', '@(!(a) \\{1,2\\})*', { unescape: true }));
-    assert(!pm.isMatch('aa', '@(!(a) \\{1,2\\})*', { unescape: true }));
-    assert(!pm.isMatch('aaa', '@(!(a) \\{1,2\\})*', { unescape: true }));
-    assert(!pm.isMatch('b', '@(!(a) \\{1,2\\})*', { unescape: true }));
-    assert(!pm.isMatch('bb', '@(!(a) \\{1,2\\})*', { unescape: true }));
-    assert(!pm.isMatch('bbb', '@(!(a) \\{1,2\\})*', { unescape: true }));
-    assert(pm.isMatch(' a ', '@(!(a) \\{1,2\\})*', { unescape: true }));
-    assert(pm.isMatch('b  ', '@(!(a) \\{1,2\\})*', { unescape: true }));
-    assert(pm.isMatch('b ', '@(!(a) \\{1,2\\})*', { unescape: true }));
+    assert(!pm.isMatch('a  ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+    assert(!pm.isMatch('a ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+    assert(!pm.isMatch('a', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+    assert(!pm.isMatch('aa', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+    assert(!pm.isMatch('aaa', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+    assert(!pm.isMatch('b', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+    assert(!pm.isMatch('bb', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+    assert(!pm.isMatch('bbb', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+    assert(pm.isMatch(' a ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+    assert(pm.isMatch('b  ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+    assert(pm.isMatch('b ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
 
-    assert(pm.isMatch('a   ', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(pm.isMatch('a   b', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(pm.isMatch('a  b', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(!pm.isMatch('a  ', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(!pm.isMatch('a ', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(pm.isMatch('a', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(pm.isMatch('aa', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(pm.isMatch('b', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(pm.isMatch('bb', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(pm.isMatch(' a ', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(pm.isMatch('b  ', '@(!(a \\{1,2\\}))*', { unescape: true }));
-    assert(pm.isMatch('b ', '@(!(a \\{1,2\\}))*', { unescape: true }));
+    assert(pm.isMatch('a   ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(pm.isMatch('a   b', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(pm.isMatch('a  b', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(!pm.isMatch('a  ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(!pm.isMatch('a ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(pm.isMatch('a', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(pm.isMatch('aa', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(pm.isMatch('b', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(pm.isMatch('bb', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(pm.isMatch(' a ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(pm.isMatch('b  ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(pm.isMatch('b ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
   });
 });

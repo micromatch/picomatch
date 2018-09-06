@@ -3,6 +3,7 @@
 require('mocha');
 const path = require('path');
 const util = require('util');
+const colors = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2));
 const assert = require('assert');
 const picomatch = require('..');
@@ -18,7 +19,7 @@ describe('extglobs (bash)', () => {
   beforeEach(() => (path.sep = '\\'));
   afterEach(() => (path.sep = sep));
 
-  let offset = 23;
+  let offset = 24;
   let fixtures = [
     [['', '', { bash: true }], true],
     [['', '*(0|1|3|5|7|9)', { bash: true }], false],
@@ -75,7 +76,7 @@ describe('extglobs (bash)', () => {
     [['a((b', 'a\\(b', { bash: true }], false],
     [['a(b', 'a(*b', { bash: true }], true],
     [['a(b', 'a(b', { bash: true }], true],
-    [['a\\(b', 'a\\(b', { bash: true }], false],
+    [['a\\(b', 'a\\(b', { bash: true }], true],
     [['a(b', 'a\\(b', { bash: true }], true],
     [['a.', '!(*.a|*.b|*.c)', { bash: true }], true],
     [['a.', '*!(.a|.b|.c)', { bash: true }], true],
@@ -174,8 +175,8 @@ describe('extglobs (bash)', () => {
     [['a/z', 'a/!(z)', { bash: true }], false],
     [['a\\(b', 'a(*b', { bash: true }], false],
     [['a\\(b', 'a(b', { bash: true }], false],
-    [['a\\\\z', 'a\\\\z', { unixify: false }], false],
-    [['a\\\\z', 'a\\\\z', { bash: true }], false],
+    [['a\\\\z', 'a\\\\z', { unixify: false }], true],
+    [['a\\\\z', 'a\\\\z', { bash: true }], true],
     [['a\\b', 'a/b', { unixify: true }], true],
     [['a\\z', 'a\\\\z', { unixify: false }], true],
     [['a\\z', 'a\\\\z', { bash: true }], false],
@@ -675,9 +676,10 @@ describe('extglobs (bash)', () => {
     if (argv.n !== void 0 && n !== argv.n) return;
     let args = unit[0];
     let expected = unit[1];
+    let errMessage = `${colors.cyan('Line ' + n)}) ${colors.yellow(args[0])} should ${colors.red(expected ? '' : 'not ')}match ${colors.yellow(args[1])} (${colors.dim(util.inspect(args))})`;
 
     it(`"${args[0]}" should ${expected ? '' : 'not '}match "${args[1]}"`, () => {
-      assert.equal(pm.isMatch(...args), expected, util.inspect(args));
+      assert.equal(pm.isMatch(...args), expected, errMessage);
     });
   });
 });

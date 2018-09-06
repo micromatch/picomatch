@@ -742,11 +742,12 @@ describe('bash unit tests', () => {
     assert(!isMatch('ff', '!(f!(o))'));
     assert(!isMatch('fff', '!(f!(o))'));
     assert(isMatch('fo', '!(f!(o))'));
-    // assert(!isMatch('foo', '!(f!(o))'));
-    // assert(!isMatch('foo/bar', '!(f!(o))'));
-    // assert(!isMatch('foobar', '!(f!(o))'));
-    // assert(!isMatch('foot', '!(f!(o))'));
-    // assert(!isMatch('foox', '!(f!(o))'));
+    assert(isMatch('foo', '!(!(foo))'));
+    assert(isMatch('foo', '!(f!(o))'));
+    assert(isMatch('foo/bar', '!(f!(o))'));
+    assert(isMatch('foobar', '!(f!(o))'));
+    assert(isMatch('foot', '!(f!(o))'));
+    assert(isMatch('foox', '!(f!(o))'));
     assert(isMatch('o', '!(f!(o))'));
     assert(isMatch('of', '!(f!(o))'));
     assert(isMatch('ooo', '!(f!(o))'));
@@ -952,7 +953,8 @@ describe('bash unit tests', () => {
     assert(isMatch('fff', '@(!(z*)|*x)'));
     assert(isMatch('fo', '@(!(z*)|*x)'));
     assert(isMatch('foo', '@(!(z*)|*x)'));
-    // assert(isMatch('foo/bar', '@(!(z*)|*x)'));
+    assert(isMatch('foo/bar', '@(!(z*/*)|*x)'));
+    assert(!isMatch('foo/bar', '@(!(z*)|*x)'));
     assert(isMatch('foobar', '@(!(z*)|*x)'));
     assert(isMatch('foot', '@(!(z*)|*x)'));
     assert(isMatch('foox', '@(!(z*)|*x)'));

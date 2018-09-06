@@ -2,10 +2,10 @@
 
 require('mocha');
 const assert = require('assert');
-const picomatch = require('..');
-const pm = require('./support');
+const { isMatch } = require('./support');
+const pm = require('..');
 
-describe('globstars - "**"', () => {
+describe('stars', () => {
   beforeEach(() => pm.clearCache());
 
   it('should regard non-exclusive double-stars as single stars', () => {
@@ -14,12 +14,70 @@ describe('globstars - "**"', () => {
     assert(pm.isMatch('aaa/bba/ccc', 'aaa/**b**/ccc'));
   });
 
-  it('should match nested directories', () => {
+  it('should support globstars (**)', () => {
+    assert(isMatch('a', '**'));
+    assert(isMatch('a/', '**'));
+    assert(isMatch('a/a', '**'));
+    assert(isMatch('a/b', '**'));
+    assert(isMatch('a/c', '**'));
+    assert(isMatch('a/x', '**'));
+    assert(isMatch('a/x/y', '**'));
+    assert(isMatch('a/x/y/z', '**'));
+
+    assert(isMatch('a', '**/a'));
+    assert(isMatch('a/', '**/a'));
+    assert(isMatch('a/a', '**/a'));
+    assert(!isMatch('a/b', '**/a'));
+    assert(!isMatch('a/c', '**/a'));
+    assert(!isMatch('a/x', '**/a'));
+    assert(!isMatch('a/x/y', '**/a'));
+    assert(!isMatch('a/x/y/z', '**/a'));
+
+    assert(isMatch('a', 'a/**'));
+    assert(isMatch('a/', 'a/**'));
+    assert(isMatch('a/a', 'a/**'));
+    assert(isMatch('a/b', 'a/**'));
+    assert(isMatch('a/c', 'a/**'));
+    assert(isMatch('a/x', 'a/**'));
+    assert(isMatch('a/x/y', 'a/**'));
+    assert(isMatch('a/x/y/z', 'a/**'));
+
+    assert(!isMatch('a', 'a/**/*'));
+    assert(!isMatch('a/', 'a/**/*'));
+    assert(isMatch('a/a', 'a/**/*'));
+    assert(isMatch('a/b', 'a/**/*'));
+    assert(isMatch('a/c', 'a/**/*'));
+    assert(isMatch('a/x', 'a/**/*'));
+    assert(isMatch('a/x/y', 'a/**/*'));
+    assert(isMatch('a/x/y/z', 'a/**/*'));
+
+    assert(!isMatch('a', 'a/**/**/*'));
+    assert(!isMatch('a/', 'a/**/**/*'));
+    assert(isMatch('a/a', 'a/**/**/*'));
+    assert(isMatch('a/b', 'a/**/**/*'));
+    assert(isMatch('a/c', 'a/**/**/*'));
+    assert(isMatch('a/x', 'a/**/**/*'));
+    assert(isMatch('a/x/y', 'a/**/**/*'));
+    assert(isMatch('a/x/y/z', 'a/**/**/*'));
+
+    assert(!isMatch('a', 'a/**/**/**/*'));
+    assert(!isMatch('a/', 'a/**/**/**/*'));
+    assert(isMatch('a/a', 'a/**/**/**/*'));
+    assert(isMatch('a/b', 'a/**/**/**/*'));
+    assert(isMatch('a/c', 'a/**/**/**/*'));
+    assert(isMatch('a/x', 'a/**/**/**/*'));
+    assert(isMatch('a/x/y', 'a/**/**/**/*'));
+    assert(isMatch('a/x/y/z', 'a/**/**/**/*'));
+
+    assert(isMatch('a/b/foo/bar/baz.qux', 'a/b/**/bar/**/*.*'));
+    assert(isMatch('a/b/bar/baz.qux', 'a/b/**/bar/**/*.*'));
     assert(pm.isMatch('a/.b', 'a/.*'));
     assert(pm.isMatch('a/b', '*/*'));
     assert(pm.isMatch('a/b/c', '**/*'));
     assert(pm.isMatch('a/b/c', '**/**'));
     assert(pm.isMatch('a/b/c', '*/**'));
+    assert(pm.isMatch('a/b', 'a/**/b'));
+    assert(!pm.isMatch('a/bb', 'a/**/b'));
     assert(pm.isMatch('a/b/c/d/e/j/n/p/o/z/c.md', 'a/**/j/**/z/*.md'));
     assert(pm.isMatch('a/b/c/d/e/z/c.md', 'a/**/z/*.md'));
     assert(pm.isMatch('a/b/c/xyz.md', 'a/b/c/*.md'));

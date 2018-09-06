@@ -43,6 +43,10 @@ describe('special characters', () => {
       assert(isMatch('foo?/bar?', '*/*'));
     });
 
+    it('should not match slashes with qmarks', () => {
+      assert(!isMatch('aaa/bbb', 'aaa?bbb'));
+    });
+
     it('should match literal ? with qmarks in the glob', () => {
       assert(isMatch('?', '?'));
       assert(!isMatch('?', '??'));
@@ -219,10 +223,11 @@ describe('special characters', () => {
     });
 
     it('should support regex character classes inside extglobs', () => {
-      assert(isMatch('foo/bar', '**/!([a-k])*'));
-      assert(isMatch('foo/jar', '**/!([a-k])*'));
+      assert(!isMatch('foo/bar', '**/!([a-k])*'));
+      assert(!isMatch('foo/jar', '**/!([a-k])*'));
 
-      assert(isMatch('foo/bar', '**/!([a-i])*'));
+      assert(!isMatch('foo/bar', '**/!([a-i])*'));
+      assert(isMatch('foo/bar', '**/!([c-i])*'));
       assert(isMatch('foo/jar', '**/!([a-i])*'));
     });
   });
@@ -365,8 +370,17 @@ describe('special characters', () => {
       assert(!isMatch('$$$', '?$'));
       assert(!isMatch('^', '?$'));
     });
+  });
 
+  describe('^ caret', function() {
     it('should match carets', () => {
+      assert(isMatch('^', '^'));
+      assert(isMatch('^/foo', '^/*'));
+      assert(isMatch('^/foo', '^/*'));
+      assert(isMatch('foo^', '*^'));
+      assert(isMatch('^foo/foo', '^foo/*'));
+      assert(isMatch('foo^/foo', 'foo^/*'));
+
       assert(!isMatch('^', '!(^)'));
       assert(isMatch('^^', '!(^)'));
       assert(isMatch('^^^', '!(^)'));
@@ -551,7 +565,7 @@ describe('special characters', () => {
     });
   });
 
-  describe('literal star - "*"', () => {
+  describe('star - "*"', () => {
     it('should match literal *', () => {
       assert(isMatch('*', '*'));
       assert(isMatch('*/*', '*/*'));
@@ -561,9 +575,41 @@ describe('special characters', () => {
       assert(isMatch('/*', '/?'));
       assert(isMatch('foo*/bar*', '*/*'));
     });
+
+    it('should support stars following brackets', () => {
+      assert(isMatch('a', '[a]*'));
+      assert(isMatch('aa', '[a]*'));
+      assert(isMatch('aaa', '[a]*'));
+      assert(isMatch('az', '[a-z]*'));
+      assert(isMatch('zzz', '[a-z]*'));
+    });
+
+    it('should support stars following parens', () => {
+      assert(isMatch('a', '(a)*'));
+      assert(isMatch('ab', '(a|b)*'));
+      assert(isMatch('aa', '(a)*'));
+      assert(isMatch('aaab', '(a|b)*'));
+      assert(isMatch('aaabbb', '(a|b)*'));
+    });
+
+    it('should not match slashes with single stars', () => {
+      assert(!isMatch('a/b', '(a)*'));
+      assert(!isMatch('a/b', '[a]*'));
+      assert(!isMatch('a/b', 'a*'));
+      assert(!isMatch('a/b', '(a|b)*'));
+    });
+
+    it('should not match dots with stars by default', () => {
+      assert(!isMatch('.a', '(a)*'));
+      assert(!isMatch('.a', '*[a]*'));
+      assert(!isMatch('.a', '*[a]'));
+      assert(!isMatch('.a', '*a*'));
+      assert(!isMatch('.a', '*a'));
+      assert(!isMatch('.a', '*(a|b)'));
+    });
   });
 
-  describe('literal plus - "+"', () => {
+  describe('plus - "+"', () => {
     it('should match literal +', () => {
       assert(isMatch('+', '*'));
       assert(isMatch('/+', '/*'));
@@ -574,6 +620,22 @@ describe('special characters', () => {
       assert(isMatch('+/+', '?/?'));
       assert(isMatch('+/+', '+/+'));
       assert(isMatch('foo+/bar+', '*/*'));
+    });
+
+    it('should support plus signs that follow brackets (and not escape them)', () => {
+      assert(isMatch('a', '[a]+'));
+      assert(isMatch('aa', '[a]+'));
+      assert(isMatch('aaa', '[a]+'));
+      assert(isMatch('az', '[a-z]+'));
+      assert(isMatch('zzz', '[a-z]+'));
+    });
+
+    it('should not escape plus signs that follow parens', () => {
+      assert(isMatch('a', '(a)+'));
+      assert(isMatch('ab', '(a|b)+'));
+      assert(isMatch('aa', '(a)+'));
+      assert(isMatch('aaab', '(a|b)+'));
+      assert(isMatch('aaabbb', '(a|b)+'));
     });
 
     it('should escape plus signs to match string literals', () => {

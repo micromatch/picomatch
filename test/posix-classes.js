@@ -5,12 +5,11 @@ const assert = require('assert');
 const pm = require('..');
 const opts = { strictSlashes: true, posix: true };
 const isMatch = (...args) => {
-  // console.log(pm.makeRe(...args.slice(1), opts));
   return pm.isMatch(...args, opts);
 };
 const convert = (...args) => {
   let state = pm.parse(...args, opts);
-  return state.source;
+  return state.output;
 };
 
 describe('posix classes', () => {
@@ -136,43 +135,73 @@ describe('posix classes', () => {
     });
 
     it('should match character classes', () => {
-      //match(['abc', 'abd'], 'a[bc]d', ['abd']);
+      assert(!isMatch('abc', 'a[bc]d'));
+      assert(isMatch('abd', 'a[bc]d'));
     });
 
     it('should match character class alphabetical ranges', () => {
-      //match(['abc', 'abd', 'ace', 'ac', 'a-'], 'a[b-d]e', ['ace']);
-      //match(['abc', 'abd', 'ace', 'ac', 'a-'], 'a[b-d]', ['ac']);
+      assert(!isMatch('abc', 'a[b-d]e'));
+      assert(!isMatch('abd', 'a[b-d]e'));
+      assert(isMatch('abe', 'a[b-d]e'));
+      assert(!isMatch('ac', 'a[b-d]e'));
+      assert(!isMatch('a-', 'a[b-d]e'));
+
+      assert(!isMatch('abc', 'a[b-d]'));
+      assert(!isMatch('abd', 'a[b-d]'));
+      assert(isMatch('abd', 'a[b-d]+'));
+      assert(!isMatch('abe', 'a[b-d]'));
+      assert(isMatch('ac', 'a[b-d]'));
+      assert(!isMatch('a-', 'a[b-d]'));
     });
 
     it('should match character classes with leading dashes', () => {
-      //match(['abc', 'abd', 'ace', 'ac', 'a-'], 'a[-c]', ['a-', 'ac']);
+      assert(!isMatch('abc', 'a[-c]'));
+      assert(isMatch('ac', 'a[-c]'));
+      assert(isMatch('a-', 'a[-c]'));
     });
 
     it('should match character classes with trailing dashes', () => {
-      //match(['abc', 'abd', 'ace', 'ac', 'a-'], 'a[c-]', ['a-', 'ac']);
+      assert(!isMatch('abc', 'a[c-]'));
+      assert(isMatch('ac', 'a[c-]'));
+      assert(isMatch('a-', 'a[c-]'));
     });
 
     it('should match bracket literals', () => {
-      //match(['a]c', 'abd', 'ace', 'ac', 'a-'], 'a[]]c', ['a]c']);
-      //match(['a]', 'abd', 'ace', 'ac', 'a-'], 'a]', ['a]']);
+      assert(isMatch('a]c', 'a[]]c'));
+      assert(isMatch('a]c', 'a]c'));
+      assert(isMatch('a]', 'a]'));
+
+      assert(isMatch('a[c', 'a[\\[]c'));
+      assert(isMatch('a[c', 'a[c'));
+      assert(isMatch('a[', 'a['));
     });
 
-    it('should negation patterns', () => {
-      //match(['a]', 'acd', 'aed', 'ac', 'a-'], 'a[^bc]d', ['aed']);
+    it('should support negated character classes', () => {
+      assert(!isMatch('a]', 'a[^bc]d'));
+      assert(!isMatch('acd', 'a[^bc]d'));
+      assert(isMatch('aed', 'a[^bc]d'));
+      assert(isMatch('azd', 'a[^bc]d'));
+      assert(!isMatch('ac', 'a[^bc]d'));
+      assert(!isMatch('a-', 'a[^bc]d'));
     });
 
     it('should match negated dashes', () => {
-      //match(['adc', 'a-c'], 'a[^-b]c', ['adc']);
+      assert(!isMatch('abc', 'a[^-b]c'));
+      assert(isMatch('adc', 'a[^-b]c'));
+      assert(!isMatch('a-c', 'a[^-b]c'));
     });
 
     it('should match negated pm', () => {
-      //match(['adc', 'a]c'], 'a[^]b]c', ['adc']);
+      assert(isMatch('a-c', 'a[^\\]b]c'));
+      assert(!isMatch('abc', 'a[^\\]b]c'));
+      assert(!isMatch('a]c', 'a[^\\]b]c'));
+      assert(isMatch('adc', 'a[^\\]b]c'));
     });
 
     it('should match alpha-numeric characters', () => {
-      //match(['01234', '0123e456', '0123e45g78'], '[\\de]+', ['01234', '0123e456']);
-      //match(['01234', '0123e456', '0123e45g78'], '[\\de]*', ['01234', '0123e456']);
-      //match(['01234', '0123e456', '0123e45g78'], '[e\\d]+', ['01234', '0123e456']);
+      assert(!isMatch('0123e45g78', '[\\de]+'));
+      assert(isMatch('0123e456', '[\\de]+'));
+      assert(isMatch('01234', '[\\de]+'));
     });
 
     it('should not create an invalid posix character class:', () => {
@@ -210,11 +239,20 @@ describe('posix classes', () => {
 
   describe('literals', () => {
     it('should match literal brackets when escaped', () => {
-      //match(['a [b]', 'a b'], 'a [b]', ['a b']);
-      //match(['a [b]', 'a b'], 'a \\[b\\]', ['a [b]']);
-      //match(['a [b]', 'a b'], 'a ([b])', ['a b']);
-      //match(['a [b]', 'a b'], 'a (\\[b\\]|[b])', ['a [b]', 'a b']);
-      //match(['a [b] c', 'a b c'], 'a [b] c', ['a b c']);
+      assert(isMatch('a [b]', 'a [b]'));
+      assert(isMatch('a b', 'a [b]'));
+
+      assert(isMatch('a [b] c', 'a [b] c'));
+      assert(isMatch('a b c', 'a [b] c'));
+
+      assert(isMatch('a [b]', 'a \\[b\\]'));
+      assert(!isMatch('a b', 'a \\[b\\]'));
+
+      assert(isMatch('a [b]', 'a ([b])'));
+      assert(isMatch('a b', 'a ([b])'));
+
+      assert(isMatch('a b', 'a (\\[b\\]|[b])'));
+      assert(isMatch('a [b]', 'a (\\[b\\]|[b])'));
     });
   });
 
@@ -222,13 +260,6 @@ describe('posix classes', () => {
     it('should make a regular expression for the given pattern:', () => {
       assert.deepEqual(pm.makeRe('[[:alpha:]123]', opts), /^(?:(?=.)[a-zA-Z123])$/);
       assert.deepEqual(pm.makeRe('[![:lower:]]', opts), /^(?:(?=.)[^a-z])$/);
-    });
-  });
-
-  describe('.match()', () => {
-    it('should return an array of matching strings:', () => {
-      //match(['a1B', 'a1b'], '[[:alpha:]][[:digit:]][[:upper:]]', ['a1B']);
-      //match(['.', 'a', '!'], '[[:digit:][:punct:][:space:]]', ['.', '!']);
     });
   });
 
@@ -342,17 +373,32 @@ describe('posix classes', () => {
       assert(isMatch('PATH', '[_[:alpha:]][_[:alnum:]]*'));
     });
 
+    it('should match multiple posix classses', () => {
+      assert(isMatch('a1B', '[[:alpha:]][[:digit:]][[:upper:]]'));
+      assert(!isMatch('a1b', '[[:alpha:]][[:digit:]][[:upper:]]'));
+      assert(isMatch('.', '[[:digit:][:punct:][:space:]]'));
+      assert(!isMatch('a', '[[:digit:][:punct:][:space:]]'));
+      assert(isMatch('!', '[[:digit:][:punct:][:space:]]'));
+      assert(!isMatch('!', '[[:digit:]][[:punct:]][[:space:]]'));
+      assert(isMatch('1! ', '[[:digit:]][[:punct:]][[:space:]]'));
+      assert(!isMatch('1!  ', '[[:digit:]][[:punct:]][[:space:]]'));
+    });
+
     /**
      * Some of these tests (and their descriptions) were ported directly
      * from the Bash 4.3 unit tests.
      */
 
     it('how about A?', () => {
-      //match(['9'], '[[:digit:]]', ['9']);
-      //match(['X'], '[[:digit:]]', []);
-      //match(['aB'], '[[:lower:]][[:upper:]]', ['aB']);
-      //match(['a', '3', 'aa', 'a3', 'abc'], '[[:alpha:][:digit:]]', ['3', 'a']);
-      //match(['a', 'b'], '[[:alpha:]\\]', [], []);
+      assert(isMatch('9', '[[:digit:]]'));
+      assert(!isMatch('X', '[[:digit:]]'));
+      assert(isMatch('aB', '[[:lower:]][[:upper:]]'));
+      assert(isMatch('a', '[[:alpha:][:digit:]]'));
+      assert(isMatch('3', '[[:alpha:][:digit:]]'));
+      assert(!isMatch('aa', '[[:alpha:][:digit:]]'));
+      assert(!isMatch('a3', '[[:alpha:][:digit:]]'));
+      assert(!isMatch('a', '[[:alpha:]\\]'));
+      assert(!isMatch('b', '[[:alpha:]\\]'));
     });
 
     it('OK, what\'s a tab?  is it a blank? a space?', () => {

@@ -1,6 +1,6 @@
 {
   "name": "picomatch",
-  "description": "Blazing fast and accurate glob matcher written JavaScript, with no dependencies and full support for standard and extended Bash glob features, including braces, extglobs, POSIX brackets, and advanced regex features.",
+  "description": "Blazing fast and accurate glob matcher written JavaScript, with no dependencies and full support for standard and extended Bash glob features, including braces, extglobs, POSIX brackets, and regular expressions.",
   "version": "1.0.0",
   "homepage": "https://github.com/folder/picomatch",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
@@ -21,17 +21,16 @@
     "cover": "nyc --reporter=text --reporter=html mocha"
   },
   "devDependencies": {
-    "ansi-colors": "^2.0.5",
+    "ansi-colors": "^3.0.5",
     "bash-match": "file:../bash-match",
     "fill-range": "^6.0.0",
     "glob-parent": "^3.1.0",
     "gulp-format-md": "^1.0.0",
-    "micromatch": "^3.1.10",
     "minimatch": "^3.0.4",
     "minimist": "^1.2.0",
-    "mocha": "^5.2.0",
+    "mocha": "^3.5.3",
     "multimatch": "^2.1.0",
-    "nyc": "^12.0.2"
+    "nyc": "^13.0.1"
   },
   "keywords": [
     "glob",
@@ -49,9 +48,6 @@
     ],
     "lint": {
       "reflinks": true
-    },
-    "related": {
-      "list": []
     },
     "reflinks": [
       "bash",

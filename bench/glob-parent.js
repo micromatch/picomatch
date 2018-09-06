@@ -46,6 +46,6 @@ function bench(name, options) {
 
 
 bench(red('.base') + ' *')
-  .add('  picomatch', () => pm.base('foo/*.js'))
+  .add('  picomatch', () => pm.split('foo/*.js'))
   .add('glob-parent', () => parent('foo/*.js'))
   .run();

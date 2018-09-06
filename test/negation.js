@@ -211,7 +211,7 @@ describe('negation patterns - "!"', () => {
 
   it('should support quoted strings', () => {
     assert(!isMatch('foo.md', '"!*".md'));
-    assert(!isMatch('"!*".md', '"!*".md'));
+    assert(isMatch('"!*".md', '"!*".md'));
     assert(isMatch('!*.md', '"!*".md'));
 
     assert(!isMatch('foo.md', '"!*".md', { keepQuotes: true }));
@@ -219,7 +219,7 @@ describe('negation patterns - "!"', () => {
     assert(!isMatch('!*.md', '"!*".md', { keepQuotes: true }));
 
     assert(!isMatch('foo.md', '"**".md'));
-    assert(!isMatch('"**".md', '"**".md'));
+    assert(isMatch('"**".md', '"**".md'));
     assert(isMatch('**.md', '"**".md'));
 
     assert(!isMatch('foo.md', '"**".md', { keepQuotes: true }));
@@ -228,8 +228,8 @@ describe('negation patterns - "!"', () => {
   });
 
   it('should negate dotfiles', () => {
-    assert(!isMatch('.dotfile.md', '!*.md'));
     assert(!isMatch('.dotfile.md', '!.*.md'));
+    assert(isMatch('.dotfile.md', '!*.md'));
     assert(isMatch('.dotfile.txt', '!*.md'));
     assert(isMatch('.dotfile.txt', '!*.md'));
     assert(isMatch('a/b/.dotfile', '!*.md'));
@@ -244,7 +244,7 @@ describe('negation patterns - "!"', () => {
   });
 
   it('should match nested directories with globstars', () => {
-    assert(isMatch('a', '!a/**'));
+    assert(!isMatch('a', '!a/**'));
     assert(!isMatch('a/', '!a/**'));
     assert(!isMatch('a/b', '!a/**'));
     assert(!isMatch('a/b/c', '!a/**'));

@@ -2,6 +2,7 @@
 
 require('mocha');
 const path = require('path');
+const util = require('util');
 const colors = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2));
 const assert = require('assert');
@@ -19,7 +20,7 @@ describe('extglobs (minimatch)', () => {
   afterEach(() => picomatch.clearCache());
   after(() => (path.sep = sep));
 
-  let offset = 22;
+  let offset = 25;
   let fixtures = [
     [['', ''], false],
     [['', '*(0|1|3|5|7|9)'], false],
@@ -174,8 +175,8 @@ describe('extglobs (minimatch)', () => {
     [['a/z', 'a/!(z)'], false],
     [['a\\(b', 'a(*b'], false],
     [['a\\(b', 'a(b'], false],
-    [['a\\\\z', 'a\\\\z', { unixify: false }], false],
-    [['a\\\\z', 'a\\\\z'], false],
+    [['a\\\\z', 'a\\\\z', { unixify: false }], true],
+    [['a\\\\z', 'a\\\\z'], true],
     [['a\\b', 'a/b', { unixify: true }], true],
     [['a\\z', 'a\\\\z', { unixify: false }], true],
     [['a\\z', 'a\\\\z'], false, setup],
@@ -675,7 +676,7 @@ describe('extglobs (minimatch)', () => {
     let args = unit[0];
     let expected = unit[1];
     let setup = unit[2];
-    let errMessage = `${colors.cyan('Line ' + n)}) ${colors.yellow(args[0])} should ${colors.red(expected ? '' : 'not ')}match ${colors.yellow(args[1])}`;
+    let errMessage = `${colors.cyan('Line ' + n)}) ${colors.yellow(args[0])} should ${colors.red(expected ? '' : 'not ')}match ${colors.yellow(args[1])} (${colors.dim(util.inspect(args))})`;
 
     it(`"${args[0]}" should ${expected ? '' : 'not '}match "${args[1]}"`, () => {
       // console.log(bash.isMatch(...args))
