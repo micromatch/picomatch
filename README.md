@@ -16,8 +16,8 @@
 <br>
 
 <p align="center">
-<b>Blazing fast and accurate glob matcher written in JavaScript.</b></br>
-<sub>No dependencies and full support for standard and extended Bash glob features, including braces, extglobs, POSIX brackets, and regular expressions.<sub>
+<strong>Blazing fast and accurate glob matcher written in JavaScript.</strong></br>
+<em>No dependencies and full support for standard and extended Bash glob features, including braces, extglobs, POSIX brackets, and regular expressions.<em>
 </p>
 
 <br>
@@ -37,6 +37,17 @@ See the [feature comparison](#feature-comparison) to other libraries.
 <br>
 <br>
 
+## Install
+
+Install with [npm](https://www.npmjs.com/):
+
+```sh
+$ npm install --save picomatch
+```
+
+<br>
+<br>
+
 ## Usage
 
 The main export is a function that takes a glob pattern and an options object and returns a function for matching strings.
@@ -49,17 +60,6 @@ console.log(isMatch('abcd')); //=> false
 console.log(isMatch('a.js')); //=> true
 console.log(isMatch('a.md')); //=> false
 console.log(isMatch('a/b.js')); //=> false
-```
-
-<br>
-<br>
-
-## Install
-
-Install with [npm](https://www.npmjs.com/):
-
-```sh
-$ npm install --save picomatch
 ```
 
 <br>
