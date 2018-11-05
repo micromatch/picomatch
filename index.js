@@ -26,48 +26,59 @@ const scan = require('./scan');
  * @api public
  */
 
-const picomatch = (pattern, options) => {
-  if (Array.isArray(pattern)) {
-    let fns = pattern.map(p => picomatch(p, options));
+const picomatch = (patterns, options) => {
+  if (Array.isArray(patterns)) {
+    let fns = patterns.map(p => picomatch(p, options));
     return (...args) => fns.some(fn => fn(...args));
   }
 
-  let matcher = (input, options = {}) => {
-    if (typeof input !== 'string') {
-      throw new TypeError('expected input to be a string');
+  let matcher = (pattern, opts = {}) => {
+    if (typeof pattern !== 'string') {
+      throw new TypeError('expected pattern to be a string');
     }
 
-    if (options.normalize !== false) {
-      input = normalize(input);
+    if (opts.normalize !== false) {
+      pattern = normalize(pattern);
     }
 
-    if (input === '') {
-      return str => options.bash ? str === input : false;
+    if (pattern === '') {
+      return str => opts.bash ? str === pattern : false;
     }
 
-    let regex = picomatch.makeRe(input, options);
-    let isWin = isWindows(options);
     let isIgnored = () => false;
+    let isWin = isWindows(opts);
+    let negated = false;
 
-    if (options.ignore) {
-      let ignore = picomatch(options.ignore, { ...options, ignore: null });
-      isIgnored = str => ignore(str, true);
+    if (opts.nonegate !== true && pattern[0] === '!' && pattern[1] !== '(') {
+      pattern = pattern.slice(1);
+      negated = true;
     }
 
-    return (str, isUnixified = false, isNormalized = false) => {
-      if (str === input) return true;
-      if (isNormalized !== true && options.normalize !== false) str = normalize(str);
-      if (str === input) return true;
-      if (options.matchBase) {
-        let basename = path.basename(str);
-        return !isIgnored(basename) && regex.test(basename);
+    if (opts.ignore) {
+      let ignore = picomatch(opts.ignore, { ...opts, ignore: null });
+      isIgnored = str => ignore(str, true, true);
+    }
+
+    let test = str => !isIgnored(str) && pattern === str;
+    if (/[+*?[({})\]\\]/.test(pattern)) {
+      let regex = picomatch.makeRe(pattern, opts);
+      test = str => !isIgnored(str) && (pattern === str || regex.test(str));
+    }
+
+    let isMatch = (str, isUnixified = false, isNormalized = false) => {
+      if (str === pattern) return true;
+      if (isNormalized !== true && opts.normalize !== false) str = normalize(str);
+      if (str === pattern) return true;
+      if (opts.matchBase) {
+        return test(path.basename(str));
       }
-      let val = (isUnixified !== true && isWin) ? unixify(str) : str;
-      return !isIgnored(val) && (input === val || regex.test(val));
+      return test((!isUnixified && isWin) ? unixify(str) : str);
     };
+
+    return negated ? (str => !isMatch(str)) : isMatch;
   };
 
-  return precompile('matcher', pattern, options, matcher);
+  return precompile('matcher', patterns, options, matcher);
 };
 
 /**
@@ -87,8 +98,9 @@ const picomatch = (pattern, options) => {
  * @api public
  */
 
-picomatch.isMatch = (str, pattern, options, unixified) => {
-  return precompile('isMatch', pattern, options, picomatch)(str, unixified);
+picomatch.isMatch = (str, pattern, options, unixified, normalized) => {
+  let isMatch = precompile('isMatch', pattern, options, picomatch);
+  return isMatch(str, unixified, normalized);
 };
 
 /**
@@ -107,22 +119,13 @@ picomatch.isMatch = (str, pattern, options, unixified) => {
  * @api public
  */
 
-picomatch.makeRe = (pattern, options) => {
-  let makeRe = (input, opts = {}) => {
+picomatch.makeRe = (input, options) => {
+  let makeRe = (pattern, opts = {}) => {
     let flags = opts.flags || (opts.nocase ? 'i' : '');
-    let state = picomatch.parse(input, options);
-    if (opts.segments === true) {
-      let segs = state.segs.map(ele => {
-        ele.source = state.wrap(ele.value);
-        ele.regex = toRegex(ele.source, flags);
-        ele.isMatch = str => ele.regex.test(str);
-        return ele;
-      });
-      return segs;
-    }
+    let state = picomatch.parse(pattern, opts);
     return toRegex(state.source, flags);
   };
-  return precompile('makeRe', pattern, options, makeRe);
+  return precompile('makeRe', input, options, makeRe);
 };
 
 /**
@@ -131,7 +134,7 @@ picomatch.makeRe = (pattern, options) => {
  *
  * ```js
  * const pm = require('picomatch');
- * const state = pm(pattern[, options]);
+ * const state = pm.parse(pattern[, options]);
  * ```
  * @param {String} `glob`
  * @param {Object} `options`
@@ -139,13 +142,46 @@ picomatch.makeRe = (pattern, options) => {
  * @api public
  */
 
-picomatch.parse = (input, options) => parse(input, options);
-picomatch.scan = (input, options) => scan(input, options);
+picomatch.parse = parse;
+
+/**
+ * Scan a glob pattern to separate the pattern into segments. Used
+ * by the [split](#split) method.
+ *
+ * ```js
+ * const pm = require('picomatch');
+ * const state = pm.scan(pattern[, options]);
+ * ```
+ * @param {String} `pattern`
+ * @param {Object} `options`
+ * @return {Object} Returns an object with
+ * @api public
+ */
+
+picomatch.scan = scan;
+
+/**
+ * Split a glob pattern into two parts: the directory part of the glob,
+ * and the matching part.
+ *
+ * @param {String} `pattern`
+ * @param {Object} `options`
+ * @return {Array}
+ * @api public
+ */
 
 picomatch.split = (pattern, options) => {
   let { parent, glob } = scan(pattern, options);
   return [ parent, glob ];
 };
+
+/**
+ * Properly join a file path (or paths) to a glob pattern.
+ *
+ * @param {...[string]} `args` One or more path segments to join. Only the last segment may be a glob pattern.
+ * @return {String}
+ * @api public
+ */
 
 picomatch.join = (...args) => {
   let glob = args.pop();
@@ -153,13 +189,38 @@ picomatch.join = (...args) => {
   return path.posix.join(base, glob);
 };
 
+/**
+ * Same as [.join](#join) but returns an absolute path.
+ *
+ * @param {...[string]} `args` One or more path segments to join. Only the last segment may be a glob pattern.
+ * @return {String}
+ * @api public
+ */
+
 picomatch.resolve = (...args) => {
   let glob = args.pop();
   let base = unixify(path.posix.resolve(...args));
   return path.posix.join(base, glob);
 };
 
-picomatch.clearCache = () => (picomatch.cache = {});
+/**
+ * Clear the picomatch cache that is used for precompiled regular expressions.
+ * Precompiling can be completely disabled by setting `nocache` to true.
+ *
+ * ```js
+ * picomatch.clearCache();
+ * ```
+ * @return {undefined}
+ * @api public
+ */
+
+picomatch.clearCache = () => {
+  picomatch.cache = {};
+};
+
+/**
+ * Helpers
+ */
 
 function precompile(method, pattern, options, fn) {
   if (picomatch.nocache === true || options && options.nocache === true) {
