@@ -105,12 +105,12 @@ console.log(isMatch('a/b.js')); //=> false
 
 ## Basic globbing
 
-| **Character** | **Description** | 
-| --- | --- | 
-| `*` | Matches any character zero or more times, excluding path separators. Does _not match_ path separators or hidden files or directories ("dotfiles"), unless explicitly enabled by setting the `dot` option to `true`. | 
-| `**` | Matches any character zero or more times, including path separators. Note that `**` will only match path separators (`/`, and `\\` on Windows) when they are the only characters in a path segment. Thus, `foo**/bar` is equivalent to `foo*/bar`, and `foo/a**b/bar` is equivalent to `foo/a*b/bar`, and _more than two_ consecutive stars in a glob path segment are regarded as _a single star_. Thus, `foo/***/bar` is equivalent to `foo/*/bar`. | 
-| `?` | Matches any character excluding path separators one time. Does _not match_ path separators or leading dots.  | 
-| `[abc]` | Matches any characters inside the brackets. For example, `[abc]` would match the characters `a`, `b` or `c`, and nothing else. | 
+| **Character** | **Description** |
+| --- | --- |
+| `*` | Matches any character zero or more times, excluding path separators. Does _not match_ path separators or hidden files or directories ("dotfiles"), unless explicitly enabled by setting the `dot` option to `true`. |
+| `**` | Matches any character zero or more times, including path separators. Note that `**` will only match path separators (`/`, and `\\` on Windows) when they are the only characters in a path segment. Thus, `foo**/bar` is equivalent to `foo*/bar`, and `foo/a**b/bar` is equivalent to `foo/a*b/bar`, and _more than two_ consecutive stars in a glob path segment are regarded as _a single star_. Thus, `foo/***/bar` is equivalent to `foo/*/bar`. |
+| `?` | Matches any character excluding path separators one time. Does _not match_ path separators or leading dots.  |
+| `[abc]` | Matches any characters inside the brackets. For example, `[abc]` would match the characters `a`, `b` or `c`, and nothing else. |
 
 ### Matching behavior vs. Bash
 
