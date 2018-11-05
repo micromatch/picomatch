@@ -1,8 +1,58 @@
-# picomatch [![NPM version](https://img.shields.io/npm/v/picomatch.svg?style=flat)](https://www.npmjs.com/package/picomatch) [![NPM monthly downloads](https://img.shields.io/npm/dm/picomatch.svg?style=flat)](https://npmjs.org/package/picomatch) [![NPM total downloads](https://img.shields.io/npm/dt/picomatch.svg?style=flat)](https://npmjs.org/package/picomatch) [![Linux Build Status](https://img.shields.io/travis/folder/picomatch.svg?style=flat&label=Travis)](https://travis-ci.org/folder/picomatch)
+<h1 align="center">Picomatch</h1>
 
-> Tiny, minimalist glob matching library written in JavaScript.
+<p align="center">
+<a href="https://npmjs.org/package/picomatch">
+<img src="https://img.shields.io/npm/v/picomatch.svg" alt="version" />
+</a>
+<a href="https://travis-ci.org/micromatch/picomatch">
+<img src="https://img.shields.io/travis/micromatch/picomatch.svg" alt="travis" />
+</a>
+<a href="https://npmjs.org/package/picomatch">
+<img src="https://img.shields.io/npm/dm/picomatch.svg" alt="downloads" />
+</a>
+</p>
 
-Please consider following this project's author, [Jon Schlinkert](https://github.com/jonschlinkert), and consider starring the project to show your :heart: and support.
+<br>
+<br>
+
+<p align="center">
+<b>Blazing fast and accurate glob matcher written JavaScript.</b></br>
+<sub>No dependencies and full support for standard and extended Bash glob features, including braces, extglobs, POSIX brackets, and regular expressions.<sub>
+</p>
+
+<br>
+<br>
+
+## Why picomatch?
+
+* **Lightweight** - No dependencies
+* **Minimal** - Tiny API surface. Main export is a function that takes a glob pattern and returns a matcher function.
+* **Fast** - Loads in about 2ms (that's several times faster than a [single frame of a HD movie](http://www.endmemo.com/sconvert/framespersecondframespermillisecond.php) at 60fps)
+* **Performant** - Optional precompiling to speed up repeat matching (like when watching files)
+* **Accurate matching** - Using wildcards (`*` and `?`), globstars (`**`) for nested directories, [advanced globbing](#advanced-globbing) with extglobs, braces, and POSIX brackets, and support for escaping special characters with `\` or quotes.
+* **Well tested** - Thousands of unit tests
+
+See the [feature comparison](#feature-comparison) to other libraries.
+
+<br>
+<br>
+
+## Usage
+
+The main export is a function that takes a glob pattern and an options object and returns a function for matching strings.
+
+```js
+const pm = require('picomatch');
+const isMatch = pm('*.js');
+
+console.log(isMatch('abcd')); //=> false
+console.log(isMatch('a.js')); //=> true
+console.log(isMatch('a.md')); //=> false
+console.log(isMatch('a/b.js')); //=> false
+```
+
+<br>
+<br>
 
 ## Install
 
@@ -12,284 +62,72 @@ Install with [npm](https://www.npmjs.com/):
 $ npm install --save picomatch
 ```
 
-## Features
+<br>
+<br>
 
-The fastest, most accurate glob matcher written JavaScript, with no dependencies and full support for standard and extended Bash glob features, including braces, POSIX brackets, and advanced regex features. Picomatch loads faster, runs faster and matches faster than every other matching library, without [sacrificing quality](#sacrificing quality).
+## Options
 
-including the following "metacharacters": `*`, `**`, `?` and `[...]`.
+| **Option** | **Type** | **Default value** | **Description** |
+| --- | --- | --- | --- |
+| `bash`           | `boolean`      | `false`     | Follow bash matching rules more strictly - disallows backslashes as escape characters. |
+| `dot`            | `boolean`      | `false`     | Enable dotfile matching. By default, dotfiles are ignored unless a `.` is explicitly defined in the pattern, or `options.dot` is true |
+| `expandBrace`    | `function`     | `undefined` | Function to be called on brace patterns as an alternative to the built-in functionality. The function receives the entire brace pattern including the enclosing braces as its only argument, and it must return a string to be used in the generated regex. |
+| `expandRange`    | `function`     | `undefined` | Custom function for expanding ranges in brace patterns, such as `{a..z}`. The function receives the range values as two arguments, and it must return a string to be used in the generated regex. It's recommended that returned strings be wrapped in parentheses. This option is overridden by the `braces` option. |
+| `failglob`       | `boolean`      | `false`     | Throws an error if no matches are found. Based on the bash option of the same name. |
+| `flags`          | `boolean`      | `undefined` | Regex flags to use in the generated regex. If defined, the `nocase` option will be overridden. |
+| `ignore`         | `array\|string` | `undefined` | One or more glob patterns for excluding strings that should not be matched from the result. |
+| `keepQuotes`     | `boolean`      | `false`     | Retain quotes in the generated regex, since quotes may also be used as an alternative to backslashes.  |
+| `lookbehinds`    | `boolean`      | `true`      | Support regex positive and negative lookbehinds. Note that you must be using Node 8.1.10 or higher to enable regex lookbehinds. |
+| `matchBase`      | `boolean`      | `false`     | If set, then patterns without slashes will be matched against the basename of the path if it contains slashes.  For example, `a?b` would match the path `/xyz/123/acb`, but not `/xyz/acb/123`. |
+| `maxLength`      | `boolean`      | `65536`     | Limit the max length of the input string. An error is thrown if the input string is longer than this value. |
+| `nobrace`        | `boolean`      | `false`     | Disabled brace matching. Thus, `{a,b}` and `{1..3}` would be treated as literals. |
+| `nocase`         | `boolean`      | `false`     | Make matching case-insensitive. Equivalent to the regex `i` flag. Note that this option is overridden by the `flags` option. |
+| `nodupes`        | `boolean`      | `true`      | Deprecated, use `nounique` instead. This option will be removed in a future major release. By default duplicates are removed. Disable uniquification by setting this option to false. |
+| `noextglob`      | `boolean`      | `false`     | Disable support for matching with extglobs (like `+(a\|b)`) |
+| `noglobstar`     | `boolean`      | `false`     | Disable support for matching nested directories with globstars (`**`) |
+| `nonegate`       | `boolean`      | `false`     | Disable support for negating with leading `!` |
+| `noquantifiers`  | `boolean`      | `false`     | Disable support for regex quantifiers (like `a{1,2}`) and treat them as brace patterns to be expanded. |
+| `normalize`      | `boolean`      | `false`     | Normalize returned paths to remove leading `./` |
+| `posix`          | `boolean`      | `false`     | Support POSX character classes ("posix brackets"). |
+| `prepend`        | `boolean`      | `undefined` | String to prepend to the generated regex used for matching. |
+| `strictBrackets` | `boolean`      | `undefined` | Throw an error if brackets, braces, or parens are imbalanced. |
+| `strictSlashes`  | `boolean`      | `undefined` | Strictly enforce leading and trailing slashes. |
+| `unescapeRegex`  | `boolean`      | `undefined` | Remove backslashes preceding escaped characters in the returned regular expression. By default, backslashes are retained. |
+| `unixify`        | `boolean`      | `undefined` | Convert all slashes in the list to match (not in the glob pattern itself) to forward slashes. |
 
-* No dependencies
-* Extremely fast! Loads faster, and parses faster, and matches faster than every other matching library we tested against.
-* Wildcard matching, with `*` and `?`
-* Globstar matching, with `**`
-* [Advanced globbing](#extended-globbing), with extglobs, braces, and POSIX brackets!
+<br>
+<br>
 
-## Usage
+# Globbing features
 
-```js
-const pm = require('picomatch');
-```
+* Basic globbing (Wildcard matching)
+* Advanced globbing (extglobs, posix brackets, brace matching)
 
 ## Basic globbing
 
 | **Character** | **Description** | 
-| --- | --- |
-| `*` | Matches any character zero or more times, except for `/` |
-| `**` | Matches any character zero or more times, including `/` |
-| `?` | Matches any character except for `/` one time |
-| `[abc]` | Matches any characters inside the brackets. For example, `[abc]` would match the characters `a`, `b` or `c`, and nothing else. |
+| --- | --- | 
+| `*` | Matches any character zero or more times, excluding path separators. Does _not match_ path separators or hidden files or directories ("dotfiles"), unless explicitly enabled by setting the `dot` option to `true`. | 
+| `**` | Matches any character zero or more times, including path separators. Note that `**` will only match path separators (`/`, and `\\` on Windows) when they are the only characters in a path segment. Thus, `foo**/bar` is equivalent to `foo*/bar`, and `foo/a**b/bar` is equivalent to `foo/a*b/bar`, and _more than two_ consecutive stars in a glob path segment are regarded as _a single star_. Thus, `foo/***/bar` is equivalent to `foo/*/bar`. | 
+| `?` | Matches any character excluding path separators one time. Does _not match_ path separators or leading dots.  | 
+| `[abc]` | Matches any characters inside the brackets. For example, `[abc]` would match the characters `a`, `b` or `c`, and nothing else. | 
 
-**Notes**
+### Matching behavior vs. Bash
 
-* `*` typically does not match [hidden files]<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup> unless explicitly enabled by the user [via options](#common-options)
-* `?` also typically does not match the leading dot
-* More than two stars in a glob path segment are typically interpreted as _a single star_ (e.g. `/***/` is the same as `/*/`)
+Picomatch's matching features and expected results in unit tests are based on Bash's unit tests and the Bash 4.3 specification, with the following exceptions:
 
-## Matching special characters as literals
+* Bash will match `foo/bar/baz` with `*`. Picomatch only matches nested directories with `**`.
+* Bash greedily matches with negated extglobs. For example, Bash 4.3 says that `!(foo)*` should match `foo` and `foobar`, since the trailing `*` bracktracks to match the preceding pattern. This is very memory-inefficient, and IMHO, also incorrect. Picomatch would return `false` for both `foo` and `foobar`.
 
-If you wish to match the following special characters in a filepath, and you want to use these characters in your glob pattern, they must be escaped with backslashes or quotes:
-
-**Special Characters**
-
-Some characters that are used for matching in regular expressions are also regarded as valid file path characters on some platforms.
-
-To match any of the following characters as literals: `$^*+?()[]
-
-Examples:
-
-```js
-console.log(pm.makeRe('foo/bar \\(1\\)'));
-console.log(pm.makeRe('foo/bar \\(1\\)'));
-```
-
-## Options
-
-| **Option** | **Type** | **Default value** | **Description** | 
-| --- | --- | --- | --- |
-| `bash` | `boolean` | `false` | Make matching behavior more similar to bash. |
-| `dot` | `boolean` | `false` | Enable dotfile matching. |
-| `expandBrace` | `function` | `undefined` | Function to be called on brace patterns, as an alternative to the built-in functionality. The function receives the entire brace pattern including the enclosing braces as its only argument, and it must return a string to be used in the generated regex. |
-| `expandRange` | `function` | `undefined` | Custom function for expanding ranges in brace patterns, such as `{a..z}`. The function receives the range values as two arguments, and it must return a string to be used in the generated regex. It's recommended that returned strings be wrapped in parentheses. This option is overridden by the `braces` option. |
-| `failglob` | `boolean` | `false` | Throws an error if no matches are found. Based on the bash option of the same name. |
-| `flags` | `boolean` | `undefined` | Regex flags to use in the generated regex. If defined, the `nocase` option will be overridden. |
-| `ignore` | `array | string` | `undefined` | One or more patterns |
-| `keepQuotes` | `boolean` | `false` |  |
-| `lookbehinds` | `boolean` | `true` | Support regex positive and negative lookbehinds. Note that your version of node.js must also support regex lookbehinds. |
-| `maxLength` | `boolean` | `65536` | Maximimum length of the input string. An error is thrown if the input string is longer than this value. |
-| `nocase` | `boolean` | `false` | Make globs case-insensitive. Equivalent to the regex `i` flag, this option is overridden by the `flags` option. |
-| `noextglob` | `boolean` | `false` | Disable [extglobs](#extglobs) |
-| `noglobstar` | `boolean` | `false` | Disable [globstar](#globstar) support. |
-| `nonegate` | `boolean` | `false` |  |
-| `nonull` | `boolean` | `undefined` |  |
-| `normalize` | `boolean` | `undefined` | Normalize returned paths to remove leading `./` |
-| `noquantifiers` | `boolean` | `undefined` | Disable support for regex quantifiers (like `a{1,2}`) and treat them as brace patterns to be expanded. |
-| `nounique` | `boolean` | `undefined` | Allow duplicates in the array of returned matches. |
-| `nullglob` | `boolean` | `undefined` |  |
-| `onMatch` | `function` | `undefined` | Function is called on matching strings. |
-| `prepend` | `boolean` | `undefined` |  |
-| `strictErrors` | `boolean` | `undefined` |  |
-| `strictSlashes` | `boolean` | `undefined` | Strictly enforce leading and trailing slashes. |
-| `unescape` | `boolean` | `undefined` | By default, backslashes are retained Remove backslashes preceding escaped characters. |
-| `unixify` | `boolean` | `undefined` | Convert all slashes in the list to match (not in the glob pattern itself) to forward slashes. |
-
-| `**` | When two consecutive stars, or "globstars" as defined by bash, are the only thing in a path segment.
-
-| **Option name** | **Description** | 
-| --- | --- |
-| `noextglob` | Disable extglobs. In addition to the traditional globs (using wildcards: `*`, `**`, `?` and `[...]`), extended globs add (almost) the expressive power of regular expressions, allowing the use of patterns like `foo/!(bar)*` |
-| `dot` | Match paths beginning with `.`, or where `.` directly follows a path separator, as in `foo/.gitignore`. This option is automatically enabled if the glob pattern begins with a dot. |
-| `failglob` | Throws an error when no matches are found. |
-| `ignore` | Allows you to specify one or more patterns that should not be matched. |
-| `noglobstar` | Recursively match directory paths (enabled by default in [minimatch](https://github.com/isaacs/minimatch) and [micromatch](https://github.com/micromatch/micromatch), but not in [bash](https://github.com/felixge/node-bash)) |
-| `nocase` | Perform case-insensitive matching |
-| `nullglob` | When enabled, the pattern itself will be returned when no matches are found. Aliases: `nonull` (supported by: [minimatch](https://github.com/isaacs/minimatch), [micromatch](https://github.com/micromatch/micromatch)) |
-
-| `dot`       | Allow patterns to match filenames starting with a period, even if the pattern does not explicitly have a period in that spot. Note that by default, `a/**/b` will **not** match `a/.d/b`, unless `dot` is set. |
-| `matchBase` | If set, then patterns without slashes will be matched against the basename of the path if it contains slashes.  For example, `a?b` would match the path `/xyz/123/acb`, but not `/xyz/acb/123`. |
-| `nobrace`   | Do not expand `{a,b}` and `{1..3}` brace sets. |
-| `nocase`    | Perform a case-insensitive match. |
-| `noext`     | Disable "extglob" style patterns like `+(a|b)`. |
-| `noglobstar`| Disable `**` matching against multiple folder names. |
-| `nonegate`  | Suppress the behavior of treating a leading `!` character as negation. |
-| `nonull`    | When a match is not found by `minimatch.match`, return a list containing the pattern itself if this option is set.  When not set, an empty list is returned if there are no matches. |
-
-## options.toRange
-
-**Type**: `function`
-
-**Default**: `undefine`
-
-Custom function for expanding ranges in brace patterns. The [fill-range](https://github.com/jonschlinkert/fill-range) library is ideal for this purpose, or you can use custom code to do whatever you need.
-
-**Example**
-
-The following example shows how to create a glob that matches a folder
-
-```js
-const fill = require('fill-range');
-const regex = pm.makeRe('foo/{1..25}', {
-  toRange(a, b) {
-    return `(${fill(a, b, { toRegex: true })})`;
-  }
-});
-
-console.log(regex);
-//=> /^(?:foo\/([1-9]|1[0-9]|2[0-5])(?:\/|$))$/
-
-console.log(regex.test('foo/0'))  // false
-console.log(regex.test('foo/1'))  // true
-console.log(regex.test('foo/10')) // true
-console.log(regex.test('foo/22')) // true
-console.log(regex.test('foo/25')) // true
-console.log(regex.test('foo/26')) // false
-```
-
-## API
-
-**Params**
-
-* `glob` **{String}**
-* `options` **{Object}**
-* `returns` **{Object}**: Returns an object with useful properties and output to be used as regex source string.
-
-**Example**
-
-```js
-const pm = require('picomatch');
-const state = pm(pattern[, options]);
-```
-
-### [.isMatch](index.js#L636)
-
-Returns true if **any** of the given glob `patterns` match the specified `string`.
-
-**Params**
-
-* **{String|Array}**: str The string to test.
-* **{String|Array}**: patterns One or more glob patterns to use for matching.
-* **{Object}**: See available [options](#options).
-* `returns` **{Boolean}**: Returns true if any patterns match `str`
-
-**Example**
-
-```js
-const pm = require('picomatch');
-pm.isMatch(string, patterns[, options]);
-
-console.log(pm.isMatch('a.a', ['b.*', '*.a'])); //=> true
-console.log(pm.isMatch('a.a', 'b.*')); //=> false
-```
-
-### [.matcher](index.js#L659)
-
-Returns a matcher function from the given glob `pattern` and `options`. The returned function takes a string to match as its only argument and returns true if the string is a match.
-
-**Params**
-
-* `pattern` **{String}**: Glob pattern
-* `options` **{Object}**
-* `returns` **{Function}**: Returns a matcher function.
-
-**Example**
-
-```js
-const pm = require('picomatch');
-pm.matcher(pattern[, options]);
-
-const isMatch = pm.matcher('*.!(*a)');
-console.log(isMatch('a.a')); //=> false
-console.log(isMatch('a.b')); //=> true
-```
-
-**Params**
-
-* `pattern` **{String}**: A glob pattern to convert to regex.
-* `options` **{Object}**
-* `returns` **{RegExp}**: Returns a regex created from the given pattern.
-
-**Example**
-
-```js
-const pm = require('picomatch');
-pm.makeRe(pattern[, options]);
-
-console.log(pm.makeRe('*.js'));
-//=> /^(?:(\.[\\\/])?(?!\.)(?=.)[^\/]*?\.js)$/
-```
-
-### [.scan](index.js#L733)
-
-Quickly scans a glob pattern and returns an object with a handful of useful properties, like `isGlob`, `path` (the leading non-glob, if it exists), `glob` (the actual pattern), and `negated` (true if the path starts with `!`).
-
-**Params**
-
-* `str` **{String}**
-* `options` **{Object}**
-* `returns` **{Object}**: Returns an object with tokens and regex source string.
-
-**Example**
-
-```js
-const pm = require('picomatch');
-console.log(pm.scan('foo/bar/*.js'));
-{ isGlob: true, input: 'foo/bar/*.js', path: 'foo/bar', parts: [ 'foo', 'bar' ], glob: '*.js' }
-```
+<br>
+<br>
 
 ## Advanced globbing
 
-Picomatch supports extended globbing by default, with the exception of [POSIX brackets](#posix-brackets), which must be enabled first.
-
-* [Advanced regex](#Advanced regex) feature support, including [lookbehinds](TODO) (requires Node.js v10+)!
-* [Braces](#extglobs) support (basic)
-* [Extglob](#extglobs) support
-* [POSIX bracket](#posix-brackets) support
-
-### Advanced regex features
-
-**Lookbehinds**
-
-### Extglobs
-
-| **Pattern** | **Description** |
-| --- | --- | --- |
-| `@(pattern)` | Match _only one_ consecutive occurrence of `pattern` |
-| `*(pattern)` | Match _zero or more_ consecutive occurrences of `pattern` |
-| `+(pattern)` | Match _one or more_ consecutive occurrences of `pattern` |
-| `?(pattern)` | Match _zero or **one**_ consecutive occurrences of `pattern` |
-| `!(pattern)` | Match _anything but_ `pattern` |
-
-**Examples**
-
-```js
-const pm = require('picomatch');
-
-// *(pattern) matches ZERO or more of "pattern"
-console.log(pm.isMatch('a', 'a*(z)')); // true
-console.log(pm.isMatch('az', 'a*(z)')); // true
-console.log(pm.isMatch('azzz', 'a*(z)')); // true
-
-// +(pattern) matches ONE or more of "pattern"
-console.log(pm.isMatch('a', 'a*(z)')); // true
-console.log(pm.isMatch('az', 'a*(z)')); // true
-console.log(pm.isMatch('azzz', 'a*(z)')); // true
-
-// supports multiple extglobs
-console.log(pm.isMatch('moo.cow', '!(moo).!(cow)')); // false
-console.log(pm.isMatch('foo.cow', '!(moo).!(cow)')); // false
-console.log(pm.isMatch('moo.bar', '!(moo).!(cow)')); // false
-console.log(pm.isMatch('foo.bar', '!(moo).!(cow)')); // true
-
-// supports nested extglobs 
-console.log(pm.isMatch('moo.cow', '!(!(moo)).!(!(cow))')); // true
-```
-
-**Disable extglob support**
-
-```js
-
-```
-
-See the [Bash Reference Manual](https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html) for more information.
+* extglobs (todo)
+* POSIX brackets
+* brace expansion (todo)
+* regular expressions (todo)
 
 ### POSIX brackets
 
@@ -302,7 +140,7 @@ console.log(pm.makeRe('[[:word:]]+', { posix: true }));
 //=> /^(?:(?=.)[A-Za-z0-9_]+\/?)$/
 ```
 
-**Supported classes**
+**Supported POSIX classes**
 
 The following named POSIX bracket expressions are supported:
 
@@ -323,38 +161,70 @@ The following named POSIX bracket expressions are supported:
 
 See the [Bash Reference Manual](https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html) for more information.
 
-## Picomatch performance
+## Matching special characters as literals
+
+If you wish to match the following special characters in a filepath, and you want to use these characters in your glob pattern, they must be escaped with backslashes or quotes:
+
+**Special Characters**
+
+Some characters that are used for matching in regular expressions are also regarded as valid file path characters on some platforms.
+
+To match any of the following characters as literals: `$^*+?()[]
+
+Examples:
+
+```js
+console.log(pm.makeRe('foo/bar \\(1\\)'));
+console.log(pm.makeRe('foo/bar \\(1\\)'));
+```
+
+<br>
+<br>
+
+## Library Comparisons
+
+Comparison to other libraries.
+
+### Feature comparison
+
+The following table shows which features are supported by [minimatch](https://github.com/isaacs/minimatch), [micromatch](https://github.com/micromatch/micromatch), [picomatch][], [nanomatch](https://github.com/micromatch/nanomatch), [extglob](https://github.com/micromatch/extglob), [braces](https://github.com/micromatch/braces), and [expand-brackets](https://github.com/micromatch/expand-brackets).
+
+| **Feature** | `minimatch` | `micromatch` | `picomatch` | `nanomatch` | `extglob` | `braces` | `expand-brackets` |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| wildcard matching (`*?+`) | ✔ | ✔ | ✔ | ✔ | - | - | - |
+| advancing globbing     | ✔ | ✔ | ✔ | - | - | - | - |
+| brace _matching_       | ✔ | ✔ | ✔ | - | - | ✔ | - |
+| brace _expansion_      | ✔ | ✔ | - | - | - | ✔ | - |
+| extglobs               | partial | ✔ | ✔ | - | ✔ | - | - |
+| posix brackets         | - | ✔ | ✔ | - | - | - | ✔ |
+| regular expression syntax | - | ✔ | ✔ | ✔ | ✔ | - | ✔ |
+| file system operations | - | - | - | - | - | - | - |
+
+<br>
+<br>
+
+## Performance comparison
 
 ### Load time
 
-* minimatch: `5.466ms`
-* picomatch: `1.447ms`
-
-## Matching behavior
-
-Picomatch's matching features and expected results in unit tests are based on Bash's unit tests and the Bash 4.3 specification, with the following exceptions:
-
-* Bash will match `foo/bar/baz` with `*`. Picomatch only matches nested directories with `**`.
-* Bash greedily matches with negated extglobs. For example, Bash 4.3 says that `!(foo)*` should match `foo` and `foobar`, since the trailing `*` bracktracks to match the preceding pattern. This is very memory-inefficient, and IMHO, also incorrect. Picomatch would return `false` for both `foo` and `foobar`.
-
-## Comparison to other libraries
-
-| **Library** | **Tests passed** | **Tests failed** |
-
-### picomatch (the baseline)
-
 ```
-1576 passing (445ms)
+minimatch: 4.230ms
+picomatch: 2.123ms
 ```
 
-### globrex
+### First match
 
-globrex was so innacurate at matching that we decided to leave it out of the benchmarks.
+Time it takes to return the first match, including `require()` time:
 
+```js
+console.log(require('minimatch').makeRe('**/*').test('foo/bar/baz/qux.js'));
+// 9.275ms
+console.log(require('picomatch').makeRe('**/*').test('foo/bar/baz/qux.js'));
+// 7.429ms
 ```
-814 passing (535ms)
-762 failing
-```
+
+<br>
+<br>
 
 ## About
 
@@ -403,16 +273,3 @@ $ npm install -g verbose/verb#dev verb-generate-readme && verb
 
 Copyright © 2018, [Jon Schlinkert](https://github.com/jonschlinkert).
 Released under the [MIT License](LICENSE).
-
-***
-
-_This file was generated by [verb-generate-readme](https://github.com/verbose/verb-generate-readme), v0.6.0, on August 11, 2018._
-
-<hr class="footnotes-sep">
-<section class="footnotes">
-<ol class="footnotes-list">
-<li id="fn1"  class="footnote-item">Also known as _dotfiles_ file names starting with a dot. See the <a href= ""https://en.wikipedia.org/wiki/Hidden_file_and_hidden_directory">hidden files and directories wiki</a> for more information." <a href="#fnref1" class="footnote-backref">↩</a>
-
-</li>
-</ol>
-</section>

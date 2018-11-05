@@ -22,9 +22,9 @@ const match = (list, pattern, options = {}) => {
 describe('extglobs', () => {
   beforeEach(() => pm.clearCache());
 
-  it('should throw on imbalanced sets when `options.strictErrors` is true', () => {
-    assert.throws(() => pm.makeRe('a(b', { strictErrors: true }), /missing closing: "\)"/i);
-    assert.throws(() => pm.makeRe('a)b', { strictErrors: true }), /missing opening: "\("/i);
+  it('should throw on imbalanced sets when `options.strictBrackets` is true', () => {
+    assert.throws(() => pm.makeRe('a(b', { strictBrackets: true }), /missing closing: "\)"/i);
+    assert.throws(() => pm.makeRe('a)b', { strictBrackets: true }), /missing opening: "\("/i);
   });
 
   it('should match extglobs ending with statechar', () => {

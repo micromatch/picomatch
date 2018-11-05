@@ -1,5 +1,4 @@
-require('ansi-colors') // noop require to prime the cache
-
 console.time('picomatch');
-console.log(require('..').makeRe('*', { strictSlashes: true }));
+console.log(require('..').makeRe('**/*').test('foo/bar/baz/qux.js'));
 console.timeEnd('picomatch');
+// picomatch: 7.429ms

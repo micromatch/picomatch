@@ -62,8 +62,8 @@ describe('options', () => {
       assert.deepEqual(match(['foo.js', 'a/foo.js'], '**/foo.js'), ['foo.js', 'a/foo.js']);
       assert.deepEqual(match(['foo.js', 'a/foo.js'], '**/foo.js', { dot: true }), ['foo.js', 'a/foo.js']);
 
-      assert.deepEqual(match(negations, '!b/a', opts), ['b/b', 'b/c']);
-      assert.deepEqual(match(negations, '!b/(a)', opts), ['b/b', 'b/c']);
+      assert.deepEqual(match(negations, '!b/a', opts), ['a/a', 'a/b', 'a/c', 'a/d', 'a/e', 'b/b', 'b/c']);
+      assert.deepEqual(match(negations, '!b/(a)', opts), ['a/a', 'a/b', 'a/c', 'a/d', 'a/e', 'b/b', 'b/c']);
       assert.deepEqual(match(negations, '!(b/(a))', opts), ['b/b', 'b/c']);
       assert.deepEqual(match(negations, '!(b/a)', opts), ['b/b', 'b/c']);
 

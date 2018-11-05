@@ -14,7 +14,7 @@ describe('picomatch', () => {
 
   describe('validation', () => {
     it('should throw an error when invalid arguments are given', () => {
-      assert.throws(() => isMatch('foo', null), /expected input to be a string/);
+      assert.throws(() => isMatch('foo', null), /expected pattern to be a string/);
       assert.throws(() => isMatch('foo', '*'.repeat(65537)), /must not be longer than/);
     });
   });

@@ -5,10 +5,10 @@ const path = require('path');
 const isWindows = process.platform === 'win32';
 const assert = require('assert');
 const { scan } = require('..');
-const base = (...args) => scan(...args).parent;
+const base = (...args) => scan(...args).base;
 const both = (...args) => {
-  let { parent, glob } = scan(...args);
-  return [parent, glob];
+  let { base, pattern } = scan(...args);
+  return [base, pattern];
 };
 
 /**
@@ -29,49 +29,49 @@ describe('picomatch.scan', () => {
 
   it('should handle leading "./"', () => {
     assert.deepEqual(scan('./foo/bar/*.js'), {
-      glob: '*.js',
       input: './foo/bar/*.js',
+      pattern: '*.js',
       isGlob: true,
       parts: ['foo', 'bar'],
-      parent: 'foo/bar',
+      base: 'foo/bar',
       prefix: './'
     });
   });
 
   it('should handle leading "!"', () => {
     assert.deepEqual(scan('!foo/bar/*.js'), {
-      glob: '*.js',
       input: '!foo/bar/*.js',
+      pattern: '*.js',
       isGlob: true,
       negated: true,
       parts: ['foo', 'bar'],
-      parent: 'foo/bar'
+      base: 'foo/bar'
     });
   });
 
   it('should handle leading "./" when negated', () => {
     assert.deepEqual(scan('./!foo/bar/*.js'), {
-      glob: '*.js',
       input: './!foo/bar/*.js',
+      pattern: '*.js',
       isGlob: true,
       negated: true,
       parts: ['foo', 'bar'],
-      parent: 'foo/bar',
+      base: 'foo/bar',
       prefix: './'
     });
 
     assert.deepEqual(scan('!./foo/bar/*.js'), {
-      glob: '*.js',
       input: '!./foo/bar/*.js',
+      pattern: '*.js',
       isGlob: true,
       negated: true,
       parts: ['foo', 'bar'],
-      parent: 'foo/bar',
+      base: 'foo/bar',
       prefix: './'
     });
   });
 
-  it('should strip glob magic to return parent path', () => {
+  it('should strip glob magic to return base path', () => {
     assert.equal(base('.'), '.');
     assert.equal(base('.*'), '');
     assert.equal(base('/.*'), '/');

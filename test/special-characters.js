@@ -207,7 +207,7 @@ describe('special characters', () => {
     });
 
     it('should throw an error on imbalanced, unescaped parens', () => {
-      let opts = { strictErrors: true };
+      let opts = { strictBrackets: true };
       assert.throws(() => picomatch.makeRe('*)', opts), /Missing opening: "\("/);
       assert.throws(() => picomatch.makeRe('*(', opts), /Missing closing: "\)"/);
     });

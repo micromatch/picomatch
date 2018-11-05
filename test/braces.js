@@ -10,6 +10,18 @@ describe('braces', () => {
   beforeEach(() => picomatch.clearCache());
 
   it('should match with brace patterns', () => {
+    assert(!pm.isMatch('a/a', 'a/{a,b}', { nobrace: true }));
+    assert(!pm.isMatch('a/b', 'a/{a,b}', { nobrace: true }));
+    assert(!pm.isMatch('a/c', 'a/{a,b}', { nobrace: true }));
+    assert(!pm.isMatch('b/b', 'a/{a,b}', { nobrace: true }));
+    assert(!pm.isMatch('b/b', 'a/{a,b,c}', { nobrace: true }));
+    assert(!pm.isMatch('a/c', 'a/{a,b,c}', { nobrace: true }));
+    assert(!pm.isMatch('a/a', 'a/{a..c}', { nobrace: true }));
+    assert(!pm.isMatch('a/b', 'a/{a..c}', { nobrace: true }));
+    assert(!pm.isMatch('a/c', 'a/{a..c}', { nobrace: true }));
+  });
+
+  it('should match with brace patterns', () => {
     assert(pm.isMatch('a/a', 'a/{a,b}'));
     assert(pm.isMatch('a/b', 'a/{a,b}'));
     assert(!pm.isMatch('a/c', 'a/{a,b}'));
@@ -43,7 +55,60 @@ describe('braces', () => {
     assert(pm.isMatch('{a}{b}{c}', '[abc{}]+'));
   });
 
+  it('should support braces with slashes', () => {
+    assert(pm.isMatch('aa.txt', 'a{a,b/}*.txt'));
+    assert(pm.isMatch('ab/.txt', 'a{a,b/}*.txt'));
+    assert(pm.isMatch('ab/a.txt', 'a{a,b/}*.txt'));
+  });
+
+  it('should support braces with empty elements', () => {
+    assert(pm.isMatch('a.txt', 'a{,b}.txt'));
+    assert(pm.isMatch('ab.txt', 'a{,b}.txt'));
+    assert(!pm.isMatch('abc.txt', 'a{,b}.txt'));
+    assert(pm.isMatch('a.txt', 'a{b,}.txt'));
+    assert(pm.isMatch('ab.txt', 'a{b,}.txt'));
+    assert(!pm.isMatch('abc.txt', 'a{b,}.txt'));
+    assert(pm.isMatch('aa.txt', 'a{a,b,}.txt'));
+    assert(pm.isMatch('aa.txt', 'a{a,b,}.txt'));
+    assert(!pm.isMatch('abc.txt', 'a{a,b,}.txt'));
+  });
+
   it('should support braces with slashes and empty elements', () => {
+    assert(pm.isMatch('a.txt', 'a{,/}*.txt'));
+    assert(pm.isMatch('ab.txt', 'a{,/}*.txt'));
+    assert(pm.isMatch('a/b.txt', 'a{,/}*.txt'));
+    assert(pm.isMatch('a/ab.txt', 'a{,/}*.txt'));
+  });
+
+  it('should support braces with stars', () => {
+    assert(pm.isMatch('a.txt', 'a{,.*{foo,db},\\(bar\\)}.txt'));
+    assert(!pm.isMatch('adb.txt', 'a{,.*{foo,db},\\(bar\\)}.txt'));
+    assert(pm.isMatch('a.db.txt', 'a{,.*{foo,db},\\(bar\\)}.txt'));
+
+    assert(pm.isMatch('a.txt', 'a{,*.{foo,db},\\(bar\\)}.txt'));
+    assert(!pm.isMatch('adb.txt', 'a{,*.{foo,db},\\(bar\\)}.txt'));
+    assert(pm.isMatch('a.db.txt', 'a{,*.{foo,db},\\(bar\\)}.txt'));
+
+    assert(pm.isMatch('a', 'a{,.*{foo,db},\\(bar\\)}'));
+    assert(!pm.isMatch('adb', 'a{,.*{foo,db},\\(bar\\)}'));
+    assert(pm.isMatch('a.db', 'a{,.*{foo,db},\\(bar\\)}'));
+
+    assert(pm.isMatch('a', 'a{,*.{foo,db},\\(bar\\)}'));
+    assert(!pm.isMatch('adb', 'a{,*.{foo,db},\\(bar\\)}'));
+    assert(pm.isMatch('a.db', 'a{,*.{foo,db},\\(bar\\)}'));
+
+    assert(!pm.isMatch('a', '{,.*{foo,db},\\(bar\\)}'));
+    assert(!pm.isMatch('adb', '{,.*{foo,db},\\(bar\\)}'));
+    assert(!pm.isMatch('a.db', '{,.*{foo,db},\\(bar\\)}'));
+    assert(pm.isMatch('.db', '{,.*{foo,db},\\(bar\\)}'));
+
+    assert(!pm.isMatch('a', '{,*.{foo,db},\\(bar\\)}'));
+    assert(pm.isMatch('a', '{*,*.{foo,db},\\(bar\\)}'));
+    assert(!pm.isMatch('adb', '{,*.{foo,db},\\(bar\\)}'));
+    assert(pm.isMatch('a.db', '{,*.{foo,db},\\(bar\\)}'));
+  });
+
+  it('should support braces with globstars, slashes and empty elements', () => {
     assert(pm.isMatch('a.txt', 'a{,/**/}*.txt'));
     assert(pm.isMatch('a/b.txt', 'a{,/**/,/}*.txt'));
     assert(pm.isMatch('a/x/y.txt', 'a{,/**/}*.txt'));

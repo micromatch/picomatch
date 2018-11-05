@@ -203,7 +203,7 @@ describe('slash handling - posix', () => {
 
   it('should support globstars (**)', () => {
     assert(isMatch('a', ['a']));
-    assert(isMatch('a/', ['a']));
+    assert(!isMatch('a/', ['a']));
     assert(!isMatch('a/a', ['a']));
     assert(!isMatch('a/b', ['a']));
     assert(!isMatch('a/c', ['a']));

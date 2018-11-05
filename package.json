@@ -24,7 +24,6 @@
     "ansi-colors": "^3.0.5",
     "bash-match": "file:../bash-match",
     "fill-range": "^6.0.0",
-    "glob-parent": "^3.1.0",
     "gulp-format-md": "^1.0.0",
     "minimatch": "^3.0.4",
     "minimist": "^1.2.0",
@@ -39,7 +38,7 @@
   ],
   "verb": {
     "toc": false,
-    "layout": "default",
+    "layout": false,
     "tasks": [
       "readme"
     ],
@@ -53,7 +52,15 @@
       "bash",
       "fill-range",
       "micromatch",
-      "minimatch"
-    ]
+      "minimatch",
+      "braces",
+      "expand-brackets",
+      "extglob",
+      "nanomatch",
+      "picomatch"
+    ],
+    "related": {
+      "list": []
+    }
   }
 }

@@ -9,6 +9,23 @@ const { isMatch } = require('./support');
 describe('regex features', () => {
   beforeEach(() => pm.clearCache());
 
+  describe('lookarounds', () => {
+    it('should support regex lookbehinds', () => {
+      if (parseInt(version.slice(1), 10) >= 10) {
+        assert(isMatch('foo/cbaz', 'foo/*(?<!d)baz'));
+        assert(!isMatch('foo/cbaz', 'foo/*(?<!c)baz'));
+        assert(!isMatch('foo/cbaz', 'foo/*(?<=d)baz'));
+        assert(isMatch('foo/cbaz', 'foo/*(?<=c)baz'));
+      }
+    });
+
+    it('should throw an error when regex lookbehinds are used on an unsupported node version', () => {
+      Reflect.defineProperty(process, 'version', { value: 'v6.0.0' });
+      assert.throws(() => isMatch('foo/cbaz', 'foo/*(?<!c)baz'), /Node\.js v10 or higher/);
+      Reflect.defineProperty(process, 'version', { value: version });
+    });
+  });
+
   describe('back-references', () => {
     it('should support regex backreferences', () => {
       assert(!isMatch('1/2', '(*)/\\1'));
@@ -152,23 +169,6 @@ describe('regex features', () => {
       assert(isMatch('a/bb/c/dd/e.md', 'a/**/(?:dd)/e.md'));
       assert(isMatch('a/b/c/d/e.md', 'a/?/c/?/(?:e|f).md'));
       assert(isMatch('a/b/c/d/f.md', 'a/?/c/?/(?:e|f).md'));
-    });
-  });
-
-  describe('lookarounds', () => {
-    it('should support regex lookbehinds', () => {
-      if (parseInt(version.slice(1), 10) >= 10) {
-        assert(isMatch('foo/cbaz', 'foo/*(?<!d)baz'));
-        assert(!isMatch('foo/cbaz', 'foo/*(?<!c)baz'));
-        assert(!isMatch('foo/cbaz', 'foo/*(?<=d)baz'));
-        assert(isMatch('foo/cbaz', 'foo/*(?<=c)baz'));
-      }
-    });
-
-    it('should throw an error when regex lookbehinds are used on an unsupported node version', () => {
-      Reflect.defineProperty(process, 'version', { value: 'v6.0.0' });
-      assert.throws(() => isMatch('foo/cbaz', 'foo/*(?<!c)baz'), /Node\.js v10 or higher/);
-      Reflect.defineProperty(process, 'version', { value: version });
     });
   });
 });

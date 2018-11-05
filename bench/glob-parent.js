@@ -11,8 +11,8 @@ const pm = require('..');
  */
 
 const cycle = (e, newline) => {
-  process.stdout.write('\u001b[G');
-  process.stdout.write(`  ${e.target}${newline ? `\n` : ''}`);
+  // process.stdout.write('');
+  process.stdout.write(`\u001b[G  ${e.target}${newline ? `\n` : ''}`);
 };
 
 function bench(name, options) {
@@ -40,12 +40,10 @@ function bench(name, options) {
     return suite;
   };
 
-  // suite.on('complete', fastest.bind(suite));
   return suite;
 }
 
-
-bench(red('.base') + ' *')
-  .add('  picomatch', () => pm.split('foo/*.js'))
+bench(red('.base') + ' foo/*.js')
+  .add('  picomatch', () => pm.split('foo/*.js', { cache: false }))
   .add('glob-parent', () => parent('foo/*.js'))
   .run();
