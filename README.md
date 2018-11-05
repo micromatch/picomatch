@@ -77,7 +77,7 @@ console.log(isMatch('a/b.js')); //=> false
 | `flags`          | `boolean`      | `undefined` | Regex flags to use in the generated regex. If defined, the `nocase` option will be overridden. |
 | `ignore`         | `array\|string` | `undefined` | One or more glob patterns for excluding strings that should not be matched from the result. |
 | `keepQuotes`     | `boolean`      | `false`     | Retain quotes in the generated regex, since quotes may also be used as an alternative to backslashes.  |
-| `lookbehinds`    | `boolean`      | `true`      | Support regex positive and negative lookbehinds. Note that you must be using Node 8.1.10 or higher to enable regex lookbehinds. |
+| `lookbehinds`    | `boolean`      | `true`      | Support regex positive and negative lookbehinds. Note that you must be using Node 10 or higher to enable regex lookbehinds. |
 | `matchBase`      | `boolean`      | `false`     | If set, then patterns without slashes will be matched against the basename of the path if it contains slashes.  For example, `a?b` would match the path `/xyz/123/acb`, but not `/xyz/acb/123`. |
 | `maxLength`      | `boolean`      | `65536`     | Limit the max length of the input string. An error is thrown if the input string is longer than this value. |
 | `nobrace`        | `boolean`      | `false`     | Disabled brace matching. Thus, `{a,b}` and `{1..3}` would be treated as literals. |
