@@ -17,7 +17,7 @@
 
 <p align="center">
 <strong>Blazing fast and accurate glob matcher written in JavaScript.</strong></br>
-<em>No dependencies and full support for standard and extended Bash glob features, including braces, extglobs, POSIX brackets, and regular expressions.<em>
+<em>No dependencies and full support for standard and extended Bash glob features, including braces, extglobs, POSIX brackets, and regular expressions.</em>
 </p>
 
 <br>
