@@ -10,6 +10,9 @@
 <a href="https://npmjs.org/package/picomatch">
 <img src="https://img.shields.io/npm/dm/picomatch.svg" alt="downloads" />
 </a>
+<a href="https://packagephobia.now.sh/result?p=picomatch">
+<img src="https://packagephobia.now.sh/badge?p=picomatch" alt="install size" />
+</a>
 </p>
 
 <br>
