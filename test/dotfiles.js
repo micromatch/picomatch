@@ -20,6 +20,11 @@ describe('dotfiles', () => {
     assert(!pm.isMatch('foo/.bar/baz', '*/*/*'));
   });
 
+  it('should work with dots in the path', () => {
+    assert(pm.isMatch('../test.js', '../*.js'));
+    assert(!pm.isMatch('../.test.js', '../*.js'));
+  });
+
   it('should not match dotfiles with globstars by default', () => {
     assert(pm.isMatch('foo', '**/*'));
     assert(!pm.isMatch('.foo', '**'));
