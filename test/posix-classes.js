@@ -4,9 +4,7 @@ require('mocha');
 const assert = require('assert');
 const pm = require('..');
 const opts = { strictSlashes: true, posix: true };
-const isMatch = (...args) => {
-  return pm.isMatch(...args, opts);
-};
+const isMatch = (...args) => pm.isMatch(...args, opts);
 const convert = (...args) => {
   let state = pm.parse(...args, opts);
   return state.output;
@@ -258,8 +256,8 @@ describe('posix classes', () => {
 
   describe('.makeRe()', () => {
     it('should make a regular expression for the given pattern:', () => {
-      assert.deepEqual(pm.makeRe('[[:alpha:]123]', opts), /^(?:(?=.)[a-zA-Z123])$/);
-      assert.deepEqual(pm.makeRe('[![:lower:]]', opts), /^(?:(?=.)[^a-z])$/);
+      assert.deepEqual(pm.makeRe('[[:alpha:]123]', opts), /^(?=.)[a-zA-Z123]$/);
+      assert.deepEqual(pm.makeRe('[![:lower:]]', opts), /^(?=.)[^a-z]$/);
     });
   });
 

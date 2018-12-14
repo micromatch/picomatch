@@ -9,26 +9,26 @@ describe('negation patterns - "!"', () => {
   beforeEach(() => picomatch.clearCache());
 
   it('should patterns with a leading "!" as negated/inverted globs', () => {
-    assert(isMatch('abc', '!xyz'));
+    assert(!isMatch('abc', '!*'));
+    assert(!isMatch('abc', '!abc'));
+    assert(!isMatch('bar.md', '*!.md'));
+    assert(!isMatch('bar.md', 'foo!.md'));
+    assert(!isMatch('foo!.md', '\\!*!*.md'));
+    assert(!isMatch('foo!bar.md', '\\!*!*.md'));
+    assert(isMatch('!foo!.md', '*!*.md'));
+    assert(isMatch('!foo!.md', '\\!*!*.md'));
     assert(isMatch('abc', '!*foo'));
     assert(isMatch('abc', '!foo*'));
-    assert(!isMatch('abc', '!abc'));
-    assert(!isMatch('abc', '!*'));
-    assert(isMatch('foo!.md', 'foo!.md'));
-    assert(!isMatch('bar.md', 'foo!.md'));
-    assert(isMatch('foo!.md', '*.md'));
-    assert(isMatch('bar.md', '*.md'));
-    assert(isMatch('foo!.md', '*!.md'));
-    assert(!isMatch('bar.md', '*!.md'));
-    assert(isMatch('foobar.md', '*b*.md'));
-    assert(isMatch('foo!bar.md', '*!*.md'));
-    assert(isMatch('foo!.md', '*!*.md'));
-    assert(isMatch('!foo!.md', '*!*.md'));
-    assert(!isMatch('foo!bar.md', '\\!*!*.md'));
-    assert(!isMatch('foo!.md', '\\!*!*.md'));
-    assert(isMatch('!foo!.md', '\\!*!*.md'));
-    assert(isMatch('foo!.md', '*!*.*'));
+    assert(isMatch('abc', '!xyz'));
     assert(isMatch('ba!r.js', '*!*.*'));
+    assert(isMatch('bar.md', '*.md'));
+    assert(isMatch('foo!.md', '*!*.*'));
+    assert(isMatch('foo!.md', '*!*.md'));
+    assert(isMatch('foo!.md', '*!.md'));
+    assert(isMatch('foo!.md', '*.md'));
+    assert(isMatch('foo!.md', 'foo!.md'));
+    assert(isMatch('foo!bar.md', '*!*.md'));
+    assert(isMatch('foobar.md', '*b*.md'));
   });
 
   it('should treat non-leading "!" as literal characters', () => {
@@ -244,10 +244,10 @@ describe('negation patterns - "!"', () => {
   });
 
   it('should match nested directories with globstars', () => {
-    assert(!isMatch('a', '!a/**'));
     assert(!isMatch('a/', '!a/**'));
     assert(!isMatch('a/b', '!a/**'));
     assert(!isMatch('a/b/c', '!a/**'));
+    assert(isMatch('a', '!a/**'));
     assert(isMatch('b', '!a/**'));
     assert(isMatch('b/c', '!a/**'));
 
@@ -260,14 +260,16 @@ describe('negation patterns - "!"', () => {
 
     assert(isMatch('a/a', 'a/!(b*)'));
     assert(!isMatch('a/b', 'a/!(b*)'));
-    assert(!isMatch('a/b/c', 'a/!(b*)'));
+    assert(isMatch('a/b/c', 'a/!(b*)'));
     assert(isMatch('a/c', 'a/!(b*)'));
 
-    assert(isMatch('a/a', 'a/!(b*)/**'));
     assert(isMatch('a/a/', 'a/!(b*)/**'));
+    assert(isMatch('a/a', 'a/!(b*)'));
+    assert(!isMatch('a/a', 'a/!(b*)/**'));
     assert(!isMatch('a/b', 'a/!(b*)/**'));
     assert(!isMatch('a/b/c', 'a/!(b*)/**'));
-    assert(isMatch('a/c', 'a/!(b*)/**'));
+    assert(!isMatch('a/c', 'a/!(b*)/**'));
+    assert(isMatch('a/c', 'a/!(b*)'));
     assert(isMatch('a/c/', 'a/!(b*)/**'));
 
     assert(isMatch('foo', '!f*b'));

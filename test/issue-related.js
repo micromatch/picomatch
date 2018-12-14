@@ -20,7 +20,7 @@ describe('issue-related tests', () => {
 
   it('micromatch issue#24', () => {
     assert(!pm.isMatch('a/b/c/d/', 'a/b/**/f'));
-    assert(pm.isMatch('a', 'a/**'));
+    assert(!pm.isMatch('a', 'a/**'));
     assert(pm.isMatch('a', '**'));
     assert(pm.isMatch('a/', '**'));
     assert(pm.isMatch('a/b/c/d', '**'));

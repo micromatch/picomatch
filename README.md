@@ -10,9 +10,6 @@
 <a href="https://npmjs.org/package/picomatch">
 <img src="https://img.shields.io/npm/dm/picomatch.svg" alt="downloads" />
 </a>
-<a href="https://packagephobia.now.sh/result?p=picomatch">
-<img src="https://packagephobia.now.sh/badge?p=picomatch" alt="install size" />
-</a>
 </p>
 
 <br>
@@ -80,7 +77,7 @@ console.log(isMatch('a/b.js')); //=> false
 | `flags`          | `boolean`      | `undefined` | Regex flags to use in the generated regex. If defined, the `nocase` option will be overridden. |
 | `ignore`         | `array\|string` | `undefined` | One or more glob patterns for excluding strings that should not be matched from the result. |
 | `keepQuotes`     | `boolean`      | `false`     | Retain quotes in the generated regex, since quotes may also be used as an alternative to backslashes.  |
-| `lookbehinds`    | `boolean`      | `true`      | Support regex positive and negative lookbehinds. Note that you must be using Node 10 or higher to enable regex lookbehinds. |
+| `lookbehinds`    | `boolean`      | `true`      | Support regex positive and negative lookbehinds. Note that you must be using Node 8.1.10 or higher to enable regex lookbehinds. |
 | `matchBase`      | `boolean`      | `false`     | If set, then patterns without slashes will be matched against the basename of the path if it contains slashes.  For example, `a?b` would match the path `/xyz/123/acb`, but not `/xyz/acb/123`. |
 | `maxLength`      | `boolean`      | `65536`     | Limit the max length of the input string. An error is thrown if the input string is longer than this value. |
 | `nobrace`        | `boolean`      | `false`     | Disabled brace matching. Thus, `{a,b}` and `{1..3}` would be treated as literals. |
@@ -108,12 +105,12 @@ console.log(isMatch('a/b.js')); //=> false
 
 ## Basic globbing
 
-| **Character** | **Description** |
-| --- | --- |
-| `*` | Matches any character zero or more times, excluding path separators. Does _not match_ path separators or hidden files or directories ("dotfiles"), unless explicitly enabled by setting the `dot` option to `true`. |
-| `**` | Matches any character zero or more times, including path separators. Note that `**` will only match path separators (`/`, and `\\` on Windows) when they are the only characters in a path segment. Thus, `foo**/bar` is equivalent to `foo*/bar`, and `foo/a**b/bar` is equivalent to `foo/a*b/bar`, and _more than two_ consecutive stars in a glob path segment are regarded as _a single star_. Thus, `foo/***/bar` is equivalent to `foo/*/bar`. |
-| `?` | Matches any character excluding path separators one time. Does _not match_ path separators or leading dots.  |
-| `[abc]` | Matches any characters inside the brackets. For example, `[abc]` would match the characters `a`, `b` or `c`, and nothing else. |
+| **Character** | **Description** | 
+| --- | --- | 
+| `*` | Matches any character zero or more times, excluding path separators. Does _not match_ path separators or hidden files or directories ("dotfiles"), unless explicitly enabled by setting the `dot` option to `true`. | 
+| `**` | Matches any character zero or more times, including path separators. Note that `**` will only match path separators (`/`, and `\\` on Windows) when they are the only characters in a path segment. Thus, `foo**/bar` is equivalent to `foo*/bar`, and `foo/a**b/bar` is equivalent to `foo/a*b/bar`, and _more than two_ consecutive stars in a glob path segment are regarded as _a single star_. Thus, `foo/***/bar` is equivalent to `foo/*/bar`. | 
+| `?` | Matches any character excluding path separators one time. Does _not match_ path separators or leading dots.  | 
+| `[abc]` | Matches any characters inside the brackets. For example, `[abc]` would match the characters `a`, `b` or `c`, and nothing else. | 
 
 ### Matching behavior vs. Bash
 

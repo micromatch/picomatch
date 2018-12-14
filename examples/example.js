@@ -1,8 +1,20 @@
 // 'use strict';
 
-// const mm = require('minimatch');
-// const bash = require('bash-match');
 const pm = require('..');
+const mm = require('../vendor/minimatch');
+const mi = require('micromatch');
+const colors = require('ansi-colors');
+const color = val => val === true ? colors.green(val) : colors.red(val);
+// const bash = require('bash-match');
+
+console.log('mm', 'pm');
+const match = (str, pattern) => {
+  let arr = [mm(str, pattern), pm(pattern)(str)];
+  arr.push(color(arr[0] === arr[1]));
+  if (arr[0] !== arr[1]) arr.push([str, pattern].join(', '));
+  arr = arr.map(v => String(v).padEnd(5, ' '));
+  console.log(arr.join(' '));
+};
 
 // // console.log(pm.makeRe('*'));
 // // console.log(bash.isMatch('foo/bar', '!(foo)'));
@@ -84,4 +96,105 @@ const pm = require('..');
 // console.log(pm.resolve('foo\\bar\\', '\\*.js'));
 
 
-console.log(pm.parse('!(a|b|c)'));
+// let isMatch = pm('**/foo/**/package.json');
+// console.log(isMatch('packages/foo/package.json'));
+
+// console.log(mm.makeRe('a/**'));
+// console.log(pm.makeRe('a/**'));
+// console.log('---')
+// console.log(mm.makeRe('a/**/*.txt'));
+// console.log(pm.makeRe('a/**/*.txt'));
+
+// console.log(mm('/a', '*'));
+// console.log(mm('a', 'a/**'));
+// console.log(mi.isMatch('a', 'a/**'));
+// console.log(pm('a/**', { relaxSlashes: true })('a'));
+// console.log(pm('a/**')('a'));
+
+// match('a', '*');
+// match('a/', '*');
+// match('/a', '*');
+// match('/a/', '*');
+// console.log('---');
+
+// match('a', '/*');
+// match('a/', '/*');
+// match('/a', '/*');
+// match('/a/', '/*');
+// console.log('---');
+
+// match('a', '*/*');
+// match('a/', '*/*');
+// match('/a', '*/*');
+// match('/a/', '*/*');
+// console.log('---');
+
+// match('a', 'a/*');
+// match('a/', 'a/*');
+// match('/a', 'a/*');
+// match('/a/', 'a/*');
+// console.log('---');
+
+// match('a', 'a/*');
+// match('a/', 'a/*');
+// match('/a', 'a/*');
+// match('/a/', 'a/*');
+// console.log('---');
+
+// match('a', 'a/*/');
+// match('a/', 'a/*/');
+// match('/a', 'a/*/');
+// match('/a/', 'a/*/');
+// console.log('---');
+
+// match('a', '/a/**');
+// match('a/', '/a/**');
+// match('/a', '/a/**');
+// match('/a/', '/a/**');
+// console.log('---');
+
+// match('a', 'a/**');
+// match('a/', 'a/**');
+// match('/a', 'a/**');
+// match('/a/', 'a/**');
+// console.log('---');
+
+// match('a/../a', 'a/**/*');
+// match('a/', 'a/**/');
+// match('/a/', '/*/**/*');
+// match('..', '**/*');
+match('foo/bar/bazqux.js', '**/!(bazqux).js');
+match('foo/bars', '!(foo)');
+// match('..', '**/*', { dot: true });
+// console.log('---');
+
+// console.log(mm.makeRe('a/**/*'))
+// console.log(pm.makeRe('a/**/**/*'))
+// console.log(pm.makeRe('**/a/**'))
+// console.log(pm.makeRe('**/**/**'))
+console.log('pm', pm.makeRe('a/!(b*)'));
+console.log('mm', mm.makeRe('a/!(b*)'));
+console.log('---');
+console.log('pm', pm.makeRe('**/!(bazqux).js'));
+console.log('mm', mm.makeRe('**/!(bazqux).js'));
+console.log('---');
+console.log('pm', pm.makeRe('!(foo)'));
+console.log('mm', mm.makeRe('!(foo)'));
+
+// console.log(mm('a', '**/a'));
+// console.log(mm('/a', '*'));
+// console.log(mm('a', 'a/**'));
+// console.log(mm('a', '**/a'));
+// console.log(mm('/a', '*'));
+
+// console.log(pm('**/a')('a'));
+// console.log(pm('a/**')('a'));
+// console.log(pm('*')('/a'));
+// console.log(mm('a/b.txt', 'a/**/*.txt'));
+// let re = pm.makeRe('a/**/*.txt');
+// console.log(re.test('a/b.txt'));
+// [ 'packages/foo-foo/package.json' ]
+//
+// console.log(pm.parse('!(a|b|c)'));
+
+// console.log(pm('*^⛄/')('^⛄/'));

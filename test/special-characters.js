@@ -5,10 +5,22 @@ const path = require('path');
 const assert = require('assert');
 const fill = require('fill-range');
 const picomatch = require('..');
-const { isMatch } = require('./support');
+const { isMatch } = picomatch;
 
 describe('special characters', () => {
   beforeEach(() => picomatch.clearCache());
+  afterEach(() => picomatch.clearCache());
+
+  // See micromatch#127
+  describe('unicode', () => {
+    it('should match Japanese characters', () => {
+      assert(isMatch('フォルダ/aaa.js', 'フ*/**/*'));
+      assert(isMatch('フォルダ/aaa.js', 'フォ*/**/*'));
+      assert(isMatch('フォルダ/aaa.js', 'フォル*/**/*'));
+      assert(isMatch('フォルダ/aaa.js', 'フ*ル*/**/*'));
+      assert(isMatch('フォルダ/aaa.js', 'フォルダ/**/*'));
+    });
+  });
 
   describe('numbers', () => {
     it('should match numbers in the input string', () => {
@@ -47,22 +59,25 @@ describe('special characters', () => {
       assert(!isMatch('aaa/bbb', 'aaa?bbb'));
     });
 
-    it('should match literal ? with qmarks in the glob', () => {
-      assert(isMatch('?', '?'));
+    it('should match literal ? with qmarks', () => {
       assert(!isMatch('?', '??'));
       assert(!isMatch('?', '???'));
       assert(!isMatch('??', '?'));
-      assert(isMatch('??', '??'));
       assert(!isMatch('??', '???'));
       assert(!isMatch('???', '?'));
       assert(!isMatch('???', '??'));
-      assert(isMatch('???', '???'));
-
-      assert(isMatch('ab?', 'ab?'));
       assert(!isMatch('ac?', 'ab?'));
+      assert(isMatch('?', '?*'));
+      assert(isMatch('??', '?*'));
+      assert(isMatch('???', '?*'));
+      assert(isMatch('????', '?*'));
+      assert(isMatch('?', '?'));
+      assert(isMatch('??', '??'));
+      assert(isMatch('???', '???'));
+      assert(isMatch('ab?', 'ab?'));
     });
 
-    it('should not match slashes with qmarks', () => {
+    it('should match other non-slash characters with qmarks', () => {
       assert(!isMatch('/a/', '?'));
       assert(!isMatch('/a/', '??'));
       assert(!isMatch('/a/', '???'));
@@ -70,9 +85,15 @@ describe('special characters', () => {
       assert(!isMatch('aaa/bbb', 'aaa?bbb'));
       assert(!isMatch('aaa//bbb', 'aaa?bbb'));
       assert(!isMatch('aaa\\\\bbb', 'aaa?bbb'));
-      assert(isMatch('acb/', 'a?b'));
       assert(isMatch('acb/', 'a?b/'));
-      assert(isMatch('/acb/', '/a?b'));
+      assert(isMatch('acdb/', 'a??b/'));
+      assert(isMatch('/acb', '/a?b'));
+    });
+
+    it('should match non-slash characters when options.qmarkLiteral is true', () => {
+      assert(!isMatch('acb/', 'a?b/', { qmarkLiteral: true }));
+      assert(!isMatch('acdb/', 'a??b/', { qmarkLiteral: true }));
+      assert(!isMatch('/acb', '/a?b', { qmarkLiteral: true }));
     });
 
     it('should match one character per question mark', () => {

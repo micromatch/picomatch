@@ -7,8 +7,8 @@ const pm = require('./support');
 picomatch.nocache = true;
 
 describe('dotfiles', () => {
-  beforeEach(() => pm.clearCache());
-  afterEach(() => pm.clearCache());
+  // beforeEach(() => pm.clearCache());
+  // afterEach(() => pm.clearCache());
 
   it('should not match dotfiles with single stars by default', () => {
     assert(pm.isMatch('foo', '*'));
@@ -82,39 +82,38 @@ describe('dotfiles', () => {
   });
 
   it('should match with double dots', () => {
+    assert(!pm.isMatch('../../b', '**/../*'));
+    assert(!pm.isMatch('../../b', '*/../*'));
+    assert(!pm.isMatch('../../b', '../*'));
+    assert(!pm.isMatch('../a', '*/../*'));
+    assert(!pm.isMatch('../c', '*/../*'));
+    assert(!pm.isMatch('../c/d', '**/../*'));
+    assert(!pm.isMatch('../c/d', '*/../*'));
+    assert(!pm.isMatch('../c/d', '../*'));
+    assert(!pm.isMatch('a', '**/../*'));
+    assert(!pm.isMatch('a', '*/../*'));
+    assert(!pm.isMatch('a', '../*'));
     assert(!pm.isMatch('a/../a', '../*'));
     assert(!pm.isMatch('ab/../ac', '../*'));
-    assert(pm.isMatch('../a', '../*'));
-    assert(!pm.isMatch('a', '../*'));
-    assert(!pm.isMatch('../../b', '../*'));
-    assert(pm.isMatch('../c', '../*'));
-    assert(!pm.isMatch('../c/d', '../*'));
+    assert(!pm.isMatch('a/../', '**/../*'));
 
-    assert(pm.isMatch('a/../a', '*/../*'));
-    assert(pm.isMatch('ab/../ac', '*/../*'));
-    assert(!pm.isMatch('../a', '*/../*'));
-    assert(!pm.isMatch('a', '*/../*'));
-    assert(!pm.isMatch('../../b', '*/../*'));
-    assert(!pm.isMatch('../c', '*/../*'));
-    assert(!pm.isMatch('../c/d', '*/../*'));
-
-    assert(pm.isMatch('a/../a', '**/../*'));
-    assert(pm.isMatch('ab/../ac', '**/../*'));
     assert(pm.isMatch('../a', '**/../*'));
-    assert(!pm.isMatch('a', '**/../*'));
-    assert(!pm.isMatch('../../b', '**/../*'));
-    assert(pm.isMatch('../c', '**/../*'));
-    assert(!pm.isMatch('../c/d', '**/../*'));
+    assert(pm.isMatch('../a', '../*'));
+    assert(pm.isMatch('a/../a', '**/../*'));
+    assert(pm.isMatch('a/../a', '*/../*'));
+    assert(pm.isMatch('ab/../ac', '**/../*'));
+    assert(pm.isMatch('ab/../ac', '*/../*'));
   });
 
   it('should match dots in root path when glob is prefixed with **/', () => {
+    assert(!pm.isMatch('.x', '**/.x/**'));
     assert(!pm.isMatch('.x/.x', '**/.x/**'));
-    assert(pm.isMatch('a/b/.x', '**/.x/**'));
-    assert(pm.isMatch('.x', '**/.x/**'));
+    assert(!pm.isMatch('a/b/.x', '**/.x/**'));
     assert(pm.isMatch('.x/', '**/.x/**'));
     assert(pm.isMatch('.x/a', '**/.x/**'));
     assert(pm.isMatch('.x/a/b', '**/.x/**'));
     assert(pm.isMatch('a/.x/b', '**/.x/**'));
+    assert(pm.isMatch('a/b/.x', '**/.x'));
     assert(pm.isMatch('a/b/.x/', '**/.x/**'));
     assert(pm.isMatch('a/b/.x/c', '**/.x/**'));
     assert(pm.isMatch('a/b/.x/c/d', '**/.x/**'));

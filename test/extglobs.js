@@ -1,19 +1,8 @@
 'use strict';
 
 const assert = require('assert');
-const { isMatch } = require('./support');
+const { isMatch, match } = require('./support');
 const pm = require('..');
-
-const match = (list, pattern, options = {}) => {
-  let isMatch = pm(pattern, options);
-  let matches = new Set();
-  for (let ele of list) {
-    if (isMatch(ele)) {
-      matches.add(ele);
-    }
-  }
-  return [...matches];
-};
 
 /**
  * Most of these tests were converted directly from bash 4.3 and 4.4 unit tests.
@@ -23,8 +12,9 @@ describe('extglobs', () => {
   beforeEach(() => pm.clearCache());
 
   it('should throw on imbalanced sets when `options.strictBrackets` is true', () => {
-    assert.throws(() => pm.makeRe('a(b', { strictBrackets: true }), /missing closing: "\)"/i);
-    assert.throws(() => pm.makeRe('a)b', { strictBrackets: true }), /missing opening: "\("/i);
+    let opts = { strictBrackets: true };
+    assert.throws(() => pm.makeRe('a(b', opts), /missing closing: "\)"/i);
+    assert.throws(() => pm.makeRe('a)b', opts), /missing opening: "\("/i);
   });
 
   it('should match extglobs ending with statechar', () => {
@@ -83,46 +73,23 @@ describe('extglobs', () => {
     assert(isMatch('az', 'a*!(z)'));
 
     assert(isMatch('a/a', '!(b/a)'));
-    assert(isMatch('a/b', '!(b/a)'));
-    assert(isMatch('a/c', '!(b/a)'));
     assert(!isMatch('b/a', '!(b/a)'));
-    assert(isMatch('b/b', '!(b/a)'));
-    assert(isMatch('b/c', '!(b/a)'));
 
     assert(isMatch('a/a', '!(b/a)'));
-    assert(isMatch('a/b', '!(b/a)'));
-    assert(isMatch('a/c', '!(b/a)'));
     assert(!isMatch('b/a', '!(b/a)'));
-    assert(isMatch('b/b', '!(b/a)'));
-    assert(isMatch('b/c', '!(b/a)'));
 
+    assert(isMatch('a/a', '(!(b/a))'));
     assert(isMatch('a/a', '!((b/a))'));
-    assert(isMatch('a/b', '!((b/a))'));
-    assert(isMatch('a/c', '!((b/a))'));
     assert(!isMatch('b/a', '!((b/a))'));
-    assert(isMatch('b/b', '!((b/a))'));
-    assert(isMatch('b/c', '!((b/a))'));
 
-    assert(isMatch('a/a', '!((?:b/a))'));
-    assert(isMatch('a/b', '!((?:b/a))'));
-    assert(isMatch('a/c', '!((?:b/a))'));
+    assert(isMatch('a/a', '(!(?:b/a))'));
     assert(!isMatch('b/a', '!((?:b/a))'));
-    assert(isMatch('b/b', '!((?:b/a))'));
-    assert(isMatch('b/c', '!((?:b/a))'));
 
     assert(isMatch('a/a', '!(b/(a))'));
-    assert(isMatch('a/b', '!(b/(a))'));
-    assert(isMatch('a/c', '!(b/(a))'));
     assert(!isMatch('b/a', '!(b/(a))'));
-    assert(isMatch('b/b', '!(b/(a))'));
-    assert(isMatch('b/c', '!(b/(a))'));
 
     assert(isMatch('a/a', '!(b/a)'));
-    assert(isMatch('a/b', '!(b/a)'));
-    assert(isMatch('a/c', '!(b/a)'));
     assert(!isMatch('b/a', '!(b/a)'));
-    assert(isMatch('b/b', '!(b/a)'));
-    assert(isMatch('b/c', '!(b/a)'));
 
     assert(!isMatch('a   ', '@(!(a) )*'));
     assert(!isMatch('a   b', '@(!(a) )*'));
@@ -954,7 +921,7 @@ describe('bash unit tests', () => {
     assert(isMatch('fo', '@(!(z*)|*x)'));
     assert(isMatch('foo', '@(!(z*)|*x)'));
     assert(isMatch('foo/bar', '@(!(z*/*)|*x)'));
-    assert(!isMatch('foo/bar', '@(!(z*)|*x)'));
+    assert(isMatch('foo/bar', '@(!(z*)|*x)'));
     assert(isMatch('foobar', '@(!(z*)|*x)'));
     assert(isMatch('foot', '@(!(z*)|*x)'));
     assert(isMatch('foox', '@(!(z*)|*x)'));

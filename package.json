@@ -22,7 +22,7 @@
     "cover": "nyc --reporter=text --reporter=html mocha"
   },
   "devDependencies": {
-    "ansi-colors": "^3.0.5",
+    "ansi-colors": "^3.2.1",
     "bash-match": "^1.0.2",
     "fill-range": "^6.0.0",
     "gulp-format-md": "^1.0.0",
@@ -61,7 +61,7 @@
       "picomatch"
     ],
     "related": {
-      "list": []
+      "list": ["micromatch", "braces"]
     }
   }
 }

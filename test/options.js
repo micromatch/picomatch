@@ -3,6 +3,7 @@
 const assert = require('assert');
 const path = require('path');
 const sep = path.sep;
+const { isMatch, match } = require('./support');
 const pm = require('..');
 
 const compare = (a, b) => {
@@ -11,22 +12,9 @@ const compare = (a, b) => {
   return a > b ? 1 : a < b ? -1 : 0;
 };
 
-const match = (list, pattern, options = {}) => {
-  let isMatch = pm(pattern, options);
-  let matches = new Set();
-  for (let ele of [].concat(list || [])) {
-    ele = ele.replace(/^\.\//, '');
-    if (options.unixify !== false) {
-      ele = ele.replace(/\\\\/g, '/');
-    }
-    if (isMatch(ele)) {
-      matches.add(ele);
-    }
-  }
-  return [...matches];
-};
-
 describe('options', () => {
+  beforeEach(() => pm.clearCache());
+  afterEach(() => pm.clearCache());
   beforeEach(() => (path.sep = '\\'));
   afterEach(() => (path.sep = sep));
   after(() => (path.sep = sep));
@@ -39,7 +27,7 @@ describe('options', () => {
       let opts = { ignore: ['a/**'] };
       let dotOpts = { ...opts, dot: true };
 
-      assert.deepEqual(match(globs, '*', opts), ['b']);
+      assert.deepEqual(match(globs, '*', opts), ['a', 'b']);
       assert.deepEqual(match(globs, '*', { ignore: '**/a' }), ['b']);
       assert.deepEqual(match(globs, '*/*', opts), ['x/y', 'z/z']);
       assert.deepEqual(match(globs, '*/*/*', opts), ['b/b/b', 'b/b/c', 'c/c/c', 'e/f/g', 'h/i/a', 'x/x/x', 'z/z/z']);
@@ -50,7 +38,7 @@ describe('options', () => {
       assert.deepEqual(match(globs, '**/*/[b-z]', opts), ['b/b/b', 'b/b/c', 'c/c/c', 'e/f/g', 'x/x/x', 'x/y', 'z/z', 'z/z/z']);
 
       assert.deepEqual(match(globs, '*', { ignore: '**/a', dot: true }), ['.a', 'b']);
-      assert.deepEqual(match(globs, '*', dotOpts), ['.a', 'b']);
+      assert.deepEqual(match(globs, '*', dotOpts), ['.a', 'a', 'b']);
       assert.deepEqual(match(globs, '*/*', dotOpts), ['.a/a', 'x/y', 'z/z']);
       assert.deepEqual(match(globs, '*/*/*', dotOpts), ['.a/a/a', 'b/b/b', 'b/b/c', 'c/c/c', 'e/f/g', 'h/i/a', 'x/x/x', 'z/z/z']);
       assert.deepEqual(match(globs, '*/*/*/*', dotOpts), ['.a/a/a/a']);
@@ -77,7 +65,7 @@ describe('options', () => {
     it('should match the basename of file paths when `options.matchBase` is true', () => {
       assert.deepEqual(match(['a/b/c/d.md'], '*.md'), [], 'should not match multiple levels');
       assert.deepEqual(match(['a/b/c/foo.md'], '*.md'), [], 'should not match multiple levels');
-      assert.deepEqual(match(['ab', 'acb', 'acb/', 'acb/d/e', 'x/y/acb', 'x/y/acb/d'], 'a?b'), ['acb', 'acb/'], 'should not match multiple levels');
+      assert.deepEqual(match(['ab', 'acb', 'acb/', 'acb/d/e', 'x/y/acb', 'x/y/acb/d'], 'a?b'), ['acb'], 'should not match multiple levels');
       assert.deepEqual(match(['a/b/c/d.md'], '*.md', { matchBase: true }), ['a/b/c/d.md']);
       assert.deepEqual(match(['a/b/c/foo.md'], '*.md', { matchBase: true }), ['a/b/c/foo.md']);
       assert.deepEqual(match(['x/y/acb', 'acb/', 'acb/d/e', 'x/y/acb/d'], 'a?b', { matchBase: true }), ['x/y/acb', 'acb/']);
@@ -215,35 +203,35 @@ describe('options', () => {
 
     it('should strip leading `./`', () => {
       let fixtures = ['./a', './a/a/a', './a/a/a/a', './a/a/a/a/a', './a/b', './a/x', './z/z', 'a', 'a/a', 'a/a/b', 'a/c', 'b', 'x/y'];
-      assert.deepEqual(match(fixtures, '*'), ['a', 'b']);
-      assert.deepEqual(match(fixtures, '**/a/**'), ['a', 'a/a/a', 'a/a/a/a', 'a/a/a/a/a', 'a/b', 'a/x', 'a/a', 'a/a/b', 'a/c']);
-      assert.deepEqual(match(fixtures, '*/*'), ['a/b', 'a/x', 'z/z', 'a/a', 'a/c', 'x/y']);
-      assert.deepEqual(match(fixtures, '*/*/*'), ['a/a/a', 'a/a/b']);
-      assert.deepEqual(match(fixtures, '*/*/*/*'), ['a/a/a/a']);
-      assert.deepEqual(match(fixtures, '*/*/*/*/*'), ['a/a/a/a/a']);
-      assert.deepEqual(match(fixtures, './*'), ['a', 'b']);
-      assert.deepEqual(match(fixtures, './**/a/**'), ['a', 'a/a/a', 'a/a/a/a', 'a/a/a/a/a', 'a/b', 'a/x', 'a/a', 'a/a/b', 'a/c']);
-      assert.deepEqual(match(fixtures, './a/*/a'), ['a/a/a']);
-      assert.deepEqual(match(fixtures, 'a/*'), ['a/b', 'a/x', 'a/a', 'a/c']);
-      assert.deepEqual(match(fixtures, 'a/*/*'), ['a/a/a', 'a/a/b']);
-      assert.deepEqual(match(fixtures, 'a/*/*/*'), ['a/a/a/a']);
-      assert.deepEqual(match(fixtures, 'a/*/*/*/*'), ['a/a/a/a/a']);
-      assert.deepEqual(match(fixtures, 'a/*/a'), ['a/a/a']);
+      assert.deepEqual(match(fixtures, '*'), ['./a', 'a', 'b']);
+      assert.deepEqual(match(fixtures, '**/a/**'), ['./a/a/a', './a/a/a/a', './a/a/a/a/a', './a/b', './a/x', 'a/a', 'a/a/b', 'a/c']);
+      assert.deepEqual(match(fixtures, '*/*'), ['./a/b', './a/x', './z/z', 'a/a', 'a/c', 'x/y']);
+      assert.deepEqual(match(fixtures, '*/*/*'), ['./a/a/a', 'a/a/b']);
+      assert.deepEqual(match(fixtures, '*/*/*/*'), ['./a/a/a/a']);
+      assert.deepEqual(match(fixtures, '*/*/*/*/*'), ['./a/a/a/a/a']);
+      assert.deepEqual(match(fixtures, './*'), ['./a', 'a', 'b']);
+      assert.deepEqual(match(fixtures, './**/a/**'), ['./a/a/a', './a/a/a/a', './a/a/a/a/a', './a/b', './a/x', 'a/a', 'a/a/b', 'a/c']);
+      assert.deepEqual(match(fixtures, './a/*/a'), ['./a/a/a']);
+      assert.deepEqual(match(fixtures, 'a/*'), ['./a/b', './a/x', 'a/a', 'a/c']);
+      assert.deepEqual(match(fixtures, 'a/*/*'), ['./a/a/a', 'a/a/b']);
+      assert.deepEqual(match(fixtures, 'a/*/*/*'), ['./a/a/a/a']);
+      assert.deepEqual(match(fixtures, 'a/*/*/*/*'), ['./a/a/a/a/a']);
+      assert.deepEqual(match(fixtures, 'a/*/a'), ['./a/a/a']);
 
-      assert.deepEqual(match(fixtures, '*', { unixify: false }), ['a', 'b']);
-      assert.deepEqual(match(fixtures, '**/a/**', { unixify: false }), ['a', 'a/a/a', 'a/a/a/a', 'a/a/a/a/a', 'a/b', 'a/x', 'a/a', 'a/a/b', 'a/c']);
-      assert.deepEqual(match(fixtures, '*/*', { unixify: false }), ['a/b', 'a/x', 'z/z', 'a/a', 'a/c', 'x/y']);
-      assert.deepEqual(match(fixtures, '*/*/*', { unixify: false }), ['a/a/a', 'a/a/b']);
-      assert.deepEqual(match(fixtures, '*/*/*/*', { unixify: false }), ['a/a/a/a']);
-      assert.deepEqual(match(fixtures, '*/*/*/*/*', { unixify: false }), ['a/a/a/a/a']);
-      assert.deepEqual(match(fixtures, './*', { unixify: false }), ['a', 'b']);
-      assert.deepEqual(match(fixtures, './**/a/**', { unixify: false }), ['a', 'a/a/a', 'a/a/a/a', 'a/a/a/a/a', 'a/b', 'a/x', 'a/a', 'a/a/b', 'a/c']);
-      assert.deepEqual(match(fixtures, './a/*/a', { unixify: false }), ['a/a/a']);
-      assert.deepEqual(match(fixtures, 'a/*', { unixify: false }), ['a/b', 'a/x', 'a/a', 'a/c']);
-      assert.deepEqual(match(fixtures, 'a/*/*', { unixify: false }), ['a/a/a', 'a/a/b']);
-      assert.deepEqual(match(fixtures, 'a/*/*/*', { unixify: false }), ['a/a/a/a']);
-      assert.deepEqual(match(fixtures, 'a/*/*/*/*', { unixify: false }), ['a/a/a/a/a']);
-      assert.deepEqual(match(fixtures, 'a/*/a', { unixify: false }), ['a/a/a']);
+      assert.deepEqual(match(fixtures, '*', { unixify: false }), ['./a', 'a', 'b']);
+      assert.deepEqual(match(fixtures, '**/a/**', { unixify: false }), ['./a/a/a', './a/a/a/a', './a/a/a/a/a', './a/b', './a/x', 'a/a', 'a/a/b', 'a/c']);
+      assert.deepEqual(match(fixtures, '*/*', { unixify: false }), ['./a/b', './a/x', './z/z', 'a/a', 'a/c', 'x/y']);
+      assert.deepEqual(match(fixtures, '*/*/*', { unixify: false }), ['./a/a/a', 'a/a/b']);
+      assert.deepEqual(match(fixtures, '*/*/*/*', { unixify: false }), ['./a/a/a/a']);
+      assert.deepEqual(match(fixtures, '*/*/*/*/*', { unixify: false }), ['./a/a/a/a/a']);
+      assert.deepEqual(match(fixtures, './*', { unixify: false }), ['./a', 'a', 'b']);
+      assert.deepEqual(match(fixtures, './**/a/**', { unixify: false }), ['./a/a/a', './a/a/a/a', './a/a/a/a/a', './a/b', './a/x', 'a/a', 'a/a/b', 'a/c']);
+      assert.deepEqual(match(fixtures, './a/*/a', { unixify: false }), ['./a/a/a']);
+      assert.deepEqual(match(fixtures, 'a/*', { unixify: false }), ['./a/b', './a/x', 'a/a', 'a/c']);
+      assert.deepEqual(match(fixtures, 'a/*/*', { unixify: false }), ['./a/a/a', 'a/a/b']);
+      assert.deepEqual(match(fixtures, 'a/*/*/*', { unixify: false }), ['./a/a/a/a']);
+      assert.deepEqual(match(fixtures, 'a/*/*/*/*', { unixify: false }), ['./a/a/a/a/a']);
+      assert.deepEqual(match(fixtures, 'a/*/a', { unixify: false }), ['./a/a/a']);
     });
   });
 
@@ -258,10 +246,10 @@ describe('options', () => {
 
         // https://github.com/isaacs/minimatch/issues/30
         assert.deepEqual(match(['foo/bar.js'], '**/foo/**'), ['foo/bar.js']);
-        assert.deepEqual(match(['./foo/bar.js'], './**/foo/**'), ['foo/bar.js']);
-        assert.deepEqual(match(['./foo/bar.js'], './**/foo/**', { unixify: false }), ['foo/bar.js']);
-        assert.deepEqual(match(['./foo/bar.js'], '**/foo/**'), ['foo/bar.js']);
-        assert.deepEqual(match(['./foo/bar.js'], '**/foo/**', { unixify: false }), ['foo/bar.js']);
+        assert.deepEqual(match(['./foo/bar.js'], './**/foo/**'), ['./foo/bar.js']);
+        assert.deepEqual(match(['./foo/bar.js'], './**/foo/**', { unixify: false }), ['./foo/bar.js']);
+        assert.deepEqual(match(['./foo/bar.js'], '**/foo/**'), ['./foo/bar.js']);
+        assert.deepEqual(match(['./foo/bar.js'], '**/foo/**', { unixify: false }), ['./foo/bar.js']);
       });
 
       it('should match dotfiles when a leading dot is defined in the path:', () => {

@@ -2,11 +2,11 @@
 
 require('mocha');
 const path = require('path');
+const sep = path.sep;
 const fill = require('fill-range');
 const assert = require('assert');
 const picomatch = require('..');
 const { isMatch } = require('./support');
-const sep = path.sep;
 
 describe('picomatch', () => {
   beforeEach(() => picomatch.clearCache());
@@ -889,7 +889,7 @@ describe('picomatch', () => {
       assert(!isMatch('foo/bar/baz', '**/bar**'));
       assert(!isMatch('foo/baz/bar', 'foo**bar'));
       assert(!isMatch('foo/baz/bar', 'foo*bar'));
-      assert(isMatch('foo', 'foo/**'));
+      assert(!isMatch('foo', 'foo/**'));
       assert(isMatch('/ab', '/*'));
       assert(isMatch('/cd', '/*'));
       assert(isMatch('/ef', '/*'));
@@ -943,7 +943,8 @@ describe('picomatch', () => {
 
       // micromatch/#24
       assert(!isMatch('a/b/c/d/', 'a/b/**/f'));
-      assert(isMatch('a', 'a/**'));
+      assert(!isMatch('a', 'a/**'));
+      assert(isMatch('a', 'a/**', { relaxSlashes: true }));
       assert(isMatch('a', '**'));
       assert(isMatch('a', 'a{,/**}'));
       assert(isMatch('a/', '**'));
@@ -1171,9 +1172,12 @@ describe('picomatch', () => {
     });
 
     it('issue #24', () => {
+      assert(!isMatch('a', 'a/**'));
+      assert(!isMatch('a/b/c/d/', 'a/b/**/f'));
       assert(isMatch('a', '**'));
-      assert(isMatch('a', 'a/**'));
       assert(isMatch('a/', '**'));
+      assert(isMatch('a/b-c/d/e/z.js', 'a/b-*/**/z.js'));
+      assert(isMatch('a/b-c/z.js', 'a/b-*/**/z.js'));
       assert(isMatch('a/b/c/d', '**'));
       assert(isMatch('a/b/c/d/', '**'));
       assert(isMatch('a/b/c/d/', '**/**'));
@@ -1182,15 +1186,12 @@ describe('picomatch', () => {
       assert(isMatch('a/b/c/d/', 'a/b/**/'));
       assert(isMatch('a/b/c/d/', 'a/b/**/c/**/'));
       assert(isMatch('a/b/c/d/', 'a/b/**/c/**/d/'));
-      assert(!isMatch('a/b/c/d/', 'a/b/**/f'));
       assert(isMatch('a/b/c/d/e.f', 'a/b/**/**/*.*'));
       assert(isMatch('a/b/c/d/e.f', 'a/b/**/*.*'));
       assert(isMatch('a/b/c/d/e.f', 'a/b/**/c/**/d/*.*'));
       assert(isMatch('a/b/c/d/e.f', 'a/b/**/d/**/*.*'));
       assert(isMatch('a/b/c/d/g/e.f', 'a/b/**/d/**/*.*'));
       assert(isMatch('a/b/c/d/g/g/e.f', 'a/b/**/d/**/*.*'));
-      assert(isMatch('a/b-c/z.js', 'a/b-*/**/z.js'));
-      assert(isMatch('a/b-c/d/e/z.js', 'a/b-*/**/z.js'));
     });
 
     it('should match slashes', () => {
@@ -1202,9 +1203,9 @@ describe('picomatch', () => {
       assert(!isMatch('foo/bar/baz', '**/bar**'));
       assert(!isMatch('foo/baz/bar', 'foo**bar'));
       assert(!isMatch('foo/baz/bar', 'foo*bar'));
-      assert(!isMatch('deep/foo/bar/baz/', '**/bar/*'));
       assert(!isMatch('deep/foo/bar/baz', '**/bar/*/'));
-      assert(isMatch('foo', 'foo/**'));
+      assert(!isMatch('foo', 'foo/**'));
+      assert(isMatch('deep/foo/bar/baz/', '**/bar/*'));
       assert(isMatch('a/b/j/c/z/x.md', 'a/**/j/**/z/*.md'));
       assert(isMatch('a/j/z/x.md', 'a/**/j/**/z/*.md'));
       assert(isMatch('bar/baz/foo', '**/foo'));

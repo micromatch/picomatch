@@ -5,15 +5,22 @@ const argv = require('minimist')(process.argv.slice(2), { alias: { c: 'compare' 
 const bash = require('bash-match');
 const minimatch = require('minimatch');
 const multimatch = require('multimatch');
+const micromatch = require('micromatch');
 const picomatch = require('../..');
 
 const mm = (input, patterns, options) => {
-  return multimatch([].concat(input), patterns, options);
+  if (Array.isArray(patterns)) {
+    return multimatch([].concat(input), patterns, options);
+  }
+  if (Array.isArray(input)) {
+    return minimatch.match(input, patterns, options);
+  }
+  return minimatch(input, patterns, options);
 };
 
-mm.isMatch = (str, pattern, options) => multimatch(str, pattern, options);
+mm.isMatch = (str, pattern, options) => mm(str, pattern, options);
 mm.makeRe = minimatch.makeRe;
-mm.match = multimatch;
+mm.match = mm;
 
 const compare = (list, pattern, options) => {
   list = [].concat(list);
@@ -76,8 +83,22 @@ compare.makeRe = picomatch.makeRe;
 compare.match = picomatch.match;
 compare.any = picomatch.any;
 
+picomatch.match = (list, pattern, options = {}) => {
+  let isMatch = picomatch(pattern, options);
+  let matches = new Set();
+  for (let ele of list) {
+    let match = isMatch(ele);
+    if (match) {
+      matches.add(typeof match === 'boolean' ? ele : match);
+    }
+  }
+  return [...matches];
+};
+
 if (argv.compare) {
   module.exports = compare;
+} else if (argv.mi) {
+  module.exports = micromatch;
 } else if (argv.mm) {
   module.exports = mm;
 } else if (argv.bash) {
