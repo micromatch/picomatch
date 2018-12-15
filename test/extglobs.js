@@ -921,7 +921,7 @@ describe('bash unit tests', () => {
     assert(isMatch('fo', '@(!(z*)|*x)'));
     assert(isMatch('foo', '@(!(z*)|*x)'));
     assert(isMatch('foo/bar', '@(!(z*/*)|*x)'));
-    assert(isMatch('foo/bar', '@(!(z*)|*x)'));
+    assert(!isMatch('foo/bar', '@(!(z*)|*x)'));
     assert(isMatch('foobar', '@(!(z*)|*x)'));
     assert(isMatch('foot', '@(!(z*)|*x)'));
     assert(isMatch('foox', '@(!(z*)|*x)'));

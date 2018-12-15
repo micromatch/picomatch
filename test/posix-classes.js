@@ -256,8 +256,8 @@ describe('posix classes', () => {
 
   describe('.makeRe()', () => {
     it('should make a regular expression for the given pattern:', () => {
-      assert.deepEqual(pm.makeRe('[[:alpha:]123]', opts), /^(?=.)[a-zA-Z123]$/);
-      assert.deepEqual(pm.makeRe('[![:lower:]]', opts), /^(?=.)[^a-z]$/);
+      assert.deepEqual(pm.makeRe('[[:alpha:]123]', opts), /^(?:(?=.)[a-zA-Z123])$/);
+      assert.deepEqual(pm.makeRe('[![:lower:]]', opts), /^(?:(?=.)[^a-z])$/);
     });
   });
 
