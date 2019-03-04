@@ -19,12 +19,12 @@ describe('handling of potential regex exploits', () => {
   it('should throw an error when the pattern is too long', () => {
     assert.throws(() => {
       assert(!pm.isMatch('A', `!(${generate(65536)}A)`));
-    }, /input string must not be longer than 65536 bytes/);
+    }, /Input length: 65540, exceeds maximum allowed length: 65536/);
   });
 
   it('should allow max bytes to be customized', () => {
     assert.throws(() => {
       assert(!pm.isMatch('A', `!(${generate(500)}A)`, { maxLength: 499 }));
-    }, /input string must not be longer than 499 bytes/);
+    }, /Input length: 504, exceeds maximum allowed length: 499/);
   });
 });

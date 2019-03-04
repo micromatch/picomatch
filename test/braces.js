@@ -9,7 +9,7 @@ picomatch.nocache = true;
 describe('braces', () => {
   beforeEach(() => picomatch.clearCache());
 
-  it('should match with brace patterns', () => {
+  it('should not match with brace patterns when disabled', () => {
     assert(!isMatch('a/a', 'a/{a,b}', { nobrace: true }));
     assert(!isMatch('a/b', 'a/{a,b}', { nobrace: true }));
     assert(!isMatch('a/c', 'a/{a,b}', { nobrace: true }));
@@ -115,6 +115,7 @@ describe('braces', () => {
   it('should support braces in patterns with globstars', () => {
     assert(!isMatch('a/b/c/xyz.md', 'a/b/**/c{d,e}/**/xyz.md'));
     assert(!isMatch('a/b/d/xyz.md', 'a/b/**/c{d,e}/**/xyz.md'));
+    assert(isMatch('a/b/cd/xyz.md', 'a/b/**/c{d,e}/**/xyz.md'));
     assert(isMatch('a/b/c/xyz.md', 'a/b/**/{c,d,e}/**/xyz.md'));
     assert(isMatch('a/b/d/xyz.md', 'a/b/**/{c,d,e}/**/xyz.md'));
   });
@@ -187,17 +188,17 @@ describe('braces', () => {
     assert(isMatch('b  ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
     assert(isMatch('b ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
 
-    assert(isMatch('a   ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('a   b', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('a  b', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(!isMatch('a  ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(!isMatch('a ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('a', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('aa', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('b', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('bb', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch(' a ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('b  ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('b ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(isMatch('a   ', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch('a   b', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch('a  b', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch('a  ', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch('a ', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch('a', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch('aa', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch('b', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch('bb', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch(' a ', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch('b  ', '@(!(a \\{1,2\\}))*'));
+    assert(isMatch('b ', '@(!(a \\{1,2\\}))*'));
   });
 });

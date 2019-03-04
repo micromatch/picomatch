@@ -7,14 +7,16 @@ const colors = require('ansi-colors');
 const color = val => val === true ? colors.green(val) : colors.red(val);
 // const bash = require('bash-match');
 
-console.log('mm', 'pm');
-const match = (str, pattern) => {
-  let arr = [mm(str, pattern), pm(pattern)(str)];
-  arr.push(color(arr[0] === arr[1]));
-  if (arr[0] !== arr[1]) arr.push([str, pattern].join(', '));
-  arr = arr.map(v => String(v).padEnd(5, ' '));
-  console.log(arr.join(' '));
-};
+console.log(pm('E*d')('Edward'));
+
+// console.log('mm', 'pm');
+// const match = (str, pattern) => {
+//   let arr = [mm(str, pattern), pm(pattern)(str)];
+//   arr.push(color(arr[0] === arr[1]));
+//   if (arr[0] !== arr[1]) arr.push([str, pattern].join(', '));
+//   arr = arr.map(v => String(v).padEnd(5, ' '));
+//   console.log(arr.join(' '));
+// };
 
 // // console.log(pm.makeRe('*'));
 // // console.log(bash.isMatch('foo/bar', '!(foo)'));
@@ -163,8 +165,8 @@ const match = (str, pattern) => {
 // match('a/', 'a/**/');
 // match('/a/', '/*/**/*');
 // match('..', '**/*');
-match('foo/bar/bazqux.js', '**/!(bazqux).js');
-match('foo/bars', '!(foo)');
+// match('foo/bar/bazqux.js', '**/!(bazqux).js');
+// match('foo/bars', '!(foo)');
 // match('..', '**/*', { dot: true });
 // console.log('---');
 
@@ -172,14 +174,14 @@ match('foo/bars', '!(foo)');
 // console.log(pm.makeRe('a/**/**/*'))
 // console.log(pm.makeRe('**/a/**'))
 // console.log(pm.makeRe('**/**/**'))
-console.log('pm', pm.makeRe('a/!(b*)'));
-console.log('mm', mm.makeRe('a/!(b*)'));
-console.log('---');
-console.log('pm', pm.makeRe('**/!(bazqux).js'));
-console.log('mm', mm.makeRe('**/!(bazqux).js'));
-console.log('---');
-console.log('pm', pm.makeRe('!(foo)'));
-console.log('mm', mm.makeRe('!(foo)'));
+// console.log('pm', pm.makeRe('a/!(b*)'));
+// console.log('mm', mm.makeRe('a/!(b*)'));
+// console.log('---');
+// console.log('pm', pm.makeRe('**/!(bazqux).js'));
+// console.log('mm', mm.makeRe('**/!(bazqux).js'));
+// console.log('---');
+// console.log('pm', pm.makeRe('!(foo)'));
+// console.log('mm', mm.makeRe('!(foo)'));
 
 // console.log(mm('a', '**/a'));
 // console.log(mm('/a', '*'));

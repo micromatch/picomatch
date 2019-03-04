@@ -2,13 +2,13 @@
 
 require('mocha');
 const assert = require('assert');
+const pm = require('..');
 const picomatch = require('..');
-const pm = require('./support');
 picomatch.nocache = true;
 
 describe('dotfiles', () => {
-  // beforeEach(() => pm.clearCache());
-  // afterEach(() => pm.clearCache());
+  beforeEach(() => pm.clearCache());
+  afterEach(() => pm.clearCache());
 
   it('should not match dotfiles with single stars by default', () => {
     assert(pm.isMatch('foo', '*'));
@@ -26,7 +26,7 @@ describe('dotfiles', () => {
   });
 
   it('should not match dotfiles with globstars by default', () => {
-    assert(pm.isMatch('foo', '**/*'));
+    assert(!pm.isMatch('.foo', '**/**'));
     assert(!pm.isMatch('.foo', '**'));
     assert(!pm.isMatch('.foo', '**/*'));
     assert(!pm.isMatch('bar/.foo', '**/*'));
@@ -103,6 +103,11 @@ describe('dotfiles', () => {
     assert(pm.isMatch('a/../a', '*/../*'));
     assert(pm.isMatch('ab/../ac', '**/../*'));
     assert(pm.isMatch('ab/../ac', '*/../*'));
+
+    assert(pm.isMatch('b/.c', '**/**/**', { dot: true }));
+    assert(!pm.isMatch('b/.c', '**/**/**'));
+    assert(!pm.isMatch('../c', '**/**/**', { dot: true }));
+    assert(!pm.isMatch('../c', '**/**/**'));
   });
 
   it('should match dots in root path when glob is prefixed with **/', () => {

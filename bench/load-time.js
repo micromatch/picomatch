@@ -3,6 +3,6 @@ console.time('minimatch');
 exports.mm = require('minimatch');
 console.timeEnd('minimatch');
 console.time('picomatch');
-exports.pm = require('..');
+exports.pm = require('../split');
 console.timeEnd('picomatch');
 console.log();
