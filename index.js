@@ -2,6 +2,7 @@
 
 const path = require('path');
 const win32 = process.platform === 'win32';
+const MAX_LENGTH = 65536;
 
 /**
  * Constants
@@ -29,9 +30,63 @@ const GLOBSTAR_NO_DOTS = '(?:\\.{1,2})($|\\/)';
 const GLOBSTAR_NO_DOT = '\\.';
 
 /**
+ * Extglobs and brackets
+ */
+
+const EXTGLOB_CHARS = {
+  '!': { open: '(?:(?!', close: ').*?)' },
+  '?': { open: '(?:', close: ')?' },
+  '+': { open: '(?:', close: ')+' },
+  '*': { open: '(?:', close: ')*' },
+  '@': { open: '(?:', close: ')' }
+};
+
+const BRACKET_CHARS = {
+  '"': { type: 'quote', close: '"' },
+  '(': { type: 'paren', close: ')' },
+  '[': { type: 'bracket', close: ']' },
+  '{': { type: 'brace', close: '}' }
+};
+
+/**
+ * Special characters
+ */
+
+const kind = {
+  '!': 'bang',
+  '+': 'plus',
+  '*': 'star',
+  '@': 'at',
+  '?': 'qmark',
+  '.': 'dot'
+};
+
+/**
+ * POSIX Bracket Regex
+ */
+
+const POSIX_REGEX = {
+  alnum: 'a-zA-Z0-9',
+  alpha: 'a-zA-Z',
+  ascii: '\\x00-\\x7F',
+  blank: ' \\t',
+  cntrl: '\\x00-\\x1F\\x7F',
+  digit: '0-9',
+  graph: '\\x21-\\x7E',
+  lower: 'a-z',
+  print: '\\x20-\\x7E ',
+  punct: '\\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~',
+  space: ' \\t\\r\\n\\v\\f',
+  upper: 'A-Z',
+  word: 'A-Za-z0-9_',
+  xdigit: 'A-Fa-f0-9'
+};
+
+/**
  * Helpers
  */
 
+const escapeRegex = str => str.replace(/[-[\\$*+?.#^\s{}(|)\]]/g, '\\$&');
 const trimStart = str => str.startsWith('./') ? str.slice(2) : str;
 const globstar = dot => {
   return `(?:(?!(?:\\/|^)${dot ? GLOBSTAR_NO_DOTS : GLOBSTAR_NO_DOT}).)*?`;
@@ -51,7 +106,7 @@ const picomatch = (pattern, options) => {
       str = str.replace(/\\/g, '/');
     }
 
-      console.log([str])
+    // console.log([str])
     return regex.test(str);
   }
 };
@@ -104,10 +159,17 @@ const fastpaths = (input, options) => {
 
 picomatch.parse = (input, options) => {
   let opts = options || { dot: false };
+
+  let max = typeof opts.maxLength === 'number' ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
+  let len = input.length;
+  if (len > max) {
+    throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
+  }
+
   let bos = { type: 'bos', value: '' };
   let tokens = [bos];
 
-  let isWindows = win32 || path.sep === '\\' || opts.windows === true;
+  let isWindows = win32 === true || path.sep === '\\' || opts.windows === true;
   let state = {
     consumed: '',
     output: '',
@@ -118,7 +180,6 @@ picomatch.parse = (input, options) => {
     tokens,
   };
 
-  let len = input.length;
   let i = -1;
   let lastSlash;
   let prev = bos;
@@ -127,14 +188,25 @@ picomatch.parse = (input, options) => {
   let value;
   let token;
 
+  /**
+   * Tokenizing helpers
+   */
+
   const eos = () => i === len - 1;
   const peek = (n = 1) => input[i + n];
   const advance = () => input[++i];
-
   const append = token => {
     state.output += token.output || token.value;
     state.consumed += token.value || '';
   };
+
+  /**
+   * Push tokens onto the tokens array. This helper speeds up
+   * tokenizing by 1) helping us avoid backtracking as much as possible,
+   * and 2) helping us avoid creating extra tokens when consecutive
+   * characters are plain text. This improves performance and simplifies
+   * lookbehinds.
+   */
 
   const push = token => {
     if (prev.type === 'globstar') {
@@ -161,10 +233,17 @@ picomatch.parse = (input, options) => {
     prev = token;
   };
 
-  // parse input
+  /**
+   * Tokenize input until we reach end-of-string
+   */
+
   while (!eos()) {
     value = advance();
     last = prev;
+
+    /**
+     * Escaped characters
+     */
 
     if (value === '\\') {
       if (opts.unescape === true) {
@@ -181,11 +260,20 @@ picomatch.parse = (input, options) => {
       }
     }
 
+    /**
+     * If we're inside a regex character class, continue
+     * until we reach the closing bracket.
+     */
+
     if (state.brackets > 0 && value !== ']') {
       prev.value += value;
       append({ value });
       continue;
     }
+
+    /**
+     * Parentheses
+     */
 
     if (value === '(') {
       push({ type: 'paren', value });
@@ -194,13 +282,17 @@ picomatch.parse = (input, options) => {
     }
 
     if (value === ')') {
-      if (options.strictBrackets === true) {
+      if (state.parens === 0 && options.strictBrackets === true) {
         throw new SyntaxError(syntaxError('opening', '('));
       }
       push({ type: 'paren', value, output: state.parens ? ')' : '\\)' });
       state.parens--;
       continue;
     }
+
+    /**
+     * Brackets
+     */
 
     if (value === '[') {
       push({ type: 'bracket', value });
@@ -209,14 +301,36 @@ picomatch.parse = (input, options) => {
     }
 
     if (value === ']') {
-      if (options.strictBrackets === true) {
+      if (state.brackets === 0 && options.strictBrackets === true) {
         throw new SyntaxError(syntaxError('opening', '['));
       }
+
       prev.value += value;
       append({ value });
       state.brackets--;
+
+      // when literal brackets are explicitly disabled
+      // assume we should match with a regex character class
+      if (opts.literalBrackets === false) {
+        continue;
+      }
+
+      // when literal brackets are explicitly enabled
+      // assume we should escape the brackets to match literal characters
+      let escaped = prev.value.replace(/\W/g, '\\$&');
+      if (opts.literalBrackets === true) {
+        prev.value = escaped;
+        continue;
+      }
+
+      // when the user specifies nothing, try to match both
+      prev.value = `(?:${escaped}|${prev.value})`;
       continue;
     }
+
+    /**
+     * Braces
+     */
 
     if (value === '{' && opts.nobrace !== true) {
       push({ type: 'brace', value, output: '(' });
@@ -225,15 +339,26 @@ picomatch.parse = (input, options) => {
     }
 
     if (value === '}' && opts.nobrace !== true) {
+      if (state.braces === 0 && options.strictBrackets === true) {
+        throw new SyntaxError(syntaxError('opening', '{'));
+      }
       push({ type: 'brace', value, output: state.braces ? ')' : '\\}' });
       state.braces--;
       continue;
     }
 
+    /**
+     * Commas
+     */
+
     if (value === ',') {
       push({ type: 'comma', value, output: state.braces ? '|' : value });
       continue;
     }
+
+    /**
+     * Slashes
+     */
 
     if (value === '/') {
       if (prev.type === 'dot' && i === 1) {
@@ -252,10 +377,18 @@ picomatch.parse = (input, options) => {
       continue;
     }
 
+    /**
+     * Dots
+     */
+
     if (value === '.') {
       push({ type: 'dot', value, output: DOT_LITERAL });
       continue;
     }
+
+    /**
+     * Question marks
+     */
 
     if (value === '?') {
       if (last && last.type === 'paren') {
@@ -272,7 +405,7 @@ picomatch.parse = (input, options) => {
       }
 
       if (prev.type === 'slash' || prev.type === 'bos') {
-        push({ type: 'qmark', value, output: QMARK_NO_DOT });
+        push({ type: 'qmark', value, output: isWindows ? QMARK_WINDOWS_NO_DOT : QMARK_NO_DOT });
         continue;
       }
 
@@ -280,12 +413,20 @@ picomatch.parse = (input, options) => {
       continue;
     }
 
+    /**
+     * Exclamation
+     */
+
     if (value === '!') {
       if (i === 0) {
         state.negated = true;
         continue;
       }
     }
+
+    /**
+     * Plain text
+     */
 
     if (value !== '*') {
       if (value === '$' || value === '^') {
@@ -295,6 +436,10 @@ picomatch.parse = (input, options) => {
       push({ type: 'text', value });
       continue;
     }
+
+    /**
+     * Stars
+     */
 
     if (prev && (prev.type === 'globstar' || prev.star === true)) {
       prev.type = 'star';
