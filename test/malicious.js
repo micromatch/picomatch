@@ -1,30 +1,31 @@
 'use strict';
 
 const assert = require('assert');
-const pm = require('..');
-const generate = n => '\\'.repeat(n);
+const { clearCache, isMatch } = require('..');
+const repeat = n => '\\'.repeat(n);
 
 /**
  * These tests are based on minimatch unit tests
  */
 
 describe('handling of potential regex exploits', () => {
-  beforeEach(() => pm.clearCache());
+  beforeEach(() => clearCache());
 
   it('should support long escape sequences', () => {
-    assert(pm.isMatch('A', `!(${generate(65500)}A)`), 'within the limits, and valid match');
-    assert(!pm.isMatch('A', `[!(${generate(65500)}A`), 'within the limits, but invalid regex');
+    assert(isMatch('A', `!(${repeat(65500)}A)`), 'within the limits, and valid match');
+    assert(!isMatch('A', `[!(${repeat(65500)}A`), 'within the limits, but invalid regex');
   });
 
   it('should throw an error when the pattern is too long', () => {
+    assert.throws(() => isMatch('foo', '*'.repeat(65537)), /exceeds maximum allowed/);
     assert.throws(() => {
-      assert(!pm.isMatch('A', `!(${generate(65536)}A)`));
+      assert(!isMatch('A', `!(${repeat(65536)}A)`));
     }, /Input length: 65540, exceeds maximum allowed length: 65536/);
   });
 
   it('should allow max bytes to be customized', () => {
     assert.throws(() => {
-      assert(!pm.isMatch('A', `!(${generate(500)}A)`, { maxLength: 499 }));
+      assert(!isMatch('A', `!(${repeat(500)}A)`, { maxLength: 499 }));
     }, /Input length: 504, exceeds maximum allowed length: 499/);
   });
 });

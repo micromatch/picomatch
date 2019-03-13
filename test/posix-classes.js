@@ -3,15 +3,17 @@
 require('mocha');
 const assert = require('assert');
 const pm = require('..');
-const opts = { strictSlashes: true, posix: true };
+const { clearCache, makeRe, parse } = pm;
+
+const opts = { strictSlashes: true, posix: true, regex: true };
 const isMatch = (...args) => pm.isMatch(...args, opts);
 const convert = (...args) => {
-  let state = pm.parse(...args, opts);
+  let state = parse(...args, opts);
   return state.output;
 };
 
 describe('posix classes', () => {
-  beforeEach(() => pm.clearCache());
+  beforeEach(() => clearCache());
 
   describe('posix bracket type conversion', () => {
     it('should create regex character classes from POSIX bracket expressions:', () => {
@@ -132,78 +134,8 @@ describe('posix classes', () => {
       assert(isMatch('axyzc', 'a[[:word:]]+'));
     });
 
-    it('should match character classes', () => {
-      assert(!isMatch('abc', 'a[bc]d'));
-      assert(isMatch('abd', 'a[bc]d'));
-    });
-
-    it('should match character class alphabetical ranges', () => {
-      assert(!isMatch('abc', 'a[b-d]e'));
-      assert(!isMatch('abd', 'a[b-d]e'));
-      assert(isMatch('abe', 'a[b-d]e'));
-      assert(!isMatch('ac', 'a[b-d]e'));
-      assert(!isMatch('a-', 'a[b-d]e'));
-
-      assert(!isMatch('abc', 'a[b-d]'));
-      assert(!isMatch('abd', 'a[b-d]'));
-      assert(isMatch('abd', 'a[b-d]+'));
-      assert(!isMatch('abe', 'a[b-d]'));
-      assert(isMatch('ac', 'a[b-d]'));
-      assert(!isMatch('a-', 'a[b-d]'));
-    });
-
-    it('should match character classes with leading dashes', () => {
-      assert(!isMatch('abc', 'a[-c]'));
-      assert(isMatch('ac', 'a[-c]'));
-      assert(isMatch('a-', 'a[-c]'));
-    });
-
-    it('should match character classes with trailing dashes', () => {
-      assert(!isMatch('abc', 'a[c-]'));
-      assert(isMatch('ac', 'a[c-]'));
-      assert(isMatch('a-', 'a[c-]'));
-    });
-
-    it('should match bracket literals', () => {
-      assert(isMatch('a]c', 'a[]]c'));
-      assert(isMatch('a]c', 'a]c'));
-      assert(isMatch('a]', 'a]'));
-
-      assert(isMatch('a[c', 'a[\\[]c'));
-      assert(isMatch('a[c', 'a[c'));
-      assert(isMatch('a[', 'a['));
-    });
-
-    it('should support negated character classes', () => {
-      assert(!isMatch('a]', 'a[^bc]d'));
-      assert(!isMatch('acd', 'a[^bc]d'));
-      assert(isMatch('aed', 'a[^bc]d'));
-      assert(isMatch('azd', 'a[^bc]d'));
-      assert(!isMatch('ac', 'a[^bc]d'));
-      assert(!isMatch('a-', 'a[^bc]d'));
-    });
-
-    it('should match negated dashes', () => {
-      assert(!isMatch('abc', 'a[^-b]c'));
-      assert(isMatch('adc', 'a[^-b]c'));
-      assert(!isMatch('a-c', 'a[^-b]c'));
-    });
-
-    it('should match negated pm', () => {
-      assert(isMatch('a-c', 'a[^\\]b]c'));
-      assert(!isMatch('abc', 'a[^\\]b]c'));
-      assert(!isMatch('a]c', 'a[^\\]b]c'));
-      assert(isMatch('adc', 'a[^\\]b]c'));
-    });
-
-    it('should match alpha-numeric characters', () => {
-      assert(!isMatch('0123e45g78', '[\\de]+'));
-      assert(isMatch('0123e456', '[\\de]+'));
-      assert(isMatch('01234', '[\\de]+'));
-    });
-
     it('should not create an invalid posix character class:', () => {
-      assert.equal(convert('[:al:]'), '(?=.)(?:\\[\\:al\\:\\]|[:al:])');
+      assert.equal(convert('[:al:]'), '(?:\\[:al:\\]|[:al:])');
       assert.equal(convert('[abc[:punct:][0-9]'), '(?=.)[abc\\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~\\[0-9]');
     });
 
@@ -256,8 +188,8 @@ describe('posix classes', () => {
 
   describe('.makeRe()', () => {
     it('should make a regular expression for the given pattern:', () => {
-      assert.deepEqual(pm.makeRe('[[:alpha:]123]', opts), /^(?:(?=.)[a-zA-Z123])$/);
-      assert.deepEqual(pm.makeRe('[![:lower:]]', opts), /^(?:(?=.)[^a-z])$/);
+      assert.deepEqual(makeRe('[[:alpha:]123]', opts), /^(?:(?=.)[a-zA-Z123])$/);
+      assert.deepEqual(makeRe('[![:lower:]]', opts), /^(?:(?=.)[^a-z])$/);
     });
   });
 
@@ -359,7 +291,7 @@ describe('posix classes', () => {
 
     it('invalid character class expressions are just characters to be matched', () => {
       assert(isMatch('a', '[:al:]'));
-      assert(!isMatch('a', '[[:al:]'));
+      assert(isMatch('a', '[[:al:]'));
       assert(isMatch('!', '[abc[:punct:][0-9]'));
     });
 

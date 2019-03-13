@@ -3,13 +3,26 @@
 require('mocha');
 const version = process.version;
 const assert = require('assert');
-const pm = require('..');
-const { isMatch } = require('./support');
+const { clearCache, isMatch } = require('..');
 
 describe('regex features', () => {
-  beforeEach(() => pm.clearCache());
+  beforeEach(() => clearCache());
 
-  describe('lookarounds', () => {
+  describe('word boundaries', () => {
+    it('should support word boundaries', () => {
+      assert(!isMatch('a', 'a\\b', { unixify: true }));
+      assert(isMatch('a', 'a\\b', { unixify: false }));
+      assert(isMatch('a', 'a\\b'));
+    });
+
+    it('should support word boundaries in parens', () => {
+      assert(!isMatch('a', '(a\\b)', { unixify: true }));
+      assert(isMatch('a', '(a\\b)', { unixify: false }));
+      assert(isMatch('a', '(a\\b)'));
+    });
+  });
+
+  describe('regex lookarounds', () => {
     it('should support regex lookbehinds', () => {
       if (parseInt(version.slice(1), 10) >= 10) {
         assert(isMatch('foo/cbaz', 'foo/*(?<!d)baz'));
@@ -26,7 +39,7 @@ describe('regex features', () => {
     });
   });
 
-  describe('back-references', () => {
+  describe('regex back-references', () => {
     it('should support regex backreferences', () => {
       assert(!isMatch('1/2', '(*)/\\1'));
       assert(isMatch('1/1', '(*)/\\1'));
@@ -43,8 +56,18 @@ describe('regex features', () => {
     });
   });
 
-  describe('character classes', () => {
-    it('should match regex character classes', () => {
+  describe('regex character classes', () => {
+    it('should not match with character classes when disabled', () => {
+      assert(!isMatch('a/a', 'a/[a-z]', { nobrackets: true }));
+      assert(!isMatch('a/b', 'a/[a-z]', { nobrackets: true }));
+      assert(!isMatch('a/c', 'a/[a-z]', { nobrackets: true }));
+    });
+
+    it('should match with character classes by default', () => {
+      assert(isMatch('a/a', 'a/[a-z]'));
+      assert(isMatch('a/b', 'a/[a-z]'));
+      assert(isMatch('a/c', 'a/[a-z]'));
+
       assert(!isMatch('foo/bar', '**/[jkl]*'));
       assert(isMatch('foo/jar', '**/[jkl]*'));
 
@@ -59,6 +82,76 @@ describe('regex features', () => {
 
       assert(isMatch('foo/bar', '**/[abc]ar'));
       assert(!isMatch('foo/jar', '**/[abc]ar'));
+    });
+
+    it('should match character classes', () => {
+      assert(!isMatch('abc', 'a[bc]d'));
+      assert(isMatch('abd', 'a[bc]d'));
+    });
+
+    it('should match character class alphabetical ranges', () => {
+      assert(!isMatch('abc', 'a[b-d]e'));
+      assert(!isMatch('abd', 'a[b-d]e'));
+      assert(isMatch('abe', 'a[b-d]e'));
+      assert(!isMatch('ac', 'a[b-d]e'));
+      assert(!isMatch('a-', 'a[b-d]e'));
+
+      assert(!isMatch('abc', 'a[b-d]'));
+      assert(!isMatch('abd', 'a[b-d]'));
+      assert(isMatch('abd', 'a[b-d]+'));
+      assert(!isMatch('abe', 'a[b-d]'));
+      assert(isMatch('ac', 'a[b-d]'));
+      assert(!isMatch('a-', 'a[b-d]'));
+    });
+
+    it('should match character classes with leading dashes', () => {
+      assert(!isMatch('abc', 'a[-c]'));
+      assert(isMatch('ac', 'a[-c]'));
+      assert(isMatch('a-', 'a[-c]'));
+    });
+
+    it('should match character classes with trailing dashes', () => {
+      assert(!isMatch('abc', 'a[c-]'));
+      assert(isMatch('ac', 'a[c-]'));
+      assert(isMatch('a-', 'a[c-]'));
+    });
+
+    it('should match bracket literals', () => {
+      assert(isMatch('a]c', 'a[]]c'));
+      assert(isMatch('a]c', 'a]c'));
+      assert(isMatch('a]', 'a]'));
+
+      assert(isMatch('a[c', 'a[\\[]c'));
+      assert(isMatch('a[c', 'a[c'));
+      assert(isMatch('a[', 'a['));
+    });
+
+    it('should support negated character classes', () => {
+      assert(!isMatch('a]', 'a[^bc]d'));
+      assert(!isMatch('acd', 'a[^bc]d'));
+      assert(isMatch('aed', 'a[^bc]d'));
+      assert(isMatch('azd', 'a[^bc]d'));
+      assert(!isMatch('ac', 'a[^bc]d'));
+      assert(!isMatch('a-', 'a[^bc]d'));
+    });
+
+    it('should match negated dashes', () => {
+      assert(!isMatch('abc', 'a[^-b]c'));
+      assert(isMatch('adc', 'a[^-b]c'));
+      assert(!isMatch('a-c', 'a[^-b]c'));
+    });
+
+    it('should match negated pm', () => {
+      assert(isMatch('a-c', 'a[^\\]b]c'));
+      assert(!isMatch('abc', 'a[^\\]b]c'));
+      assert(!isMatch('a]c', 'a[^\\]b]c'));
+      assert(isMatch('adc', 'a[^\\]b]c'));
+    });
+
+    it('should match alpha-numeric characters', () => {
+      assert(!isMatch('0123e45g78', '[\\de]+'));
+      assert(isMatch('0123e456', '[\\de]+'));
+      assert(isMatch('01234', '[\\de]+'));
     });
 
     it('should support valid regex ranges', () => {
@@ -149,7 +242,26 @@ describe('regex features', () => {
     });
   });
 
-  describe('capture groups', () => {
+  describe('regex capture groups', () => {
+    it('should support regex logical "or"', () => {
+      assert(isMatch('a/a', 'a/(a|c)'));
+      assert(!isMatch('a/b', 'a/(a|c)'));
+      assert(isMatch('a/c', 'a/(a|c)'));
+
+      assert(isMatch('a/a', 'a/(a|b|c)'));
+      assert(isMatch('a/b', 'a/(a|b|c)'));
+      assert(isMatch('a/c', 'a/(a|b|c)'));
+    });
+
+    it('should support regex character classes inside extglobs', () => {
+      assert(!isMatch('foo/bar', '**/!([a-k])*'));
+      assert(!isMatch('foo/jar', '**/!([a-k])*'));
+
+      assert(!isMatch('foo/bar', '**/!([a-i])*'));
+      assert(isMatch('foo/bar', '**/!([c-i])*'));
+      assert(isMatch('foo/jar', '**/!([a-i])*'));
+    });
+
     it('should support regex capture groups', () => {
       assert(isMatch('a/bb/c/dd/e.md', 'a/??/?/(dd)/e.md'));
       assert(isMatch('a/b/c/d/e.md', 'a/?/c/?/(e|f).md'));
@@ -169,6 +281,41 @@ describe('regex features', () => {
       assert(isMatch('a/bb/c/dd/e.md', 'a/**/(?:dd)/e.md'));
       assert(isMatch('a/b/c/d/e.md', 'a/?/c/?/(?:e|f).md'));
       assert(isMatch('a/b/c/d/f.md', 'a/?/c/?/(?:e|f).md'));
+    });
+  });
+
+  describe('quantifiers', () => {
+    it('should support regex quantifiers by escaping braces', () => {
+      assert(isMatch('a   ', 'a \\{1,5\\}', { unescape: true }));
+      assert(!isMatch('a   ', 'a \\{1,2\\}', { unescape: true }));
+      assert(!isMatch('a   ', 'a \\{1,2\\}'));
+    });
+
+    it('should support extglobs with regex quantifiers', () => {
+      assert(!isMatch('a  ', '@(!(a) \\{1,2\\})*', { unescape: true }));
+      assert(!isMatch('a ', '@(!(a) \\{1,2\\})*', { unescape: true }));
+      assert(!isMatch('a', '@(!(a) \\{1,2\\})*', { unescape: true }));
+      assert(!isMatch('aa', '@(!(a) \\{1,2\\})*', { unescape: true }));
+      assert(!isMatch('aaa', '@(!(a) \\{1,2\\})*', { unescape: true }));
+      assert(!isMatch('b', '@(!(a) \\{1,2\\})*', { unescape: true }));
+      assert(!isMatch('bb', '@(!(a) \\{1,2\\})*', { unescape: true }));
+      assert(!isMatch('bbb', '@(!(a) \\{1,2\\})*', { unescape: true }));
+      assert(isMatch(' a ', '@(!(a) \\{1,2\\})*', { unescape: true }));
+      assert(isMatch('b  ', '@(!(a) \\{1,2\\})*', { unescape: true }));
+      assert(isMatch('b ', '@(!(a) \\{1,2\\})*', { unescape: true }));
+
+      assert(isMatch('a   ', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch('a   b', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch('a  b', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch('a  ', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch('a ', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch('a', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch('aa', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch('b', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch('bb', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch(' a ', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch('b  ', '@(!(a \\{1,2\\}))*'));
+      assert(isMatch('b ', '@(!(a \\{1,2\\}))*'));
     });
   });
 });

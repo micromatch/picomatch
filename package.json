@@ -61,7 +61,13 @@
       "picomatch"
     ],
     "related": {
-      "list": ["micromatch", "braces"]
+      "list": [
+        "micromatch",
+        "braces"
+      ]
     }
+  },
+  "dependencies": {
+    "safe-regex": "^2.0.2"
   }
 }

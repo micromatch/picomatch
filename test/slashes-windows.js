@@ -29,12 +29,12 @@ describe('slash handling - windows', () => {
   });
 
   it('should not match literal backslashes with literal forward slashes when unixify is disabled', () => {
-    assert(!isMatch('a\\a', 'a\\\\b', { unixify: false }));
-    assert(isMatch('a\\b', 'a\\\\b', { unixify: false }));
-    assert(!isMatch('a\\c', 'a\\\\b', { unixify: false }));
-    assert(!isMatch('b\\a', 'a\\\\b', { unixify: false }));
-    assert(!isMatch('b\\b', 'a\\\\b', { unixify: false }));
-    assert(!isMatch('b\\c', 'a\\\\b', { unixify: false }));
+    assert(!isMatch('a\\a', 'a\\b', { unixify: false }));
+    assert(isMatch('a\\b', 'a\\b', { unixify: false }));
+    assert(!isMatch('a\\c', 'a\\b', { unixify: false }));
+    assert(!isMatch('b\\a', 'a\\b', { unixify: false }));
+    assert(!isMatch('b\\b', 'a\\b', { unixify: false }));
+    assert(!isMatch('b\\c', 'a\\b', { unixify: false }));
 
     assert(!isMatch('a\\a', 'a/b', { unixify: false }));
     assert(!isMatch('a\\b', 'a/b', { unixify: false }));
@@ -60,12 +60,12 @@ describe('slash handling - windows', () => {
     assert(!isMatch('a\\a', 'a/(a|b|c)', { unixify: false }));
     assert(!isMatch('a\\b', 'a/(a|b|c)', { unixify: false }));
     assert(!isMatch('a\\c', 'a/(a|b|c)', { unixify: false }));
-    assert(!isMatch('a\\a', '(a\\\\b)', { unixify: false }));
+    assert(!isMatch('a\\a', '(a\\b)', { unixify: false }));
     assert(isMatch('a\\b', '(a\\\\b)', { unixify: false }));
-    assert(!isMatch('a\\c', '(a\\\\b)', { unixify: false }));
-    assert(!isMatch('b\\a', '(a\\\\b)', { unixify: false }));
-    assert(!isMatch('b\\b', '(a\\\\b)', { unixify: false }));
-    assert(!isMatch('b\\c', '(a\\\\b)', { unixify: false }));
+    assert(!isMatch('a\\c', '(a\\b)', { unixify: false }));
+    assert(!isMatch('b\\a', '(a\\b)', { unixify: false }));
+    assert(!isMatch('b\\b', '(a\\b)', { unixify: false }));
+    assert(!isMatch('b\\c', '(a\\b)', { unixify: false }));
     assert(!isMatch('a\\a', '(a/b)', { unixify: false }));
     assert(!isMatch('a\\b', '(a/b)', { unixify: false }));
     assert(!isMatch('a\\c', '(a/b)', { unixify: false }));
@@ -414,14 +414,18 @@ describe('slash handling - windows', () => {
     assert(isMatch('a\\x', 'a/**/**/*'));
     assert(isMatch('a\\x\\y', 'a/**/**/*'));
     assert(isMatch('a\\x\\y\\z', 'a/**/**/*'));
+  });
 
-    assert(!isMatch('a\\a', 'a/**', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/**', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/**', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/**', { unixify: false }));
-    assert(!isMatch('a\\x\\y', 'a/**', { unixify: false }));
-    assert(!isMatch('a\\x\\y\\z', 'a/**', { unixify: false }));
+  it('should match backslashes with globstars with posix slashes disabled', () => {
+    // these should match, since '**' should match anything, even backslashes
+    assert(isMatch('a\\a', 'a/**', { unixify: false }));
+    assert(isMatch('a\\b', 'a/**', { unixify: false }));
+    assert(isMatch('a\\c', 'a/**', { unixify: false }));
+    assert(isMatch('a\\x', 'a/**', { unixify: false }));
+    assert(isMatch('a\\x\\y', 'a/**', { unixify: false }));
+    assert(isMatch('a\\x\\y\\z', 'a/**', { unixify: false }));
 
+    // these should NOT match, because the given strings do not have "/"
     assert(!isMatch('a\\a', 'a/**/*', { unixify: false }));
     assert(!isMatch('a\\b', 'a/**/*', { unixify: false }));
     assert(!isMatch('a\\c', 'a/**/*', { unixify: false }));
