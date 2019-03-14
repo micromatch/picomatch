@@ -47,8 +47,8 @@ function bench(name, options) {
  * Caching disabled
  */
 
-let opts = { nocache: true, unixify: false, strictSlashes: true };
-let optsDot = { ...opts, dot: true };
+let opts = { nocache: true };
+let optsDot = { nocache: true, dot: true };
 
 bench(red('.makeRe') + ' star (caching disabled)')
   .add('minimatch', () => mm.makeRe('*'))
@@ -162,76 +162,74 @@ bench(cyan('match') + ' - no glob (caching disabled)')
  * Caching enabled
  */
 
-let cacheOpts = { strictSlashes: true };
-
 bench(red('.makeRe') + ' - star')
   .add('minimatch', () => mm.makeRe('*'))
-  .add('picomatch', () => pm.makeRe('*', cacheOpts))
+  .add('picomatch', () => pm.makeRe('*'))
   .run();
 bench(cyan('.isMatch') + ' - star')
   .add('minimatch', () => mm('abc.txt', '*'))
-  .add('picomatch', () => pm('*', cacheOpts)('abc.txt'))
+  .add('picomatch', () => pm('*')('abc.txt'))
   .run();
 
 bench(red('.makeRe') + ' - with star')
   .add('minimatch', () => mm.makeRe('c*3.txt'))
-  .add('picomatch', () => pm.makeRe('c*3.txt', cacheOpts))
+  .add('picomatch', () => pm.makeRe('c*3.txt'))
   .run();
 bench(cyan('.isMatch') + ' - with star')
   .add('minimatch', () => mm('abc.txt', 'c*3.txt'))
-  .add('picomatch', () => pm('c*3.txt', cacheOpts)('abc.txt'))
+  .add('picomatch', () => pm('c*3.txt')('abc.txt'))
   .run();
 
 bench(red('.makeRe') + ' - negated')
   .add('minimatch', () => mm.makeRe('!c*3.txt'))
-  .add('picomatch', () => pm.makeRe('!c*3.txt', cacheOpts))
+  .add('picomatch', () => pm.makeRe('!c*3.txt'))
   .run();
 bench(cyan('.isMatch') + ' - negated')
   .add('minimatch', () => mm('abc.txt', '!c*3.txt'))
-  .add('picomatch', () => pm('!c*3.txt', cacheOpts)('abc.txt'))
+  .add('picomatch', () => pm('!c*3.txt')('abc.txt'))
   .run();
 
 bench(red('.makeRe') + ' - globstar')
   .add('minimatch', () => mm.makeRe('foo/bar/**/bar.txt'))
-  .add('picomatch', () => pm.makeRe('foo/bar/**/bar.txt', cacheOpts))
+  .add('picomatch', () => pm.makeRe('foo/bar/**/bar.txt'))
   .run();
 bench(cyan('.isMatch') + ' - globstar')
   .add('minimatch', () => mm('foo/bar.txt', '**/bar.txt'))
-  .add('picomatch', () => pm('**/bar.txt', cacheOpts)('foo/bar.txt'))
+  .add('picomatch', () => pm('**/bar.txt')('foo/bar.txt'))
   .run();
 
 bench(red('.makeRe') + ' - globstar negated')
   .add('minimatch', () => mm.makeRe('!**/bar.txt'))
-  .add('picomatch', () => pm.makeRe('!**/bar.txt', cacheOpts))
+  .add('picomatch', () => pm.makeRe('!**/bar.txt'))
   .run();
 bench(cyan('.isMatch') + ' - globstar negated')
   .add('minimatch', () => mm('foo/bar.txt', '!**/bar.txt'))
-  .add('picomatch', () => pm('!**/bar.txt', cacheOpts)('foo/bar.txt'))
+  .add('picomatch', () => pm('!**/bar.txt')('foo/bar.txt'))
   .run();
 
 bench(red('.makeRe') + ' - braces')
   .add('minimatch', () => mm.makeRe('{a,b,c}*.txt'))
-  .add('picomatch', () => pm.makeRe('{a,b,c}*.txt', cacheOpts))
+  .add('picomatch', () => pm.makeRe('{a,b,c}*.txt'))
   .run();
 bench(cyan('.isMatch') + ' - braces')
   .add('minimatch', () => mm('abc.txt', '{a,b,c}*.txt'))
-  .add('picomatch', () => pm('{a,b,c}*.txt', cacheOpts)('abc.txt'))
+  .add('picomatch', () => pm('{a,b,c}*.txt')('abc.txt'))
   .run();
 
 bench(red('.makeRe') + ' - multiple stars')
   .add('minimatch', () => mm.makeRe('**/*c09.*'))
-  .add('picomatch', () => pm.makeRe('**/*c09.*', cacheOpts))
+  .add('picomatch', () => pm.makeRe('**/*c09.*'))
   .run();
 bench(cyan('.isMatch') + ' - multiple stars')
   .add('minimatch', () => mm('foo/bar/ac09b.txt', '**/*c09.*'))
-  .add('picomatch', () => pm('**/*c09.*', cacheOpts)('foo/bar/ac09b.txt'))
+  .add('picomatch', () => pm('**/*c09.*')('foo/bar/ac09b.txt'))
   .run();
 
 bench(red('.makeRe') + ' - no glob')
   .add('minimatch', () => mm.makeRe('abc.txt'))
-  .add('picomatch', () => pm.makeRe('abc.txt', cacheOpts))
+  .add('picomatch', () => pm.makeRe('abc.txt'))
   .run();
 bench(cyan('.isMatch') + ' - no glob')
   .add('minimatch', () => mm('abc.txt', 'abc.txt'))
-  .add('picomatch', () => pm('abc.txt', cacheOpts)('abc.txt'))
+  .add('picomatch', () => pm('abc.txt')('abc.txt'))
   .run();

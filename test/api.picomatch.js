@@ -1,20 +1,19 @@
 'use strict';
 
-require('mocha');
+process.env.PICOMATCH_NO_CACHE = 'true';
 const path = require('path');
-const fill = require('fill-range');
-const assert = require('assert');
-const picomatch = require('..');
-const { clearCache, isMatch, makeRe } = picomatch;
 
 if (!process.env.ORIGINAL_PATH_SEP) {
   process.env.ORIGINAL_PATH_SEP = path.sep
 }
 
-describe('picomatch', () => {
-  beforeEach(() => clearCache());
-  afterEach(() => clearCache());
+require('mocha');
+const fill = require('fill-range');
+const assert = require('assert');
+const picomatch = require('..');
+const { isMatch, makeRe } = picomatch;
 
+describe('picomatch', () => {
   describe('validation', () => {
     it('should throw an error when invalid arguments are given', () => {
       assert.throws(() => isMatch('foo', ''), /Expected pattern to be a non-empty string/);

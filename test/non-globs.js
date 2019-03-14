@@ -3,15 +3,13 @@
 require('mocha');
 const path = require('path');
 const assert = require('assert');
-const { clearCache, isMatch } = require('..');
+const { isMatch } = require('..');
 
 if (!process.env.ORIGINAL_PATH_SEP) {
   process.env.ORIGINAL_PATH_SEP = path.sep
 }
 
 describe('non-globs', () => {
-  beforeEach(() => clearCache());
-
   it('should match non-globs', () => {
     assert(!isMatch('/ab', '/a'));
     assert(!isMatch('a/a', 'a/b'));

@@ -2,15 +2,13 @@
 
 const assert = require('assert');
 const match = require('./support/match');
-const { clearCache, isMatch, makeRe } = require('..');
+const { isMatch, makeRe } = require('..');
 
 /**
  * Ported from Bash 4.3 and 4.4 unit tests
  */
 
 describe('extglobs', () => {
-  beforeEach(() => clearCache());
-
   it('should throw on imbalanced sets when `options.strictBrackets` is true', () => {
     let opts = { strictBrackets: true };
     assert.throws(() => makeRe('a(b', opts), /Missing closing: "\)"/i);

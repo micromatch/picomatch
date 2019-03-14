@@ -3,11 +3,9 @@
 require('mocha');
 const assert = require('assert');
 const match = require('./support/match');
-const { clearCache, isMatch } = require('..');
+const { isMatch } = require('..');
 
 describe('options.ignore', () => {
-  beforeEach(() => clearCache());
-
   it('should not match ignored patterns', () => {
     assert(isMatch('a+b/src/glimini.js', 'a+b/src/*.js', { ignore: ['**/f*'] }));
     assert(!isMatch('a+b/src/glimini.js', 'a+b/src/*.js', { ignore: ['**/g*'] }));

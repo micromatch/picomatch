@@ -3,16 +3,13 @@
 require('mocha');
 const assert = require('assert');
 const match = require('./support/match');
-const { clearCache, isMatch } = require('..');
+const { isMatch } = require('..');
 
 const equal = (actual, expected, msg) => {
   assert.deepEqual([].concat(actual).sort(), [].concat(expected).sort(), msg);
 };
 
 describe('options.format', () => {
-  beforeEach(() => clearCache());
-  afterEach(() => clearCache());
-
   // see https://github.com/isaacs/minimatch/issues/30
   it('should match the string returned by options.format', () => {
     let opts = { format: str => str.replace(/\\/g, '/').replace(/^\.\//, ''), strictSlashes: true };

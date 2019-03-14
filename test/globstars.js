@@ -3,11 +3,9 @@
 require('mocha');
 const assert = require('assert');
 const match = require('./support/match');
-const { clearCache, isMatch } = require('..');
+const { isMatch } = require('..');
 
 describe('stars', () => {
-  beforeEach(() => clearCache());
-
   describe('issue related', () => {
     it('should match paths with no slashes (micromatch/#15)', () => {
       assert(isMatch('z.js', '**/z*.js'));

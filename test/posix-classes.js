@@ -3,7 +3,7 @@
 require('mocha');
 const assert = require('assert');
 const pm = require('..');
-const { clearCache, makeRe, parse } = pm;
+const { makeRe, parse } = pm;
 
 const opts = { strictSlashes: true, posix: true, regex: true };
 const isMatch = (...args) => pm.isMatch(...args, opts);
@@ -13,8 +13,6 @@ const convert = (...args) => {
 };
 
 describe('posix classes', () => {
-  beforeEach(() => clearCache());
-
   describe('posix bracket type conversion', () => {
     it('should create regex character classes from POSIX bracket expressions:', () => {
       assert.equal(convert('foo[[:lower:]]bar'), 'foo[a-z]bar');

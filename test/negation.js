@@ -2,12 +2,9 @@
 
 require('mocha');
 const assert = require('assert');
-const { clearCache, isMatch, makeRe } = require('..');
-const minimatch = require('minimatch');
+const { isMatch, makeRe } = require('..');
 
 describe('negation patterns - "!"', () => {
-  beforeEach(() => clearCache());
-
   it('should patterns with a leading "!" as negated/inverted globs', () => {
     assert(!isMatch('abc', '!*'));
     assert(!isMatch('abc', '!abc'));

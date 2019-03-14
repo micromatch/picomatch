@@ -3,7 +3,7 @@
 const path = require('path');
 const assert = require('assert');
 const match = require('./support/match');
-const { clearCache, isMatch, makeRe } = require('..');
+const { isMatch, makeRe } = require('..');
 
 if (!process.env.ORIGINAL_PATH_SEP) {
   process.env.ORIGINAL_PATH_SEP = path.sep
@@ -16,8 +16,6 @@ const compare = (a, b) => {
 };
 
 describe('options', () => {
-  beforeEach(() => clearCache());
-  afterEach(() => clearCache());
   beforeEach(() => (path.sep = '\\'));
   afterEach(() => (path.sep = process.env.ORIGINAL_PATH_SEP));
   after(() => (path.sep = process.env.ORIGINAL_PATH_SEP));

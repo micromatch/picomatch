@@ -3,12 +3,9 @@
 require('mocha');
 const assert = require('assert');
 const mm = require('minimatch');
-const { clearCache, isMatch, makeRe } = require('..');
+const { isMatch, makeRe } = require('..');
 
 describe('dotfiles', () => {
-  beforeEach(() => clearCache());
-  afterEach(() => clearCache());
-
   it('micromatch issue#63 (dots)', () => {
     assert(!isMatch('/aaa/.git/foo', '/aaa/**/*'));
     assert(!isMatch('/aaa/bbb/.git', '/aaa/bbb/*'));

@@ -3,12 +3,9 @@
 require('mocha');
 const path = require('path');
 const assert = require('assert');
-const { clearCache, isMatch, makeRe } = require('..');
+const { isMatch, makeRe } = require('..');
 
 describe('special characters', () => {
-  beforeEach(() => clearCache());
-  afterEach(() => clearCache());
-
   describe('numbers', () => {
     it('should match numbers in the input string', () => {
       assert(!isMatch('1', '*/*'));

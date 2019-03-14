@@ -3,18 +3,13 @@
 require('mocha');
 const path = require('path');
 const assert = require('assert');
-const { clearCache, isMatch, makeRe } = require('..');
-
-if (!process.env.ORIGINAL_PATH_SEP) {
-  process.env.ORIGINAL_PATH_SEP = path.sep
-}
+const { isMatch, makeRe } = require('..');
 
 /**
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.
  */
 
 describe('extglobs (bash)', () => {
-  beforeEach(() => clearCache());
   beforeEach(() => (path.sep = '\\'));
   afterEach(() => (path.sep = process.env.ORIGINAL_PATH_SEP));
 

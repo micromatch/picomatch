@@ -1,11 +1,9 @@
 'use strict';
 
 const assert = require('assert');
-const { clearCache, isMatch } = require('..');
+const { isMatch } = require('..');
 
 describe('Wildmat (git) tests', () => {
-  beforeEach(() => clearCache());
-
   it('Basic wildmat features', () => {
     assert(!isMatch('foo', '*f'));
     assert(!isMatch('foo', '??'));

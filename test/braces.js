@@ -1,15 +1,15 @@
 'use strict';
 
+process.env.PICOMATCH_NO_CACHE = 'true';
+
 require('mocha');
 const assert = require('assert');
 const fill = require('fill-range');
 const minimatch = require('minimatch');
 const match = require('./support/match');
-const { clearCache, isMatch, makeRe } = require('..');
+const { isMatch, makeRe } = require('..');
 
 describe('braces', () => {
-  beforeEach(() => clearCache());
-
   it('should not match with brace patterns when disabled', () => {
     assert.deepEqual(match(['a', 'b', 'c'], '{a,b,c,d}'), ['a', 'b', 'c']);
     assert.deepEqual(match(['a', 'b', 'c'], '{a,b,c,d}', { nobrace: true }), []);

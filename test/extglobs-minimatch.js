@@ -3,7 +3,7 @@
 require('mocha');
 const path = require('path');
 const assert = require('assert');
-const { clearCache, isMatch, makeRe } = require('..');
+const { isMatch, makeRe } = require('..');
 
 if (!process.env.ORIGINAL_PATH_SEP) {
   process.env.ORIGINAL_PATH_SEP = path.sep
@@ -19,11 +19,8 @@ describe('extglobs (minimatch)', () => {
     after: () => (path.sep = process.env.ORIGINAL_PATH_SEP)
   };
 
+  beforeEach(() => setup.before());
   afterEach(() => setup.after());
-  beforeEach(() => {
-    setup.before();
-    clearCache();
-  });
 
   it('should not match empty string with "*(0|1|3|5|7|9)"', () => {
     assert(!isMatch('', '*(0|1|3|5|7|9)'));

@@ -2,12 +2,9 @@
 
 require('mocha');
 const assert = require('assert');
-let { clearCache, isMatch, makeRe } = require('..');
+let { isMatch, makeRe } = require('..');
 
 describe('slash handling - posix', () => {
-  beforeEach(() => clearCache());
-  afterEach(() => clearCache());
-
   it('should match a literal string', () => {
     assert(!isMatch('a/a', '(a/b)'));
     assert(isMatch('a/b', '(a/b)'));

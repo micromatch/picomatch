@@ -3,11 +3,9 @@
 require('mocha');
 const version = process.version;
 const assert = require('assert');
-const { clearCache, isMatch } = require('..');
+const { isMatch } = require('..');
 
 describe('regex features', () => {
-  beforeEach(() => clearCache());
-
   describe('word boundaries', () => {
     it('should support word boundaries', () => {
       assert(!isMatch('a', 'a\\b', { unixify: true }));

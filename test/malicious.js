@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('assert');
-const { clearCache, isMatch } = require('..');
+const { isMatch } = require('..');
 const repeat = n => '\\'.repeat(n);
 
 /**
@@ -9,8 +9,6 @@ const repeat = n => '\\'.repeat(n);
  */
 
 describe('handling of potential regex exploits', () => {
-  beforeEach(() => clearCache());
-
   it('should support long escape sequences', () => {
     assert(isMatch('A', `!(${repeat(65500)}A)`), 'within the limits, and valid match');
     assert(!isMatch('A', `[!(${repeat(65500)}A`), 'within the limits, but invalid regex');

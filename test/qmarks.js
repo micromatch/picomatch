@@ -3,11 +3,9 @@
 const path = require('path');
 const assert = require('assert');
 const match = require('./support/match');
-const { clearCache, isMatch } = require('..');
+const { isMatch } = require('..');
 
 describe('qmarks and stars', () => {
-  beforeEach(() => clearCache());
-
   it('should match question marks with question marks', () => {
     assert.deepEqual(match(['?', '??', '???'], '?'), ['?']);
     assert.deepEqual(match(['?', '??', '???'], '??'), ['??']);

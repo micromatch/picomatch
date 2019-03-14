@@ -4,7 +4,7 @@ require('mocha');
 const assert = require('assert');
 const picomatch = require('..');
 const match = require('./support/match');
-const { clearCache, isMatch } = picomatch;
+const { isMatch } = picomatch;
 
 const equal = (actual, expected, msg) => {
   assert.deepEqual([].concat(actual).sort(), [].concat(expected).sort(), msg);
@@ -26,8 +26,6 @@ const options = () => {
 };
 
 describe('options.onMatch', () => {
-  beforeEach(() => clearCache());
-
   it('should call options.onMatch on each matching string', () => {
     let fixtures = ['a', './a', 'b', 'a/a', './a/b', 'a/c', './a/x', './a/a/a', 'a/a/b', './a/a/a/a', './a/a/a/a/a', 'x/y', './z/z'];
 
