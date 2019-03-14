@@ -3,14 +3,16 @@
 require('mocha');
 const path = require('path');
 const assert = require('assert');
-const picomatch = require('..');
-const { isMatch } = require('./support');
-let sep = path.sep;
+const { clearCache, isMatch } = require('..');
+
+if (!process.env.ORIGINAL_PATH_SEP) {
+  process.env.ORIGINAL_PATH_SEP = path.sep
+}
 
 describe('slash handling - windows', () => {
-  beforeEach(() => picomatch.clearCache());
+  beforeEach(() => clearCache());
   beforeEach(() => (path.sep = '\\'));
-  afterEach(() => (path.sep = sep));
+  afterEach(() => (path.sep = process.env.ORIGINAL_PATH_SEP));
 
   it('should match windows path separators with a string literal', () => {
     assert(!isMatch('a\\a', '(a/b)'));

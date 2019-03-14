@@ -2,15 +2,15 @@
 
 require('mocha');
 const assert = require('assert');
-const pm = require('..');
+const { clearCache, isMatch } = require('..');
 
 describe('options.noextglob', () => {
-  beforeEach(() => pm.clearCache());
+  beforeEach(() => clearCache());
 
   it('should disable extglob support when options.noextglob is true', () => {
-    assert(pm.isMatch('a+z', 'a+(z)', { noextglob: true }));
-    assert(!pm.isMatch('az', 'a+(z)', { noextglob: true }));
-    assert(!pm.isMatch('azz', 'a+(z)', { noextglob: true }));
-    assert(!pm.isMatch('azzz', 'a+(z)', { noextglob: true }));
+    assert(isMatch('a+z', 'a+(z)', { noextglob: true }));
+    assert(!isMatch('az', 'a+(z)', { noextglob: true }));
+    assert(!isMatch('azz', 'a+(z)', { noextglob: true }));
+    assert(!isMatch('azzz', 'a+(z)', { noextglob: true }));
   });
 });

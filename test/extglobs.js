@@ -3,20 +3,18 @@
 const assert = require('assert');
 const match = require('./support/match');
 const { clearCache, isMatch, makeRe } = require('..');
-const mm = require('minimatch');
-const mi = require('micromatch');
 
 /**
- * Most of these tests were converted directly from bash 4.3 and 4.4 unit tests.
+ * Ported from Bash 4.3 and 4.4 unit tests
  */
 
 describe('extglobs', () => {
   beforeEach(() => clearCache());
 
-  it.skip('should throw on imbalanced sets when `options.strictBrackets` is true', () => {
+  it('should throw on imbalanced sets when `options.strictBrackets` is true', () => {
     let opts = { strictBrackets: true };
-    assert.throws(() => makeRe('a(b', opts), /missing closing: "\)"/i);
-    assert.throws(() => makeRe('a)b', opts), /missing opening: "\("/i);
+    assert.throws(() => makeRe('a(b', opts), /Missing closing: "\)"/i);
+    assert.throws(() => makeRe('a)b', opts), /Missing opening: "\("/i);
   });
 
   it('should match extglobs ending with statechar', () => {

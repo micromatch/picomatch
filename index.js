@@ -1,3 +1,3 @@
 'use strict';
 
-module.exports = require('./src/picomatch');
+module.exports = require('./lib/picomatch');

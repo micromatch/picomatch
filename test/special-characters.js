@@ -4,7 +4,6 @@ require('mocha');
 const path = require('path');
 const assert = require('assert');
 const { clearCache, isMatch, makeRe } = require('..');
-const mm = require('minimatch');
 
 describe('special characters', () => {
   beforeEach(() => clearCache());
