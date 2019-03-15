@@ -1,6 +1,5 @@
 // 'use strict';
 
-// process.env.PICOMATCH_NO_CACHE = 'true';
 // require('mocha');
 // const path = require('path');
 // const isWindows = process.platform === 'win32';

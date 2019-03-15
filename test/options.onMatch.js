@@ -14,12 +14,12 @@ const format = str => str.replace(/^\.\//, '');
 const options = () => {
   return {
     format,
-    onMatch({ pattern, regex, input, value }, matches) {
-      if (value.length > 2 && (value.startsWith('./') || value.startsWith('.\\'))) {
-        value = value.slice(2);
+    onMatch({ pattern, regex, input, output }, matches) {
+      if (output.length > 2 && (output.startsWith('./') || output.startsWith('.\\'))) {
+        output = output.slice(2);
       }
       if (matches) {
-        matches.add(value);
+        matches.add(output);
       }
     }
   };

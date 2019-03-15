@@ -1,17 +1,17 @@
-// 'use strict';
+// // 'use strict';
 
 const pm = require('..');
-const mm = require('../vendor/minimatch');
-const mi = require('micromatch');
-const colors = require('ansi-colors');
-const color = val => val === true ? colors.green(val) : colors.red(val);
+// const mm = require('../vendor/minimatch');
+// const mi = require('micromatch');
+// const colors = require('ansi-colors');
+// const color = val => val === true ? colors.green(val) : colors.red(val);
 // const bash = require('bash-match');
 
-console.log(pm('E*d')('Edward'));
+// console.log(pm('E*d')('Edward'));
 
 // console.log('mm', 'pm');
 // const match = (str, pattern) => {
-//   let arr = [mm(str, pattern), pm(pattern)(str)];
+//   let arr = [mm(str, pattern), pm(pattern, { strictSlashes: true })(str), mi.isMatch(str, pattern)];
 //   arr.push(color(arr[0] === arr[1]));
 //   if (arr[0] !== arr[1]) arr.push([str, pattern].join(', '));
 //   arr = arr.map(v => String(v).padEnd(5, ' '));
@@ -81,21 +81,21 @@ console.log(pm('E*d')('Edward'));
 
 // console.log(parent('a/\\+\\(b c)/foo'))
 
-// console.log(pm.base('foo/bar', 'one/two/*.js'));
-// { base: 'foo/bar/one/two', glob: '*.js' }
+// // console.log(pm.base('foo/bar', 'one/two/*.js'));
+// // { base: 'foo/bar/one/two', glob: '*.js' }
 
-// console.log(pm.base('foo\\bar\\', '*.js'));
-// console.log(pm.join('foo\\bar\\', '\\*.js'));
-// const [ base, pattern ] = pm.split('tests/*.js');
+// // console.log(pm.base('foo\\bar\\', '*.js'));
+// // console.log(pm.join('foo\\bar\\', '\\*.js'));
+// // const [ base, pattern ] = pm.split('tests/*.js');
 
-// console.log(glob.sync(pattern, { cwd: pm.join(__dirname, base) }))
+// // console.log(glob.sync(pattern, { cwd: pm.join(__dirname, base) }))
 
-// console.log(pm.join(__dirname, 'foo\\bar', 'baz\\qux', '\\*.js'));
-// console.log(pm.join(__dirname, 'foo\\bar', 'baz\\qux', '\\*.js'));
-// console.log(pm.join(__dirname, 'foo\\bar', 'baz\\qux', '*.js'));
+// // console.log(pm.join(__dirname, 'foo\\bar', 'baz\\qux', '\\*.js'));
+// // console.log(pm.join(__dirname, 'foo\\bar', 'baz\\qux', '\\*.js'));
+// // console.log(pm.join(__dirname, 'foo\\bar', 'baz\\qux', '*.js'));
 // // console.log(pm.resolve('foo\\bar\\', '*.js'));
 // // console.log(pm.resolve('foo\\bar', '\\*.js'));
-// console.log(pm.resolve('foo\\bar\\', '\\*.js'));
+// // console.log(pm.resolve('foo\\bar\\', '\\*.js'));
 
 
 // let isMatch = pm('**/foo/**/package.json');
@@ -196,7 +196,10 @@ console.log(pm('E*d')('Edward'));
 // let re = pm.makeRe('a/**/*.txt');
 // console.log(re.test('a/b.txt'));
 // [ 'packages/foo-foo/package.json' ]
-//
+
 // console.log(pm.parse('!(a|b|c)'));
 
 // console.log(pm('*^⛄/')('^⛄/'));
+
+
+console.log(pm.makeRe('!(test)'))

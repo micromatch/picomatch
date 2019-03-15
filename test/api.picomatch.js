@@ -1,13 +1,8 @@
 'use strict';
 
-process.env.PICOMATCH_NO_CACHE = 'true';
-const path = require('path');
-
-if (!process.env.ORIGINAL_PATH_SEP) {
-  process.env.ORIGINAL_PATH_SEP = path.sep
-}
-
+require('./support');
 require('mocha');
+const path = require('path');
 const fill = require('fill-range');
 const assert = require('assert');
 const picomatch = require('..');

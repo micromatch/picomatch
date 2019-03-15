@@ -3,7 +3,7 @@
 require('mocha');
 const assert = require('assert');
 const match = require('./support/match');
-const { isMatch } = require('..');
+const { isMatch, makeRe } = require('..');
 
 describe('stars', () => {
   describe('issue related', () => {
@@ -263,7 +263,6 @@ describe('stars', () => {
 
     it('should work with file extensions', () => {
       assert(!isMatch('a.txt', 'a/**/*.txt'));
-      assert(isMatch('a/b.txt', 'a/**/*.txt'));
       assert(isMatch('a/x/y.txt', 'a/**/*.txt'));
       assert(!isMatch('a/x/y/z', 'a/**/*.txt'));
 

@@ -10,9 +10,9 @@ const equal = (actual, expected, msg) => {
   assert.deepEqual([].concat(actual).sort(), [].concat(expected).sort(), msg);
 };
 
-describe('options.format', () => {
-  before(() => support.disableCache());
-  after(() => support.enableCache());
+describe('options.format - cached', () => {
+  before(() => support.enableCache());
+  after(() => support.disableCache());
 
   // see https://github.com/isaacs/minimatch/issues/30
   it('should match the string returned by options.format', () => {

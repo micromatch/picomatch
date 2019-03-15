@@ -1,13 +1,14 @@
 'use strict';
 
-process.env.PICOMATCH_NO_CACHE = 'true';
-
 require('mocha');
+const support = require('./support');
 const assert = require('assert');
 const { isMatch } = require('..');
 
 // $echo a/{1..3}/b
 describe('from the Bash 4.3 spec/unit tests', () => {
+  before(() => support.disableCache());
+
   it('should handle "regular globbing"', () => {
     assert(!isMatch('*', 'a*'));
     assert(!isMatch('**', 'a*'));

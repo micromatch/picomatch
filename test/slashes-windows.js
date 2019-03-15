@@ -5,10 +5,6 @@ const path = require('path');
 const assert = require('assert');
 const { isMatch } = require('..');
 
-if (!process.env.ORIGINAL_PATH_SEP) {
-  process.env.ORIGINAL_PATH_SEP = path.sep
-}
-
 describe('slash handling - windows', () => {
   beforeEach(() => (path.sep = '\\'));
   afterEach(() => (path.sep = process.env.ORIGINAL_PATH_SEP));
