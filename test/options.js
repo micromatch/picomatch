@@ -2,6 +2,7 @@
 
 const path = require('path');
 const assert = require('assert');
+const support = require('./support');
 const match = require('./support/match');
 const { isMatch, makeRe } = require('..');
 
@@ -16,9 +17,8 @@ const compare = (a, b) => {
 };
 
 describe('options', () => {
-  beforeEach(() => (path.sep = '\\'));
-  afterEach(() => (path.sep = process.env.ORIGINAL_PATH_SEP));
-  after(() => (path.sep = process.env.ORIGINAL_PATH_SEP));
+  beforeEach(() => support.windowsPathSep());
+  afterEach(() => support.resetPathSep());
 
   describe('options.matchBase', () => {
     it('should match the basename of file paths when `options.matchBase` is true', () => {

@@ -5,7 +5,6 @@ process.env.PICOMATCH_NO_CACHE = 'true';
 require('mocha');
 const assert = require('assert');
 const fill = require('fill-range');
-const minimatch = require('minimatch');
 const match = require('./support/match');
 const { isMatch, makeRe } = require('..');
 

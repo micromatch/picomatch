@@ -3,24 +3,16 @@
 require('mocha');
 const path = require('path');
 const assert = require('assert');
+const support = require('./support');
 const { isMatch, makeRe } = require('..');
-
-if (!process.env.ORIGINAL_PATH_SEP) {
-  process.env.ORIGINAL_PATH_SEP = path.sep
-}
 
 /**
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.
  */
 
 describe('extglobs (minimatch)', () => {
-  let setup = {
-    before: () => (path.sep = '\\'),
-    after: () => (path.sep = process.env.ORIGINAL_PATH_SEP)
-  };
-
-  beforeEach(() => setup.before());
-  afterEach(() => setup.after());
+  beforeEach(() => support.windowsPathSep());
+  afterEach(() => support.resetPathSep());
 
   it('should not match empty string with "*(0|1|3|5|7|9)"', () => {
     assert(!isMatch('', '*(0|1|3|5|7|9)'));

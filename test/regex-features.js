@@ -8,14 +8,10 @@ const { isMatch } = require('..');
 describe('regex features', () => {
   describe('word boundaries', () => {
     it('should support word boundaries', () => {
-      assert(!isMatch('a', 'a\\b', { unixify: true }));
-      assert(isMatch('a', 'a\\b', { unixify: false }));
       assert(isMatch('a', 'a\\b'));
     });
 
     it('should support word boundaries in parens', () => {
-      assert(!isMatch('a', '(a\\b)', { unixify: true }));
-      assert(isMatch('a', '(a\\b)', { unixify: false }));
       assert(isMatch('a', '(a\\b)'));
     });
   });

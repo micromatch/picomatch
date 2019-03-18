@@ -1,38 +1,29 @@
 'use strict';
 
 require('mocha');
-const support = require('./support');
 const assert = require('assert');
-const { isMatch } = require('..');
+const { isMatch, makeRe } = require('..');
 
 // $echo a/{1..3}/b
 describe('from the Bash 4.3 spec/unit tests', () => {
-  before(() => support.disableCache());
-
   it('should handle "regular globbing"', () => {
     assert(!isMatch('*', 'a*'));
     assert(!isMatch('**', 'a*'));
     assert(!isMatch('\\*', 'a*'));
-    assert(isMatch('a', 'a*'));
     assert(!isMatch('a/*', 'a*'));
-    assert(isMatch('abc', 'a*'));
-    assert(isMatch('abd', 'a*'));
-    assert(isMatch('abe', 'a*'));
     assert(!isMatch('b', 'a*'));
-    assert(!isMatch('bb', 'a*'));
+    assert(!isMatch('bc', 'a*'));
     assert(!isMatch('bcd', 'a*'));
     assert(!isMatch('bdir/', 'a*'));
     assert(!isMatch('Beware', 'a*'));
-    assert(!isMatch('c', 'a*'));
-    assert(!isMatch('ca', 'a*'));
-    assert(!isMatch('cb', 'a*'));
-    assert(!isMatch('d', 'a*'));
-    assert(!isMatch('dd', 'a*'));
-    assert(!isMatch('de', 'a*'));
+    assert(isMatch('a', 'a*'));
+    assert(isMatch('ab', 'a*'));
+    assert(isMatch('abc', 'a*'));
 
     assert(!isMatch('*', '\\a*'));
     assert(!isMatch('**', '\\a*'));
     assert(!isMatch('\\*', '\\a*'));
+
     assert(isMatch('a', '\\a*'));
     assert(!isMatch('a/*', '\\a*'));
     assert(isMatch('abc', '\\a*'));

@@ -2,13 +2,10 @@
 
 require('mocha');
 const assert = require('assert');
-const support = require('./support');
 const match = require('./support/match');
 const { isMatch, makeRe } = require('..');
 
 describe('dotfiles', () => {
-  beforeEach(() => support.disableCache());
-
   describe('normal', () => {
     it('should not match dotfiles by default:', () => {
       assert.deepEqual(match(['.dotfile'], '*'), []);
@@ -65,9 +62,6 @@ describe('dotfiles', () => {
   describe('options.dot', () => {
     it('should match dotfiles when `options.dot` is true:', () => {
       let fixtures = ['a/./b', 'a/../b', 'a/c/b', 'a/.d/b'];
-      assert.deepEqual(match(fixtures, 'a/.*/b'), ['a/.d/b']);
-      assert.deepEqual(match(fixtures, 'a/.*/b', { dot: true }), ['a/.d/b']);
-      assert.deepEqual(match(fixtures, 'a/*/b', { dot: true }), ['a/c/b', 'a/.d/b']);
       assert.deepEqual(match(['.dotfile'], '*.*', { dot: true }), ['.dotfile']);
       assert.deepEqual(match(['.dotfile'], '*.md', { dot: true }), []);
       assert.deepEqual(match(['.dotfile'], '.dotfile', { dot: true }), ['.dotfile']);
@@ -82,19 +76,20 @@ describe('dotfiles', () => {
       assert.deepEqual(match(['a/b/c/.dotfile.md'], '*.md', { dot: true }), []);
       assert.deepEqual(match(['a/b/c/.verb.md'], '**/*.md', { dot: true }), ['a/b/c/.verb.md']);
       assert.deepEqual(match(['d.md'], '*.md', { dot: true }), ['d.md']);
+      assert.deepEqual(match(fixtures, 'a/*/b', { dot: true }), ['a/c/b', 'a/.d/b']);
+      assert.deepEqual(match(fixtures, 'a/.*/b'), ['a/.d/b']);
+      assert.deepEqual(match(fixtures, 'a/.*/b', { dot: true }), ['a/.d/b']);
     });
 
     it('should match dotfiles when `options.dot` is true', () => {
-      assert(isMatch('.dot', '*dot', { dot: true }));
-      assert(isMatch('/a/b/.dot', '**/*dot', { dot: true }));
-      assert(isMatch('/a/b/.dot', '/**/*dot', { dot: true }));
       assert(isMatch('.dot', '**/*dot', { dot: true }));
-      assert(isMatch('/a/b/.dot', '**/.[d]ot', { dot: true }));
-      assert(isMatch('/a/b/.dot', '**/?dot', { dot: true }));
-      assert(isMatch('.dotfile.js', '.*.js', { dot: true }));
       assert(isMatch('.dot', '*dot', { dot: true }));
       assert(isMatch('.dot', '?dot', { dot: true }));
+      assert(isMatch('.dotfile.js', '.*.js', { dot: true }));
       assert(isMatch('/a/b/.dot', '/**/*dot', { dot: true }));
+      assert(isMatch('/a/b/.dot', '**/*dot', { dot: true }));
+      assert(isMatch('/a/b/.dot', '**/.[d]ot', { dot: true }));
+      assert(isMatch('/a/b/.dot', '**/?dot', { dot: true }));
       assert(isMatch('/a/b/.dot', '/**/.[d]ot', { dot: true }));
       assert(isMatch('/a/b/.dot', '/**/?dot', { dot: true }));
       assert(isMatch('a/b/.dot', '**/*dot', { dot: true }));
@@ -142,6 +137,7 @@ describe('dotfiles', () => {
 
     it('should work with dots in the path', () => {
       assert(isMatch('../test.js', '../*.js'));
+      assert(isMatch('../.test.js', '../*.js', { dot: true }));
       assert(!isMatch('../.test.js', '../*.js'));
     });
 
@@ -217,6 +213,10 @@ describe('dotfiles', () => {
       assert(!isMatch('abc/../abc', '../*'));
       assert(!isMatch('abc/../', '**/../*'));
 
+      assert(isMatch('..', '..'));
+      assert(isMatch('../b', '../*'));
+      assert(isMatch('../../b', '../../*'));
+      assert(isMatch('../../..', '../../..'));
       assert(isMatch('../abc', '**/../*'));
       assert(isMatch('../abc', '../*'));
       assert(isMatch('abc/../abc', '**/../*'));
@@ -261,14 +261,7 @@ describe('dotfiles', () => {
       assert(!isMatch('abc/..', '*/*', { dot: true }));
       assert(!isMatch('abc/abc/..', '*/**/*', { dot: true }));
 
-      console.log([makeRe('abc/**/*')])
-      console.log([makeRe('abc/**/*', { dot: true })])
-      console.log([makeRe('abc/**/*', { strictSlashes: true })]);
-
-
       assert(!isMatch('abc/../abc', 'abc/**/*'));
-
-
       assert(!isMatch('abc/../abc', 'abc/**/*', { dot: true }));
       assert(!isMatch('abc/../abc', 'abc/**/*/*', { dot: true }));
       assert(!isMatch('abc/../abc', 'abc/*/*/*', { dot: true }));

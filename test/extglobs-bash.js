@@ -3,6 +3,7 @@
 require('mocha');
 const path = require('path');
 const assert = require('assert');
+const support = require('./support');
 const { isMatch, makeRe } = require('..');
 
 /**
@@ -10,8 +11,8 @@ const { isMatch, makeRe } = require('..');
  */
 
 describe('extglobs (bash)', () => {
-  beforeEach(() => (path.sep = '\\'));
-  afterEach(() => (path.sep = process.env.ORIGINAL_PATH_SEP));
+  beforeEach(() => support.windowsPathSep());
+  afterEach(() => support.resetPathSep());
 
   it('should not match empty string iwth "*(0|1|3|5|7|9)"', () => {
     assert(!isMatch('', '*(0|1|3|5|7|9)', { bash: true }));
@@ -41,8 +42,8 @@ describe('extglobs (bash)', () => {
     assert(!isMatch('-adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*', { bash: true }));
   });
 
-  it('"/dev/udp/129.22.8.102/45" should not match "/dev\\/@(tcp|udp)\\/*\\/*"', () => {
-    assert(!isMatch('/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*', { bash: true }));
+  it('"/dev/udp/129.22.8.102/45" should match "/dev\\/@(tcp|udp)\\/*\\/*"', () => {
+    assert(isMatch('/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*', { bash: true }));
   });
 
   it('"/x/y/z" should match "/x/y/z"', () => {

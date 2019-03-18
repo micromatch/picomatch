@@ -2,7 +2,6 @@
 
 require('mocha');
 const assert = require('assert');
-const support = require('./support');
 const match = require('./support/match');
 const { isMatch } = require('..');
 
@@ -11,10 +10,7 @@ const equal = (actual, expected, msg) => {
 };
 
 describe('options.format', () => {
-  before(() => support.disableCache());
-  after(() => support.enableCache());
-
-  // see https://github.com/isaacs/minimatch/issues/30
+// see https://github.com/isaacs/minimatch/issues/30
   it('should match the string returned by options.format', () => {
     let opts = { format: str => str.replace(/\\/g, '/').replace(/^\.\//, ''), strictSlashes: true };
     let fixtures = ['a', './a', 'b', 'a/a', './a/b', 'a/c', './a/x', './a/a/a', 'a/a/b', './a/a/a/a', './a/a/a/a/a', 'x/y', './z/z'];

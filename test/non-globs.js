@@ -5,10 +5,6 @@ const path = require('path');
 const assert = require('assert');
 const { isMatch } = require('..');
 
-if (!process.env.ORIGINAL_PATH_SEP) {
-  process.env.ORIGINAL_PATH_SEP = path.sep
-}
-
 describe('non-globs', () => {
   it('should match non-globs', () => {
     assert(!isMatch('/ab', '/a'));

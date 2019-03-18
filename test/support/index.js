@@ -9,16 +9,10 @@ const sep = process.platform === 'win32' ? '\\' : '/';
 const origSep = process.env.ORIGINAL_PATH_SEP || (process.env.ORIGINAL_PATH_SEP = sep);
 
 module.exports = {
-  disableCache(picomatch = {}) {
-    picomatch.cache = null;
-  },
-  enableCache(picomatch = {}) {
-    picomatch.cache = {};
-  },
   windowsPathSep() {
     path.sep = '\\';
   },
   resetPathSep() {
-    process.env.ORIGINAL_PATH_SEP = sep;
+    path.sep = sep;
   }
 };

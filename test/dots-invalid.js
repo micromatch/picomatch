@@ -2,12 +2,9 @@
 
 require('mocha');
 const assert = require('assert');
-const support = require('./support');
 const { isMatch } = require('..');
 
 describe('invalid (exclusive) dots', () => {
-  beforeEach(() => support.disableCache());
-
   describe('double dots', () => {
     describe('no options', () => {
       describe('should not match leading double-dots', () => {
