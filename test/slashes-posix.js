@@ -2,7 +2,7 @@
 
 require('mocha');
 const assert = require('assert');
-let { isMatch, makeRe } = require('..');
+const { isMatch, makeRe } = require('..');
 
 describe('slash handling - posix', () => {
   it('should match a literal string', () => {
@@ -263,7 +263,6 @@ describe('slash handling - posix', () => {
     assert(!isMatch('a/x/y', 'a/*'));
     assert(!isMatch('a/x/y/z', 'a/*'));
 
-    assert(!isMatch('a', 'a/**', { strictSlashes: true }));
     assert(isMatch('a', 'a/**'));
     assert(isMatch('a/', 'a/**'));
     assert(isMatch('a/a', 'a/**'));
@@ -621,12 +620,10 @@ describe('slash handling - posix', () => {
     assert(isMatch('/a/a', '**/a'));
 
     assert(isMatch('a', 'a/**'));
-    assert(!isMatch('a', 'a/**', { strictSlashes: true }));
     assert(!isMatch('/a', 'a/**'));
     assert(!isMatch('/a/', 'a/**'));
     assert(!isMatch('/a/a', 'a/**'));
     assert(!isMatch('/a/a/', 'a/**'));
-    assert(!isMatch('/a', '/a/**', { strictSlashes: true }));
     assert(isMatch('/a', '/a/**'));
     assert(isMatch('/a/', '/a/**'));
     assert(isMatch('/a/a', '/a/**'));
@@ -638,9 +635,7 @@ describe('slash handling - posix', () => {
     assert(isMatch('a/a/a/', 'a/**'));
 
     assert(isMatch('a', '**/a/**'));
-    assert(!isMatch('a', '**/a/**', { strictSlashes: true }));
     assert(isMatch('/a', '**/a/**'));
-    assert(!isMatch('/a', '**/a/**', { strictSlashes: true }));
     assert(isMatch('/a/', '**/a/**'));
     assert(isMatch('/a/a', '**/a/**'));
     assert(isMatch('/a/a/', '**/a/**'));

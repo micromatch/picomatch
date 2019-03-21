@@ -37,9 +37,7 @@ describe('Wildmat (git) tests', () => {
     assert(!isMatch('foo/bba/arr', 'foo/**z'));
     assert(!isMatch('foo/bba/arr', 'foo/*arr'));
     assert(!isMatch('foo/bba/arr', 'foo/*z'));
-    assert(
-      !isMatch('XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*')
-    );
+    assert(!isMatch('XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*'));
     assert(isMatch('-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*'));
     assert(isMatch('ab/cXd/efXg/hi', '**/*X*/**/*i'));
     assert(isMatch('ab/cXd/efXg/hi', '*/*X*/*/*i'));

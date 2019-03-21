@@ -2,7 +2,7 @@
 
 require('./support');
 const assert = require('assert');
-const { isMatch } = require('..');
+const { isMatch, makeRe } = require('..');
 const repeat = n => '\\'.repeat(n);
 
 /**
@@ -11,6 +11,8 @@ const repeat = n => '\\'.repeat(n);
 
 describe('handling of potential regex exploits', () => {
   it('should support long escape sequences', () => {
+    assert(isMatch('\\A', `${repeat(65500)}A`), 'within the limits, and valid match');
+    assert(isMatch('A', `!${repeat(65500)}A`), 'within the limits, and valid match');
     assert(isMatch('A', `!(${repeat(65500)}A)`), 'within the limits, and valid match');
     assert(!isMatch('A', `[!(${repeat(65500)}A`), 'within the limits, but invalid regex');
   });

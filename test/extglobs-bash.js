@@ -644,7 +644,7 @@ describe('extglobs (bash)', () => {
   });
 
   it('"a\\z" should not match "a\\z"', () => {
-    assert(!isMatch('a\\z', 'a\\\\z', { bash: true }));
+    assert(isMatch('a\\z', 'a\\\\z', { bash: true }));
   });
 
   it('"aa" should not match "!(a!(b))"', () => {
@@ -2291,6 +2291,10 @@ describe('extglobs (bash)', () => {
     assert(isMatch('foobb', '(foo)bb', { bash: true }));
   });
 
+  it('"(foo)bb" should match "\\(foo\\)bb"', () => {
+    assert(isMatch('(foo)bb', '\\(foo\\)bb', { bash: true }));
+  });
+
   it('"foofoofo" should match "@(foo|f|fo)*(f|of+(o))"', () => {
     assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { bash: true }));
   });
@@ -2603,3 +2607,4 @@ describe('extglobs (bash)', () => {
     assert(!isMatch('zz', '(a+|b)*', { bash: true }));
   });
 });
+

@@ -48,6 +48,28 @@ describe('negation patterns - "!"', () => {
     assert(isMatch('b/c', '!a/b'));
   });
 
+  it('should support multiple leading ! to toggle negation', () => {
+    assert(!isMatch('abc', '!abc'));
+    assert(isMatch('abc',  '!!abc'));
+    assert(!isMatch('abc', '!!!abc'));
+    assert(isMatch('abc',  '!!!!abc'));
+    assert(!isMatch('abc', '!!!!!abc'));
+    assert(isMatch('abc',  '!!!!!!abc'));
+    assert(!isMatch('abc', '!!!!!!!abc'));
+    assert(isMatch('abc',  '!!!!!!!!abc'));
+  });
+
+  it('should support negation extglobs after leading !', () => {
+    assert(!isMatch('abc', '!(abc)'));
+    assert(isMatch('abc',  '!!(abc)'));
+    assert(!isMatch('abc', '!!!(abc)'));
+    assert(isMatch('abc',  '!!!!(abc)'));
+    assert(!isMatch('abc', '!!!!!(abc)'));
+    assert(isMatch('abc',  '!!!!!!(abc)'));
+    assert(!isMatch('abc', '!!!!!!!(abc)'));
+    assert(isMatch('abc',  '!!!!!!!!(abc)'));
+  });
+
   it('should support negation with globs', () => {
     assert(!isMatch('a/a', '!(*/*)'));
     assert(!isMatch('a/b', '!(*/*)'));
@@ -245,7 +267,6 @@ describe('negation patterns - "!"', () => {
     assert(!isMatch('a/', '!a/**'));
     assert(!isMatch('a/b', '!a/**'));
     assert(!isMatch('a/b/c', '!a/**'));
-    assert(isMatch('a', '!a/**', { strictSlashes: true }));
     assert(isMatch('b', '!a/**'));
     assert(isMatch('b/c', '!a/**'));
 

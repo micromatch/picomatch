@@ -52,9 +52,9 @@ describe('regex features', () => {
 
   describe('regex character classes', () => {
     it('should not match with character classes when disabled', () => {
-      assert(!isMatch('a/a', 'a/[a-z]', { nobrackets: true }));
-      assert(!isMatch('a/b', 'a/[a-z]', { nobrackets: true }));
-      assert(!isMatch('a/c', 'a/[a-z]', { nobrackets: true }));
+      assert(!isMatch('a/a', 'a/[a-z]', { nobracket: true }));
+      assert(!isMatch('a/b', 'a/[a-z]', { nobracket: true }));
+      assert(!isMatch('a/c', 'a/[a-z]', { nobracket: true }));
     });
 
     it('should match with character classes by default', () => {

@@ -4,7 +4,7 @@ require('mocha');
 const path = require('path');
 const assert = require('assert');
 const support = require('./support');
-const { isMatch } = require('..');
+const { isMatch, makeRe } = require('..');
 
 describe('slash handling - windows', () => {
   beforeEach(() => support.windowsPathSep());
@@ -414,16 +414,14 @@ describe('slash handling - windows', () => {
     assert(isMatch('a\\x\\y\\z', 'a/**/**/*'));
   });
 
-  it('should match backslashes with globstars with posix slashes disabled', () => {
-    // these should match, since '**' should match anything, even backslashes
-    assert(isMatch('a\\a', 'a/**', { unixify: false }));
-    assert(isMatch('a\\b', 'a/**', { unixify: false }));
-    assert(isMatch('a\\c', 'a/**', { unixify: false }));
-    assert(isMatch('a\\x', 'a/**', { unixify: false }));
-    assert(isMatch('a\\x\\y', 'a/**', { unixify: false }));
-    assert(isMatch('a\\x\\y\\z', 'a/**', { unixify: false }));
+  it('should not match backslashes with globstars when disabled', () => {
+    assert(!isMatch('a\\a', 'a/**', { unixify: false }));
+    assert(!isMatch('a\\b', 'a/**', { unixify: false }));
+    assert(!isMatch('a\\c', 'a/**', { unixify: false }));
+    assert(!isMatch('a\\x', 'a/**', { unixify: false }));
+    assert(!isMatch('a\\x\\y', 'a/**', { unixify: false }));
+    assert(!isMatch('a\\x\\y\\z', 'a/**', { unixify: false }));
 
-    // these should NOT match, because the given strings do not have "/"
     assert(!isMatch('a\\a', 'a/**/*', { unixify: false }));
     assert(!isMatch('a\\b', 'a/**/*', { unixify: false }));
     assert(!isMatch('a\\c', 'a/**/*', { unixify: false }));

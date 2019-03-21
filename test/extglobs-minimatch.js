@@ -639,7 +639,7 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"a\\z" should not match "a\\z"', () => {
-    assert(!isMatch('a\\z', 'a\\\\z'));
+    assert(isMatch('a\\z', 'a\\\\z'));
   });
 
   it('"aa" should not match "!(a!(b))"', () => {
@@ -1412,14 +1412,6 @@ describe('extglobs (minimatch)', () => {
 
   it('"acd" should not match "ab?*(e|f)"', () => {
     assert(!isMatch('acd', 'ab?*(e|f)'));
-  });
-
-  it('"ax" should match "?(a*|b)"', () => {
-    assert(isMatch('ax', '?(a*|b)'));
-  });
-
-  it('"ax" should not match "a?(b*)"', () => {
-    assert(!isMatch('ax', 'a?(b*)'));
   });
 
   it('"axz" should not match "a+(z)"', () => {

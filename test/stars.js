@@ -245,18 +245,18 @@ describe('stars', () => {
       assert(!isMatch('a', '*/'));
       assert(!isMatch('a', '*/*'));
       assert(!isMatch('a', 'a/*'));
+      assert(!isMatch('a/', '*/*'));
+      assert(!isMatch('a/', 'a/*'));
       assert(!isMatch('a/a', '*'));
       assert(!isMatch('a/a', '*/'));
       assert(!isMatch('a/x/y', '*/'));
       assert(!isMatch('a/x/y', '*/*'));
       assert(!isMatch('a/x/y', 'a/*'));
-
-      assert(!isMatch('a/', 'a/*'));
-      assert(!isMatch('a/', '*/*'));
       assert(!isMatch('a/', '*', { strictSlashes: true }));
+      assert(isMatch('a/', '*'));
       assert(isMatch('a', '*'));
-      assert(isMatch('a/', '*{,/}'));
       assert(isMatch('a/', '*/'));
+      assert(isMatch('a/', '*{,/}'));
       assert(isMatch('a/a', '*/*'));
       assert(isMatch('a/a', 'a/*'));
     });
@@ -303,7 +303,17 @@ describe('stars', () => {
       assert(!isMatch('foo/bar/', '**/*', { strictSlashes: true }));
 
       assert(isMatch('/home/foo/..', '**/..'));
+      assert(isMatch('a', '**/a'));
+      assert(isMatch('a/a', '**'));
+      assert(isMatch('a/a', 'a/**'));
+      assert(isMatch('a/', 'a/**'));
+      assert(isMatch('a', 'a/**'));
+      assert(!isMatch('a/a', '**/'));
+      assert(isMatch('a', '**/a/**'));
+      assert(isMatch('a', 'a/**'));
+      assert(!isMatch('a/a', '**/'));
       assert(isMatch('a/a', '*/**/a'));
+      assert(isMatch('a', 'a/**'));
       assert(isMatch('foo/', '*/**'));
       assert(isMatch('foo/bar', '**/*'));
       assert(isMatch('foo/bar', '*/*'));

@@ -29,7 +29,6 @@ describe('issue-related tests', () => {
 
   it('micromatch issue#24', () => {
     assert(!isMatch('a/b/c/d/', 'a/b/**/f'));
-    assert(!isMatch('a', 'a/**', { strictSlashes: true }));
     assert(isMatch('a', 'a/**'));
     assert(isMatch('a', '**'));
     assert(isMatch('a/', '**'));

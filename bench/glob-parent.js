@@ -4,14 +4,13 @@ const { Suite } = require('benchmark');
 const { cyan, red, green } = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2));
 const parent = require('glob-parent');
-const pm = require('..');
+const split = require('../lib/split');
 
 /**
  * Setup
  */
 
 const cycle = (e, newline) => {
-  // process.stdout.write('');
   process.stdout.write(`\u001b[G  ${e.target}${newline ? `\n` : ''}`);
 };
 
@@ -44,6 +43,6 @@ function bench(name, options) {
 }
 
 bench(red('.base') + ' foo/*.js')
-  .add('  picomatch', () => pm.split('foo/*.js', { cache: false }))
+  .add('  picomatch', () => split('foo/*.js', { cache: false }))
   .add('glob-parent', () => parent('foo/*.js'))
   .run();

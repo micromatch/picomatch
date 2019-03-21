@@ -67,7 +67,6 @@ describe('braces', () => {
   });
 
   it('should support braces containing slashes', () => {
-    assert(!isMatch('a', '{/,}a/**', { strictSlashes: true }));
     assert(isMatch('a', '{/,}a/**'));
     assert(isMatch('aa.txt', 'a{a,b/}*.txt'));
     assert(isMatch('ab/.txt', 'a{a,b/}*.txt'));

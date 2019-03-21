@@ -19,24 +19,36 @@
   },
   "scripts": {
     "test": "mocha",
-    "cover": "nyc --reporter=text --reporter=html mocha"
+    "cover": "nyc --reporter=text --reporter=html mocha",
+    "jest": "jest"
   },
   "devDependencies": {
-    "ansi-colors": "^3.2.1",
-    "bash-match": "^1.0.2",
     "fill-range": "^6.0.0",
+    "gulp": "^4.0.0",
     "gulp-format-md": "^1.0.0",
+    "jest": "^24.5.0",
+    "micromatch": "^3.1.10",
     "minimatch": "^3.0.4",
-    "minimist": "^1.2.0",
     "mocha": "^3.5.3",
-    "multimatch": "^2.1.0",
-    "nyc": "^13.0.1"
+    "nyc": "^13.0.1",
+    "time-require": "github:jonschlinkert/time-require"
   },
   "keywords": [
     "glob",
     "match",
     "picomatch"
   ],
+  "jest": {
+    "verbose": true,
+    "testEnvironment": "node",
+    "testMatch": [
+      "<rootDir>/test/dotfiles.js"
+    ],
+    "coverageDirectory": "<rootDir>/coverage",
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/(?:((?!(?:test|lib|index\\.js)))[^\\/]*?)"
+    ]
+  },
   "verb": {
     "toc": false,
     "layout": false,
@@ -66,8 +78,5 @@
         "braces"
       ]
     }
-  },
-  "dependencies": {
-    "safe-regex": "^2.0.2"
   }
 }

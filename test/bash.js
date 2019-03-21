@@ -660,7 +660,7 @@ describe('from the Bash 4.3 spec/unit tests', () => {
 
   it('should match escaped characters', () => {
     if (process.platform !== 'win32') {
-      assert(isMatch('\\*', '\\\\*'));
+      assert(isMatch('\\*', '\\*'));
       assert(isMatch('XXX/\\', '[A-Z]+/\\\\'));
     }
 

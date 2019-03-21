@@ -309,16 +309,14 @@ describe('dotfiles', () => {
     });
 
     it('should match leading dots in root path when glob is prefixed with **/', () => {
-      assert(isMatch('.abc', '**/.abc/**'));
-      assert(!isMatch('.abc', '**/.abc/**', { strictSlashes: true }));
       assert(!isMatch('.abc/.abc', '**/.abc/**'));
-      assert(!isMatch('abc/abc/.abc', '**/.abc/**', { strictSlashes: true }));
-      assert(isMatch('abc/abc/.abc', '**/.abc/**'));
+      assert(isMatch('.abc', '**/.abc/**'));
       assert(isMatch('.abc/', '**/.abc/**'));
       assert(isMatch('.abc/abc', '**/.abc/**'));
       assert(isMatch('.abc/abc/b', '**/.abc/**'));
       assert(isMatch('abc/.abc/b', '**/.abc/**'));
       assert(isMatch('abc/abc/.abc', '**/.abc'));
+      assert(isMatch('abc/abc/.abc', '**/.abc/**'));
       assert(isMatch('abc/abc/.abc/', '**/.abc/**'));
       assert(isMatch('abc/abc/.abc/abc', '**/.abc/**'));
       assert(isMatch('abc/abc/.abc/c/d', '**/.abc/**'));

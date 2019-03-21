@@ -214,7 +214,6 @@ describe('picomatch', () => {
 
     it('issue #24', () => {
       assert(!isMatch('a/b/c/d/', 'a/b/**/f'));
-      assert(!isMatch('a', 'a/**', { strictSlashes: true }));
       assert(isMatch('a', 'a/**'));
       assert(isMatch('a', '**'));
       assert(isMatch('a/', '**'));
@@ -248,7 +247,6 @@ describe('picomatch', () => {
       assert(!isMatch('deep/foo/bar/baz', '**/bar/*/'));
       assert(!isMatch('deep/foo/bar/baz/', '**/bar/*', { strictSlashes: true }));
       assert(isMatch('deep/foo/bar/baz/', '**/bar/*'));
-      assert(!isMatch('foo', 'foo/**', { strictSlashes: true }));
       assert(isMatch('foo', 'foo/**'));
       assert(isMatch('deep/foo/bar/baz/', '**/bar/*{,/}'));
       assert(isMatch('a/b/j/c/z/x.md', 'a/**/j/**/z/*.md'));
