@@ -7,8 +7,8 @@ module.exports = (list, pattern, options = {}) => {
   let matches = options.matches || new Set();
 
   for (let item of [].concat(list)) {
-    let match = isMatch(item);
-    if (match && match.output) {
+    let match = isMatch(item, true);
+    if (match && match.output && match.isMatch === true) {
       matches.add(match.output);
     }
   }

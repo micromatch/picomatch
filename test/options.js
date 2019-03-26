@@ -100,10 +100,24 @@ describe('options', () => {
   describe('options.unescape', () => {
     it('should remove backslashes in glob patterns:', () => {
       let fixtures = ['abc', '/a/b/c', '\\a\\b\\c'];
-      assert.deepEqual(match(fixtures, '\\a\\b\\c'), ['\\a\\b\\c']);
-      assert.deepEqual(match(fixtures, '\\a\\b\\c'), ['\\a\\b\\c']);
-      assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: false }), ['\\a\\b\\c']);
-      assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: true, unixify: false }), ['abc', '\\a\\b\\c']);
+      if (process.platform === 'win32') {
+        assert.deepEqual(match(fixtures, '\\a\\b\\c'), ['\\a\\b\\c']);
+        assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: true }), ['abc', '\\a\\b\\c']);
+        assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: false }), ['\\a\\b\\c']);
+      } else {
+        assert.deepEqual(match(fixtures, '\\a\\b\\c'), ['/a/b/c']);
+        assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: true }), ['abc', '/a/b/c']);
+        assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: false }), ['/a/b/c']);
+      }
+    });
+
+    it('should work with unixify', () => {
+      let fixtures = ['abc', '/a/b/c', '\\a\\b\\c'];
+      if (process.platform === 'win32') {
+        assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: true, unixify: false }), ['abc', '\\a\\b\\c']);
+      } else {
+        assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: true, unixify: false }), ['abc', '\\a\\b\\c']);
+      }
     });
   });
 

@@ -639,7 +639,7 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"a\\z" should not match "a\\z"', () => {
-    assert(isMatch('a\\z', 'a\\\\z'));
+    assert(isMatch('a\\z', 'a\\z'));
   });
 
   it('"aa" should not match "!(a!(b))"', () => {

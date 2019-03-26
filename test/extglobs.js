@@ -17,11 +17,11 @@ describe('extglobs', () => {
   });
 
   it('should escape special characters immediately following opening parens', () => {
-    assert.equal(makeRe('c!(.)z').source, '^(?:c((?!(\\.))[^\\/]*?)z)$');
-    assert.equal(makeRe('c!(*)z').source, '^(?:c((?!([^\\/]*?))[^\\/]*?)z)$');
-    assert.equal(makeRe('c!(+)z').source, '^(?:c((?!(\\+))[^\\/]*?)z)$');
-    assert.equal(makeRe('c!(?)z').source, '^(?:c((?!(\\?))[^\\/]*?)z)$');
-    assert.equal(makeRe('c!(@)z').source, '^(?:c((?!(@))[^\\/]*?)z)$');
+    assert.equal(makeRe('c!(.)z').source, '^(?:c(?:(?!(?:\\.))[^\\/]*?)z)$');
+    assert.equal(makeRe('c!(*)z').source, '^(?:c(?:(?!(?:[^\\/]*?))[^\\/]*?)z)$');
+    assert.equal(makeRe('c!(+)z').source, '^(?:c(?:(?!(?:\\+))[^\\/]*?)z)$');
+    assert.equal(makeRe('c!(?)z').source, '^(?:c(?:(?!(?:\\?))[^\\/]*?)z)$');
+    assert.equal(makeRe('c!(@)z').source, '^(?:c(?:(?!(?:@))[^\\/]*?)z)$');
 
     assert(isMatch('cbz', 'c!(.)z'));
     assert(!isMatch('cbz', 'c!(*)z'));

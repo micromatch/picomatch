@@ -4,7 +4,7 @@ const { Suite } = require('benchmark');
 const { cyan, red, green } = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2));
 const parent = require('glob-parent');
-const split = require('../lib/split');
+const scan = require('../lib/scan');
 
 /**
  * Setup
@@ -42,7 +42,12 @@ function bench(name, options) {
   return suite;
 }
 
-bench(red('.base') + ' foo/*.js')
-  .add('  picomatch', () => split('foo/*.js', { cache: false }))
+bench(red('foo/*.js'))
+  .add('  picomatch', () => scan('foo/*.js'))
   .add('glob-parent', () => parent('foo/*.js'))
+  .run();
+
+bench(red('foo/{a,b}/*.js'))
+  .add('  picomatch', () => scan('foo/{a,b}/*.js'))
+  .add('glob-parent', () => parent('foo/{a,b}/*.js'))
   .run();

@@ -11,7 +11,9 @@ const repeat = n => '\\'.repeat(n);
 
 describe('handling of potential regex exploits', () => {
   it('should support long escape sequences', () => {
-    assert(isMatch('\\A', `${repeat(65500)}A`), 'within the limits, and valid match');
+    if (process.platform !== 'win32') {
+      assert(isMatch('\\A', `${repeat(65500)}A`), 'within the limits, and valid match');
+    }
     assert(isMatch('A', `!${repeat(65500)}A`), 'within the limits, and valid match');
     assert(isMatch('A', `!(${repeat(65500)}A)`), 'within the limits, and valid match');
     assert(!isMatch('A', `[!(${repeat(65500)}A`), 'within the limits, but invalid regex');
