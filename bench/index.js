@@ -41,57 +41,52 @@ const bench = (name, options) => {
   return suite;
 };
 
-bench(red('.makeRe') + ' star')
-  .add('picomatch', () => pm.makeRe('*'))
-  .add('minimatch', () => mm.makeRe('*'))
-  .run();
+// bench(red('.makeRe') + ' star')
+//   .add('picomatch', () => pm.makeRe('*'))
+//   .add('minimatch', () => mm.makeRe('*'))
+//   .run();
 
-bench(red('.makeRe') + ' star; dot=true')
-  .add('picomatch', () => pm.makeRe('*', { dot: true }))
-  .add('minimatch', () => mm.makeRe('*', { dot: true }))
-  .run();
+// bench(red('.makeRe') + ' star; dot=true')
+//   .add('picomatch', () => pm.makeRe('*', { dot: true }))
+//   .add('minimatch', () => mm.makeRe('*', { dot: true }))
+//   .run();
 
-bench(red('.makeRe') + ' globstar')
-  .add('picomatch', () => pm.makeRe('**'))
-  .add('minimatch', () => mm.makeRe('**'))
-  .run();
+// bench(red('.makeRe') + ' globstar')
+//   .add('picomatch', () => pm.makeRe('**'))
+//   .add('minimatch', () => mm.makeRe('**'))
+//   .run();
 
-bench(red('.makeRe') + ' globstars')
-  .add('picomatch', () => pm.makeRe('**/**/**'))
-  .add('minimatch', () => mm.makeRe('**/**/**'))
-  .run();
+// bench(red('.makeRe') + ' globstars')
+//   .add('picomatch', () => pm.makeRe('**/**/**'))
+//   .add('minimatch', () => mm.makeRe('**/**/**'))
+//   .run();
 
-bench(red('.makeRe') + ' with leading star')
-  .add('picomatch', () => pm.makeRe('*.txt'))
-  .add('minimatch', () => mm.makeRe('*.txt'))
-  .run();
+// bench(red('.makeRe') + ' with leading star')
+//   .add('picomatch', () => pm.makeRe('*.txt'))
+//   .add('minimatch', () => mm.makeRe('*.txt'))
+//   .run();
 
-bench(red('.makeRe') + ' with star')
-  .add('picomatch', () => pm.makeRe('c*3.txt'))
-  .add('minimatch', () => mm.makeRe('c*3.txt'))
-  .run();
+// bench(red('.makeRe') + ' with star')
+//   .add('picomatch', () => pm.makeRe('c*3.txt'))
+//   .add('minimatch', () => mm.makeRe('c*3.txt'))
+//   .run();
 
-bench(red('.makeRe') + ' - negated')
-  .add('picomatch', () => pm.makeRe('!c*3.txt'))
-  .add('minimatch', () => mm.makeRe('!c*3.txt'))
-  .run();
+// bench(red('.makeRe') + ' - negated')
+//   .add('picomatch', () => pm.makeRe('!c*3.txt'))
+//   .add('minimatch', () => mm.makeRe('!c*3.txt'))
+//   .run();
 
-bench(red('.makeRe') + ' - with globstar')
-  .add('picomatch', () => pm.makeRe('foo/**/bar.txt'))
-  .add('minimatch', () => mm.makeRe('foo/**/bar.txt'))
-  .run();
+// bench(red('.makeRe') + ' - with globstar')
+//   .add('picomatch', () => pm.makeRe('foo/**/bar.txt'))
+//   .add('minimatch', () => mm.makeRe('foo/**/bar.txt'))
+//   .run();
 
-bench(red('.makeRe') + ' - with globstar negated')
-  .add('picomatch', () => pm.makeRe('!**/bar.txt'))
-  .add('minimatch', () => mm.makeRe('!**/bar.txt'))
-  .run();
+// bench(red('.makeRe') + ' - with globstar negated')
+//   .add('picomatch', () => pm.makeRe('!**/bar.txt'))
+//   .add('minimatch', () => mm.makeRe('!**/bar.txt'))
+//   .run();
 
 bench(red('.makeRe') + ' - braces')
   .add('picomatch', () => pm.makeRe('{a,b,c}*.txt'))
   .add('minimatch', () => mm.makeRe('{a,b,c}*.txt'))
-  .run();
-
-bench(red('.makeRe') + ' - multiple stars')
-  .add('picomatch', () => pm.makeRe('**/*c09.*'))
-  .add('minimatch', () => mm.makeRe('**/*c09.*'))
   .run();
