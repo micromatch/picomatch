@@ -5,6 +5,13 @@ const assert = require('assert');
 const { isMatch } = require('..');
 
 describe('issue-related tests', () => {
+  it('should match with braces (see picomatch/issues#8)', () => {
+    assert(isMatch('directory/.test.txt', '{file.txt,directory/**/*}', { dot: true }));
+    assert(isMatch('directory/test.txt', '{file.txt,directory/**/*}', { dot: true }));
+    assert(!isMatch('directory/.test.txt', '{file.txt,directory/**/*}'));
+    assert(isMatch('directory/test.txt', '{file.txt,directory/**/*}'));
+  });
+
   it('should match Japanese characters (see micromatch/issues#127)', () => {
     assert(isMatch('フォルダ/aaa.js', 'フ*/**/*'));
     assert(isMatch('フォルダ/aaa.js', 'フォ*/**/*'));
