@@ -19,18 +19,14 @@
   },
   "scripts": {
     "test": "mocha",
-    "cover": "nyc --reporter=text --reporter=html mocha",
-    "jest": "jest"
+    "cover": "nyc --reporter=text --reporter=html mocha"
   },
   "devDependencies": {
     "fill-range": "^6.0.0",
     "gulp": "^4.0.0",
-    "gulp-format-md": "^1.0.0",
-    "jest": "^24.5.0",
-    "micromatch": "^3.1.10",
-    "minimatch": "^3.0.4",
-    "mocha": "^3.5.3",
-    "nyc": "^13.0.1",
+    "gulp-format-md": "^2.0.0",
+    "mocha": "^6.0.2",
+    "nyc": "^13.3.0",
     "time-require": "github:jonschlinkert/time-require"
   },
   "keywords": [
@@ -38,17 +34,6 @@
     "match",
     "picomatch"
   ],
-  "jest": {
-    "verbose": true,
-    "testEnvironment": "node",
-    "testMatch": [
-      "<rootDir>/test/dotfiles.js"
-    ],
-    "coverageDirectory": "<rootDir>/coverage",
-    "coveragePathIgnorePatterns": [
-      "<rootDir>/(?:((?!(?:test|lib|index\\.js)))[^\\/]*?)"
-    ]
-  },
   "verb": {
     "toc": false,
     "layout": false,
@@ -61,22 +46,20 @@
     "lint": {
       "reflinks": true
     },
-    "reflinks": [
-      "bash",
-      "fill-range",
-      "micromatch",
-      "minimatch",
-      "braces",
-      "expand-brackets",
-      "extglob",
-      "nanomatch",
-      "picomatch"
-    ],
     "related": {
       "list": [
         "micromatch",
         "braces"
       ]
-    }
+    },
+    "reflinks": [
+      "braces",
+      "expand-brackets",
+      "extglob",
+      "micromatch",
+      "minimatch",
+      "nanomatch",
+      "picomatch"
+    ]
   }
 }

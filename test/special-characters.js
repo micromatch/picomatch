@@ -74,10 +74,10 @@ describe('special characters', () => {
       assert(isMatch('/acb', '/a?b'));
     });
 
-    it('should match non-slash characters when options.qmarkLiteral is true', () => {
-      assert(!isMatch('acb/', 'a?b/', { qmarkLiteral: true }));
-      assert(!isMatch('acdb/', 'a??b/', { qmarkLiteral: true }));
-      assert(!isMatch('/acb', '/a?b', { qmarkLiteral: true }));
+    it('should match non-slash characters when ? is escaped', () => {
+      assert(!isMatch('acb/', 'a\\?b/'));
+      assert(!isMatch('acdb/', 'a\\?\\?b/'));
+      assert(!isMatch('/acb', '/a\\?b'));
     });
 
     it('should match one character per question mark', () => {

@@ -69,31 +69,92 @@ console.log(isMatch('a/b.js')); //=> false
 
 | **Option** | **Type** | **Default value** | **Description** |
 | --- | --- | --- | --- |
-| `bash`           | `boolean`      | `false`     | Follow bash matching rules more strictly - disallows backslashes as escape characters. |
-| `dot`            | `boolean`      | `false`     | Enable dotfile matching. By default, dotfiles are ignored unless a `.` is explicitly defined in the pattern, or `options.dot` is true |
-| `expandBrace`    | `function`     | `undefined` | Function to be called on brace patterns as an alternative to the built-in functionality. The function receives the entire brace pattern including the enclosing braces as its only argument, and it must return a string to be used in the generated regex. |
-| `expandRange`    | `function`     | `undefined` | Custom function for expanding ranges in brace patterns, such as `{a..z}`. The function receives the range values as two arguments, and it must return a string to be used in the generated regex. It's recommended that returned strings be wrapped in parentheses. This option is overridden by the `braces` option. |
-| `failglob`       | `boolean`      | `false`     | Throws an error if no matches are found. Based on the bash option of the same name. |
-| `flags`          | `boolean`      | `undefined` | Regex flags to use in the generated regex. If defined, the `nocase` option will be overridden. |
-| `ignore`         | `array\|string` | `undefined` | One or more glob patterns for excluding strings that should not be matched from the result. |
-| `keepQuotes`     | `boolean`      | `false`     | Retain quotes in the generated regex, since quotes may also be used as an alternative to backslashes.  |
-| `lookbehinds`    | `boolean`      | `true`      | Support regex positive and negative lookbehinds. Note that you must be using Node 8.1.10 or higher to enable regex lookbehinds. |
-| `matchBase`      | `boolean`      | `false`     | If set, then patterns without slashes will be matched against the basename of the path if it contains slashes.  For example, `a?b` would match the path `/xyz/123/acb`, but not `/xyz/acb/123`. |
-| `maxLength`      | `boolean`      | `65536`     | Limit the max length of the input string. An error is thrown if the input string is longer than this value. |
-| `nobrace`        | `boolean`      | `false`     | Disabled brace matching. Thus, `{a,b}` and `{1..3}` would be treated as literals. |
-| `nocase`         | `boolean`      | `false`     | Make matching case-insensitive. Equivalent to the regex `i` flag. Note that this option is overridden by the `flags` option. |
-| `nodupes`        | `boolean`      | `true`      | Deprecated, use `nounique` instead. This option will be removed in a future major release. By default duplicates are removed. Disable uniquification by setting this option to false. |
-| `noextglob`      | `boolean`      | `false`     | Disable support for matching with extglobs (like `+(a\|b)`) |
-| `noglobstar`     | `boolean`      | `false`     | Disable support for matching nested directories with globstars (`**`) |
-| `nonegate`       | `boolean`      | `false`     | Disable support for negating with leading `!` |
-| `noquantifiers`  | `boolean`      | `false`     | Disable support for regex quantifiers (like `a{1,2}`) and treat them as brace patterns to be expanded. |
-| `normalize`      | `boolean`      | `false`     | Normalize returned paths to remove leading `./` |
-| `posix`          | `boolean`      | `false`     | Support POSX character classes ("posix brackets"). |
-| `prepend`        | `boolean`      | `undefined` | String to prepend to the generated regex used for matching. |
-| `strictBrackets` | `boolean`      | `undefined` | Throw an error if brackets, braces, or parens are imbalanced. |
-| `strictSlashes`  | `boolean`      | `undefined` | Strictly enforce leading and trailing slashes. |
-| `unescapeRegex`  | `boolean`      | `undefined` | Remove backslashes preceding escaped characters in the returned regular expression. By default, backslashes are retained. |
-| `unixify`        | `boolean`      | `undefined` | Convert all slashes in the list to match (not in the glob pattern itself) to forward slashes. |
+| `basename` √          |                |             |             |
+| `bash`                | `boolean`      | `false`     | Follow bash matching rules more strictly - disallows backslashes as escape characters, and treats single stars as globstars (`**`). |
+| `capture` √           |                |             |             |
+| `contains` √          |                |             |             |
+| `cwd` √               |                |             |             |
+| `debug` √             |                |             |             |
+| `dot`                 | `boolean`      | `false`     | Enable dotfile matching. By default, dotfiles are ignored unless a `.` is explicitly defined in the pattern, or `options.dot` is true |
+| `expandRange`         | `function`     | `undefined` | Custom function for expanding ranges in brace patterns, such as `{a..z}`. The function receives the range values as two arguments, and it must return a string to be used in the generated regex. It's recommended that returned strings be wrapped in parentheses. This option is overridden by the `expandBrace` option. |
+| `failglob`            | `boolean`      | `false`     | Throws an error if no matches are found. Based on the bash option of the same name. |
+| `fastpaths` √         |                |             |             |
+| `flags`               | `boolean`      | `undefined` | Regex flags to use in the generated regex. If defined, the `nocase` option will be overridden. |
+| `format`              | `function`     | `undefined` | Custom function for formatting the returned string. This is useful for removing leading slashes, converting Windows paths to Posix paths, etc. |
+| `ignore`              | `array\|string` | `undefined` | One or more glob patterns for excluding strings that should not be matched from the result. |
+| `keepQuotes`          | `boolean`      | `false`     | Retain quotes in the generated regex, since quotes may also be used as an alternative to backslashes.  |
+| `literalBrackets` √   |                |             |             |
+| `lookbehinds`         | `boolean`      | `true`      | Support regex positive and negative lookbehinds. Note that you must be using Node 8.1.10 or higher to enable regex lookbehinds. |
+| `matchBase`           | `boolean`      | `false`     | If set, then patterns without slashes will be matched against the basename of the path if it contains slashes.  For example, `a?b` would match the path `/xyz/123/acb`, but not `/xyz/acb/123`. |
+| `maxLength`           | `boolean`      | `65536`     | Limit the max length of the input string. An error is thrown if the input string is longer than this value. |
+| `nobrace`             | `boolean`      | `false`     | Disable brace matching, so that `{a,b}` and `{1..3}` would be treated as literal characters. |
+| `nobracket` √         |                |             |             |
+| `nocase`              | `boolean`      | `false`     | Make matching case-insensitive. Equivalent to the regex `i` flag. Note that this option is overridden by the `flags` option. |
+| `nodupes`             | `boolean`      | `true`      | Deprecated, use `nounique` instead. This option will be removed in a future major release. By default duplicates are removed. Disable uniquification by setting this option to false. |
+| `noext`               | `boolean`      | `false`     | Alias for `noextglob` |
+| `noextglob`           | `boolean`      | `false`     | Disable support for matching with extglobs (like `+(a\|b)`) |
+| `noglobstar`          | `boolean`      | `false`     | Disable support for matching nested directories with globstars (`**`) |
+| `nonegate`            | `boolean`      | `false`     | Disable support for negating with leading `!` |
+| `noquantifiers`       | `boolean`      | `false`     | Disable support for regex quantifiers (like `a{1,2}`) and treat them as brace patterns to be expanded. |
+| [onIgnore](#optionsonIgnore) | `function` | `undefined` | Function to be called on ignored items. |
+| [onMatch](#optionsonMatch) | `function` | `undefined` | Function to be called on matched items. |
+| [onResult](#optionsonResult) | `function` | `undefined` | Function to be called on all items, regardless of whether or not they are matched or ignored. |
+| `posix`               | `boolean`      | `false`     | Support POSX character classes ("posix brackets"). |
+| `posixSlashes`        | `boolean`      | `undefined` | Convert all slashes in file paths to forward slashes. This does not convert slashes in the glob pattern itself |
+| `prepend`             | `boolean`      | `undefined` | String to prepend to the generated regex used for matching. |
+| `regex`               | `boolean`      | `false`     | Use regular expression rules for `+` (instead of matching literal `+`), and for stars that follow closing parentheses or brackets (as in `)*` and `]*`). |
+| `removeBackslashes` √ |                |             |             |
+| `strictBrackets`      | `boolean`      | `undefined` | Throw an error if brackets, braces, or parens are imbalanced. |
+| `strictSlashes`       | `boolean`      | `undefined` | When true, picomatch won't match trailing slashes with single stars. |
+| `unescape`            | `boolean`      | `undefined` | Remove backslashes preceding escaped characters in the generated regular expression. By default, backslashes are retained. |
+| `unixify` √           |                |             |             |
+
+### options.expandRange
+
+**Type**: `function`
+
+**Default**: `undefine`
+
+Custom function for expanding ranges in brace patterns. The [fill-range](https://github.com/jonschlinkert/fill-range) library is ideal for this purpose, or you can use custom code to do whatever you need.
+
+**Example**
+
+The following example shows how to create a glob that matches a folder
+
+```js
+const fill = require('fill-range');
+const regex = pm.makeRe('foo/{01..25}/bar', {
+  expandRange(a, b) {
+    return `(${fill(a, b, { toRegex: true })})`;
+  }
+});
+
+console.log(regex);
+//=> /^(?:foo\/((?:0[1-9]|1[0-9]|2[0-5]))\/bar)$/
+
+console.log(regex.test('foo/00/bar'))  // false
+console.log(regex.test('foo/01/bar'))  // true
+console.log(regex.test('foo/10/bar')) // true
+console.log(regex.test('foo/22/bar')) // true
+console.log(regex.test('foo/25/bar')) // true
+console.log(regex.test('foo/26/bar')) // false
+```
+
+### options.onResult
+
+```js
+const options = () => {
+  return {
+    format: str => str.replace(/^\.\//, ''),
+    onMatch({ pattern, regex, input, value }) {
+      if (value.length > 2 && (value.startsWith('./') || value.startsWith('.\\'))) {
+        value = value.slice(2);
+      }
+      return value;
+    }
+  };
+};
+```
 
 <br>
 <br>
@@ -124,10 +185,45 @@ Picomatch's matching features and expected results in unit tests are based on Ba
 
 ## Advanced globbing
 
-* extglobs (todo)
-* POSIX brackets
+* [extglobs](#extglobs)
+* [POSIX brackets](#posix-brackets)
 * brace expansion (todo)
 * regular expressions (todo)
+
+### Extglobs
+
+| **Pattern** | **Description** |
+| --- | --- | --- |
+| `@(pattern)` | Match _only one_ consecutive occurrence of `pattern` |
+| `*(pattern)` | Match _zero or more_ consecutive occurrences of `pattern` |
+| `+(pattern)` | Match _one or more_ consecutive occurrences of `pattern` |
+| `?(pattern)` | Match _zero or **one**_ consecutive occurrences of `pattern` |
+| `!(pattern)` | Match _anything but_ `pattern` |
+
+**Examples**
+
+```js
+const pm = require('picomatch');
+
+// *(pattern) matches ZERO or more of "pattern"
+console.log(pm.isMatch('a', 'a*(z)')); // true
+console.log(pm.isMatch('az', 'a*(z)')); // true
+console.log(pm.isMatch('azzz', 'a*(z)')); // true
+
+// +(pattern) matches ONE or more of "pattern"
+console.log(pm.isMatch('a', 'a*(z)')); // true
+console.log(pm.isMatch('az', 'a*(z)')); // true
+console.log(pm.isMatch('azzz', 'a*(z)')); // true
+
+// supports multiple extglobs
+console.log(pm.isMatch('foo.bar', '!(foo).!(bar)')); // false
+console.log(pm.isMatch('foo.bar', '!(foo).!(bar)')); // false
+console.log(pm.isMatch('foo.bar', '!(foo).!(bar)')); // false
+console.log(pm.isMatch('foo.bar', '!(foo).!(bar)')); // true
+
+// supports nested extglobs 
+console.log(pm.isMatch('foo.bar', '!(!(foo)).!(!(bar))')); // true
+```
 
 ### POSIX brackets
 
@@ -161,6 +257,14 @@ The following named POSIX bracket expressions are supported:
 
 See the [Bash Reference Manual](https://www.gnu.org/software/bash/manual/html_node/Pattern-Matching.html) for more information.
 
+## Brace Expansion
+
+TODO
+
+## Regular Expressions
+
+TODO
+
 ## Matching special characters as literals
 
 If you wish to match the following special characters in a filepath, and you want to use these characters in your glob pattern, they must be escaped with backslashes or quotes:
@@ -183,22 +287,18 @@ console.log(pm.makeRe('foo/bar \\(1\\)'));
 
 ## Library Comparisons
 
-Comparison to other libraries.
-
-### Feature comparison
-
 The following table shows which features are supported by [minimatch](https://github.com/isaacs/minimatch), [micromatch](https://github.com/micromatch/micromatch), [picomatch](https://github.com/folder/picomatch), [nanomatch](https://github.com/micromatch/nanomatch), [extglob](https://github.com/micromatch/extglob), [braces](https://github.com/micromatch/braces), and [expand-brackets](https://github.com/micromatch/expand-brackets).
 
 | **Feature** | `minimatch` | `micromatch` | `picomatch` | `nanomatch` | `extglob` | `braces` | `expand-brackets` |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| wildcard matching (`*?+`) | ✔ | ✔ | ✔ | ✔ | - | - | - |
-| advancing globbing     | ✔ | ✔ | ✔ | - | - | - | - |
-| brace _matching_       | ✔ | ✔ | ✔ | - | - | ✔ | - |
-| brace _expansion_      | ✔ | ✔ | - | - | - | ✔ | - |
-| extglobs               | partial | ✔ | ✔ | - | ✔ | - | - |
-| posix brackets         | - | ✔ | ✔ | - | - | - | ✔ |
-| regular expression syntax | - | ✔ | ✔ | ✔ | ✔ | - | ✔ |
-| file system operations | - | - | - | - | - | - | - |
+| Wildcard matching (`*?+`) | ✔ | ✔ | ✔ | ✔ | - | - | - |
+| Advancing globbing        | ✔ | ✔ | ✔ | - | - | - | - |
+| Brace _matching_          | ✔ | ✔ | ✔ | - | - | ✔ | - |
+| Brace _expansion_         | ✔ | ✔ | - | - | - | ✔ | - |
+| Extglobs                  | partial | ✔ | ✔ | - | ✔ | - | - |
+| Posix brackets            | - | ✔ | ✔ | - | - | - | ✔ |
+| Regular expression syntax | - | ✔ | ✔ | ✔ | ✔ | - | ✔ |
+| File system operations    | - | - | - | - | - | - | - |
 
 <br>
 <br>
@@ -222,6 +322,23 @@ console.log(require('minimatch').makeRe('**/*').test('foo/bar/baz/qux.js'));
 console.log(require('picomatch').makeRe('**/*').test('foo/bar/baz/qux.js'));
 // 7.429ms
 ```
+
+<br>
+<br>
+
+## Philosophies
+
+The goal of this library is to be blazing fast, without compromising on accuracy.
+
+**Accuracy**
+
+The number one of goal of this libary is accuracy. However, it's not unusual for different glob implementations to have different rules for matching behavior, even with simple wildcard matching. It gets increasingly more complicated when combinations of different features are combined, like when extglobs are combined with globstars, braces, slashes, and so on: `!(**/{a,b,*/c})`.
+
+Thus, given that there is no cannonical glob specification to use as a single source of truth when differences of opinion arise regarding behavior, sometimes we have to implement our best judgement and rely on feedback from users to make improvements.
+
+**Performance**
+
+Although this library performs well in benchmarks, and in most cases it's faster than other popular libraries we benchmarked against, we will always choose accuracy over performance. It's not helpful to anyone if our library is faster at returning the wrong answer.
 
 <br>
 <br>
