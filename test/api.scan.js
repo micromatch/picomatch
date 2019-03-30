@@ -275,7 +275,7 @@ describe('picomatch', () => {
     });
 
     it('should support regex character classes', () => {
-      let opts = { removeBackslashes: true };
+      let opts = { unescape: true };
       assert.deepEqual(both('[a-c]b*'), ['', '[a-c]b*']);
       assert.deepEqual(both('[a-j]*[^c]'), ['', '[a-j]*[^c]']);
       assert.deepEqual(both('[a-j]*[^c]b/c'), ['', '[a-j]*[^c]b/c']);
@@ -357,7 +357,7 @@ describe('picomatch', () => {
     });
 
     it('should respect brace enclosures with embedded separators', () => {
-      let opts = { removeBackslashes: true };
+      let opts = { unescape: true };
       assert.equal(base('path/{,/,bar/baz,qux}/', opts), 'path');
       assert.equal(base('path/\\{,/,bar/baz,qux}/', opts), 'path/{,/,bar/baz,qux}/');
       assert.equal(base('path/\\{,/,bar/baz,qux\\}/', opts), 'path/{,/,bar/baz,qux}/');
@@ -369,7 +369,7 @@ describe('picomatch', () => {
     });
 
     it('should handle escaped nested braces', () => {
-      let opts = { removeBackslashes: true };
+      let opts = { unescape: true };
       assert.equal(base('\\{../,./,\\{bar,/baz},qux}', opts), '{../,./,{bar,/baz},qux}');
       assert.equal(base('\\{../,./,\\{bar,/baz},qux}/', opts), '{../,./,{bar,/baz},qux}/');
       assert.equal(base('path/\\{,/,bar/{baz,qux}}/', opts), 'path/{,/,bar/{baz,qux}}/');
@@ -380,7 +380,7 @@ describe('picomatch', () => {
     });
 
     it('should recognize escaped braces', () => {
-      let opts = { removeBackslashes: true };
+      let opts = { unescape: true };
       assert.equal(base('\\{foo,bar\\}', opts), '{foo,bar}');
       assert.equal(base('\\{foo,bar\\}/', opts), '{foo,bar}/');
       assert.equal(base('\\{foo,bar}/', opts), '{foo,bar}/');
