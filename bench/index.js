@@ -66,7 +66,7 @@ bench(red('.makeRe') + ' with leading star')
   .add('minimatch', () => mm.makeRe('*.txt'))
   .run();
 
-bench(red('.makeRe') + ' - braces')
+bench(red('.makeRe') + ' - basic braces')
   .add('picomatch', () => pm.makeRe('{a,b,c}*.txt'))
   .add('minimatch', () => mm.makeRe('{a,b,c}*.txt'))
   .run();

@@ -1,16 +1,20 @@
 const pm = require('..');
 
-console.log(pm.makeRe('!(foo)'));
+
+console.log(pm.makeRe('(a|b|c)'));
+console.log(pm.makeRe('!(a|b|c)'));
+console.log(pm.makeRe('*(a|b|c)'));
+console.log(pm.makeRe('+(a|b|c)'));
+console.log(pm.makeRe('?(a|b|c)'));
+console.log(pm.makeRe('@(a|b|c)'));
 console.log('---');
 console.log();
 
-console.log(pm.makeRe('!(foo)', { noext: true }));
+console.log(pm.makeRe('(a|b|c)', { noext: true }));
+console.log(pm.makeRe('!(a|b|c)', { noext: true }));
+console.log(pm.makeRe('*(a|b|c)', { noext: true }));
+console.log(pm.makeRe('+(a|b|c)', { noext: true }));
+console.log(pm.makeRe('?(a|b|c)', { noext: true }));
+console.log(pm.makeRe('@(a|b|c)', { noext: true }));
 console.log('---');
 console.log();
-
-console.log(pm.makeRe('(foo)'));
-console.log('---');
-console.log();
-
-console.log(pm.makeRe('(foo)', { noext: true }));
-

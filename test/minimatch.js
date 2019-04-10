@@ -54,8 +54,8 @@ describe('minimatch parity:', () => {
     });
 
     it('https://github.com/isaacs/minimatch/issues/78', () => {
-      assert(isMatch('a\\b\\c.txt', 'a/**/*.txt', { posixSlashes: true }));
-      assert(isMatch('a/b/c.txt', 'a/**/*.txt', { posixSlashes: true }));
+      assert(isMatch('a\\b\\c.txt', 'a/**/*.txt', { windows: true }));
+      assert(isMatch('a/b/c.txt', 'a/**/*.txt', { windows: true }));
     });
 
     it('https://github.com/isaacs/minimatch/issues/82', () => {

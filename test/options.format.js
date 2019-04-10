@@ -41,7 +41,7 @@ describe('options.format', () => {
 
     assert(isMatch('./foo/bar.js', '**/foo/**', opts));
     assert(isMatch('./foo/bar.js', './**/foo/**', opts));
-    assert(isMatch('.\\foo\\bar.js', '**/foo/**', { ...opts, unixify: false }));
+    assert(isMatch('.\\foo\\bar.js', '**/foo/**', { ...opts, windows: false }));
     assert(isMatch('.\\foo\\bar.js', './**/foo/**', opts));
     equal(match(fixtures, '*', opts), ['a', 'b']);
     equal(match(fixtures, '**/a/**', opts), ['a', 'a/a', 'a/c', 'a/b', 'a/x', 'a/a/a', 'a/a/b', 'a/a/a/a', 'a/a/a/a/a']);

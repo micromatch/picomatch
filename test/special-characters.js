@@ -281,19 +281,19 @@ describe('special characters', () => {
       path.sep = '/';
     });
 
-    it('should match mixed slashes when options.unixify is true', () => {
-      assert(isMatch('//C://user\\docs\\Letter.txt', '**', { unixify: true }));
-      assert(isMatch('//C:\\\\user/docs/Letter.txt', '**', { unixify: true }));
-      assert(isMatch(':\\', '*{,/}', { unixify: true }));
-      assert(isMatch(':\\', ':*{,/}', { unixify: true }));
-      assert(isMatch('\\\\foo/bar', '**', { unixify: true }));
-      assert(isMatch('\\\\foo/bar', '//*/*', { unixify: true }));
-      assert(isMatch('\\\\unc\\admin$', '//**', { unixify: true }));
-      assert(isMatch('\\\\unc\\admin$', '//*/*$', { unixify: true }));
-      assert(isMatch('\\\\unc\\admin$\\system32', '//*/*$/*32', { unixify: true }));
-      assert(isMatch('\\\\unc\\share\\foo', '//u*/s*/f*', { unixify: true }));
-      assert(isMatch('\\\\\\\\\\\\unc\\share\\foo', '/\\{1,\\}u*/s*/f*', { unixify: true, unescape: true }));
-      assert(isMatch('foo\\bar\\baz', 'f*/*/*', { unixify: true }));
+    it('should match mixed slashes when options.windows is true', () => {
+      assert(isMatch('//C://user\\docs\\Letter.txt', '**', { windows: true }));
+      assert(isMatch('//C:\\\\user/docs/Letter.txt', '**', { windows: true }));
+      assert(isMatch(':\\', '*{,/}', { windows: true }));
+      assert(isMatch(':\\', ':*{,/}', { windows: true }));
+      assert(isMatch('\\\\foo/bar', '**', { windows: true }));
+      assert(isMatch('\\\\foo/bar', '//*/*', { windows: true }));
+      assert(isMatch('\\\\unc\\admin$', '//**', { windows: true }));
+      assert(isMatch('\\\\unc\\admin$', '//*/*$', { windows: true }));
+      assert(isMatch('\\\\unc\\admin$\\system32', '//*/*$/*32', { windows: true }));
+      assert(isMatch('\\\\unc\\share\\foo', '//u*/s*/f*', { windows: true }));
+      assert(isMatch('\\\\\\\\\\\\unc\\share\\foo', '/\\{1,\\}u*/s*/f*', { windows: true, unescape: true }));
+      assert(isMatch('foo\\bar\\baz', 'f*/*/*', { windows: true }));
       assert(isMatch('//*:/**', '**'));
       assert(!isMatch('//server/file', '//*'));
       assert(isMatch('//server/file', '/**'));
