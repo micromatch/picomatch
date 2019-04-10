@@ -1,15 +1,18 @@
 'use strict';
 
+process.env.PICOMATCH_NO_CACHE = 'true';
+
 require('mocha');
 const assert = require('assert');
-const picomatch = require('..');
-const { isMatch } = require('./support');
-picomatch.nocache = true;
+const fill = require('fill-range');
+const match = require('./support/match');
+const { isMatch, makeRe } = require('..');
 
 describe('braces', () => {
-  beforeEach(() => picomatch.clearCache());
-
-  it('should match with brace patterns', () => {
+  it('should not match with brace patterns when disabled', () => {
+    assert.deepEqual(match(['a', 'b', 'c'], '{a,b,c,d}'), ['a', 'b', 'c']);
+    assert.deepEqual(match(['a', 'b', 'c'], '{a,b,c,d}', { nobrace: true }), []);
+    assert.deepEqual(match(['1', '2', '3'], '{1..2}', { nobrace: true }), []);
     assert(!isMatch('a/a', 'a/{a,b}', { nobrace: true }));
     assert(!isMatch('a/b', 'a/{a,b}', { nobrace: true }));
     assert(!isMatch('a/c', 'a/{a,b}', { nobrace: true }));
@@ -21,13 +24,21 @@ describe('braces', () => {
     assert(!isMatch('a/c', 'a/{a..c}', { nobrace: true }));
   });
 
-  it('should match with brace patterns', () => {
+  it('should match literal braces when escaped', () => {
+    assert(isMatch('a {1,2}', 'a \\{1,2\\}'));
+    assert(isMatch('a {a..b}', 'a \\{a..b\\}'));
+  });
+
+  it('should match using brace patterns', () => {
+    assert(!isMatch('a/c', 'a/{a,b}'));
+    assert(!isMatch('b/b', 'a/{a,b,c}'));
+    assert(!isMatch('b/b', 'a/{a,b}'));
     assert(isMatch('a/a', 'a/{a,b}'));
     assert(isMatch('a/b', 'a/{a,b}'));
-    assert(!isMatch('a/c', 'a/{a,b}'));
-    assert(!isMatch('b/b', 'a/{a,b}'));
-    assert(!isMatch('b/b', 'a/{a,b,c}'));
     assert(isMatch('a/c', 'a/{a,b,c}'));
+  });
+
+  it('should support brace ranges', () => {
     assert(isMatch('a/a', 'a/{a..c}'));
     assert(isMatch('a/b', 'a/{a..c}'));
     assert(isMatch('a/c', 'a/{a..c}'));
@@ -56,13 +67,13 @@ describe('braces', () => {
   });
 
   it('should support braces containing slashes', () => {
-    assert(!isMatch('a', '{/,}a/**'));
+    assert(isMatch('a', '{/,}a/**'));
     assert(isMatch('aa.txt', 'a{a,b/}*.txt'));
     assert(isMatch('ab/.txt', 'a{a,b/}*.txt'));
     assert(isMatch('ab/a.txt', 'a{a,b/}*.txt'));
-    assert(isMatch('a/', '{/,}a/**'));
-    assert(isMatch('a/a', '{/,}a/**'));
-    assert(isMatch('a/a/', '{/,}a/**'));
+    assert(isMatch('a/', 'a/**{/,}'));
+    assert(isMatch('a/a', 'a/**{/,}'));
+    assert(isMatch('a/a/', 'a/**{/,}'));
   });
 
   it('should support braces with empty elements', () => {
@@ -115,6 +126,7 @@ describe('braces', () => {
   it('should support braces in patterns with globstars', () => {
     assert(!isMatch('a/b/c/xyz.md', 'a/b/**/c{d,e}/**/xyz.md'));
     assert(!isMatch('a/b/d/xyz.md', 'a/b/**/c{d,e}/**/xyz.md'));
+    assert(isMatch('a/b/cd/xyz.md', 'a/b/**/c{d,e}/**/xyz.md'));
     assert(isMatch('a/b/c/xyz.md', 'a/b/**/{c,d,e}/**/xyz.md'));
     assert(isMatch('a/b/d/xyz.md', 'a/b/**/{c,d,e}/**/xyz.md'));
   });
@@ -174,30 +186,25 @@ describe('braces', () => {
     assert(!isMatch('cc', '{a,b,c}'));
   });
 
-  it('should support regex quantifiers by escaping braces', () => {
-    assert(!isMatch('a  ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
-    assert(!isMatch('a ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
-    assert(!isMatch('a', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
-    assert(!isMatch('aa', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
-    assert(!isMatch('aaa', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
-    assert(!isMatch('b', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
-    assert(!isMatch('bb', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
-    assert(!isMatch('bbb', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
-    assert(isMatch(' a ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
-    assert(isMatch('b  ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
-    assert(isMatch('b ', '@(!(a) \\{1,2\\})*', { unescapeRegex: true }));
+  it('should match special chars and expand ranges in parentheses', () => {
+    const expandRange = (a, b) => `(${fill(a, b, { toRegex: true })})`;
 
-    assert(isMatch('a   ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('a   b', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('a  b', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(!isMatch('a  ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(!isMatch('a ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('a', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('aa', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('b', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('bb', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch(' a ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('b  ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
-    assert(isMatch('b ', '@(!(a \\{1,2\\}))*', { unescapeRegex: true }));
+    assert(!isMatch('foo/bar - 1', '*/* {4..10}', { expandRange }));
+    assert(!isMatch('foo/bar - copy (1)', '*/* - * \\({4..10}\\)', { expandRange }));
+    assert(!isMatch('foo/bar (1)', '*/* \\({4..10}\\)', { expandRange }));
+    assert(isMatch('foo/bar (4)', '*/* \\({4..10}\\)', { expandRange }));
+    assert(isMatch('foo/bar (7)', '*/* \\({4..10}\\)', { expandRange }));
+    assert(!isMatch('foo/bar (42)', '*/* \\({4..10}\\)', { expandRange }));
+    assert(isMatch('foo/bar (42)', '*/* \\({4..43}\\)', { expandRange }));
+    assert(isMatch('foo/bar - copy [1]', '*/* \\[{0..5}\\]', { expandRange }));
+    assert(isMatch('foo/bar - foo + bar - copy [1]', '*/* \\[{0..5}\\]', { expandRange }));
+    assert(!isMatch('foo/bar - 1', '*/* \\({4..10}\\)', { expandRange }));
+    assert(!isMatch('foo/bar - copy (1)', '*/* \\({4..10}\\)', { expandRange }));
+    assert(!isMatch('foo/bar (1)', '*/* \\({4..10}\\)', { expandRange }));
+    assert(isMatch('foo/bar (4)', '*/* \\({4..10}\\)', { expandRange }));
+    assert(isMatch('foo/bar (7)', '*/* \\({4..10}\\)', { expandRange }));
+    assert(!isMatch('foo/bar (42)', '*/* \\({4..10}\\)', { expandRange }));
+    assert(!isMatch('foo/bar - copy [1]', '*/* \\({4..10}\\)', { expandRange }));
+    assert(!isMatch('foo/bar - foo + bar - copy [1]', '*/* \\({4..10}\\)', { expandRange }));
   });
 });

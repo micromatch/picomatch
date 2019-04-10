@@ -2,7 +2,6 @@
 
 const path = require('path');
 const assert = require('assert');
-const mm = require('minimatch');
 const pm = require('..');
 
 /**

@@ -2,13 +2,9 @@
 
 require('mocha');
 const assert = require('assert');
-const picomatch = require('..');
-let { isMatch } = require('./support');
+const { isMatch, makeRe } = require('..');
 
 describe('slash handling - posix', () => {
-  beforeEach(() => picomatch.clearCache());
-  afterEach(() => picomatch.clearCache());
-
   it('should match a literal string', () => {
     assert(!isMatch('a/a', '(a/b)'));
     assert(isMatch('a/b', '(a/b)'));
@@ -40,9 +36,9 @@ describe('slash handling - posix', () => {
     assert(!isMatch('a/b', 'a/(a|c)'));
     assert(isMatch('a/c', 'a/(a|c)'));
 
-    assert(isMatch('a/a', ['a/(a|b|c)', 'a/b']));
-    assert(isMatch('a/b', ['a/(a|b|c)', 'a/b']));
-    assert(isMatch('a/c', ['a/(a|b|c)', 'a/b']));
+    assert(isMatch('a/a', 'a/(a|b|c)'));
+    assert(isMatch('a/b', 'a/(a|b|c)'));
+    assert(isMatch('a/c', 'a/(a|b|c)'));
   });
 
   it('should support regex ranges', () => {
@@ -213,7 +209,8 @@ describe('slash handling - posix', () => {
     assert(!isMatch('a/x/y/z', 'a'));
 
     assert(isMatch('a', '*'));
-    assert(isMatch('a/', '*'));
+    assert(isMatch('a/', '*', { relaxSlashes: true }));
+    assert(isMatch('a/', '*{,/}'));
     assert(!isMatch('a/a', '*'));
     assert(!isMatch('a/b', '*'));
     assert(!isMatch('a/c', '*'));
@@ -266,7 +263,7 @@ describe('slash handling - posix', () => {
     assert(!isMatch('a/x/y', 'a/*'));
     assert(!isMatch('a/x/y/z', 'a/*'));
 
-    assert(!isMatch('a', 'a/**'));
+    assert(isMatch('a', 'a/**'));
     assert(isMatch('a/', 'a/**'));
     assert(isMatch('a/a', 'a/**'));
     assert(isMatch('a/b', 'a/**'));
@@ -364,11 +361,7 @@ describe('slash handling - posix', () => {
   });
 
   it('should match one directory level with a single star (*)', () => {
-    assert(isMatch('/a', '/*'));
-    assert(!isMatch('/ab', '*'));
-    assert(!isMatch('/abc', '*'));
     assert(!isMatch('/a', '*/'));
-    assert(isMatch('/a', '*/*'));
     assert(!isMatch('/a', '*/*/*'));
     assert(!isMatch('/a', '*/*/*/*'));
     assert(!isMatch('/a', '*/*/*/*/*'));
@@ -380,18 +373,21 @@ describe('slash handling - posix', () => {
     assert(!isMatch('/a', 'a/*/a'));
     assert(!isMatch('/a', 'a/*/b'));
     assert(!isMatch('/a/', '*'));
+    assert(!isMatch('/a/', '**/*', { strictSlashes: true }));
     assert(!isMatch('/a/', '*/'));
-    assert(isMatch('/a/', '*/*'));
+    assert(!isMatch('/a/', '*/*', { strictSlashes: true }));
     assert(!isMatch('/a/', '*/*/*'));
     assert(!isMatch('/a/', '*/*/*/*'));
     assert(!isMatch('/a/', '*/*/*/*/*'));
-    assert(isMatch('/a/', '/*'));
+    assert(!isMatch('/a/', '/*', { strictSlashes: true }));
     assert(!isMatch('/a/', 'a/*'));
     assert(!isMatch('/a/', 'a/*/*'));
     assert(!isMatch('/a/', 'a/*/*/*'));
     assert(!isMatch('/a/', 'a/*/*/*/*'));
     assert(!isMatch('/a/', 'a/*/a'));
     assert(!isMatch('/a/', 'a/*/b'));
+    assert(!isMatch('/ab', '*'));
+    assert(!isMatch('/abc', '*'));
     assert(!isMatch('/b', '*'));
     assert(!isMatch('/b', '*/'));
     assert(!isMatch('/b', '*/*/*'));
@@ -417,17 +413,19 @@ describe('slash handling - posix', () => {
     assert(!isMatch('a', 'a/*/*/*/*'));
     assert(!isMatch('a', 'a/*/a'));
     assert(!isMatch('a', 'a/*/b'));
-    assert(!isMatch('a/', '*/*'));
-    assert(!isMatch('a/', '*/*/*/*'));
-    assert(!isMatch('a/', '*/*/*/*/*'));
-    assert(!isMatch('a/', '/*'));
-    assert(!isMatch('a/', '/*/'));
-    assert(!isMatch('a/', 'a/*'));
-    assert(!isMatch('a/', 'a/*/*'));
-    assert(!isMatch('a/', 'a/*/*/*'));
-    assert(!isMatch('a/', 'a/*/*/*/*'));
-    assert(!isMatch('a/', 'a/*/a'));
-    assert(!isMatch('a/', 'a/*/b'));
+    assert(!isMatch('a/', '*', { strictSlashes: true }));
+    assert(!isMatch('a/', '**/*', { strictSlashes: true }));
+    assert(!isMatch('a/', '*/*', { strictSlashes: true }));
+    assert(!isMatch('a/', '*/*/*/*', { strictSlashes: true }));
+    assert(!isMatch('a/', '*/*/*/*/*', { strictSlashes: true }));
+    assert(!isMatch('a/', '/*', { strictSlashes: true }));
+    assert(!isMatch('a/', '/*/', { strictSlashes: true }));
+    assert(!isMatch('a/', 'a/*', { strictSlashes: true }));
+    assert(!isMatch('a/', 'a/*/*', { strictSlashes: true }));
+    assert(!isMatch('a/', 'a/*/*/*', { strictSlashes: true }));
+    assert(!isMatch('a/', 'a/*/*/*/*', { strictSlashes: true }));
+    assert(!isMatch('a/', 'a/*/a', { strictSlashes: true }));
+    assert(!isMatch('a/', 'a/*/b', { strictSlashes: true }));
     assert(!isMatch('a/a', '*'));
     assert(!isMatch('a/a', '*/'));
     assert(!isMatch('a/a', '*/*/*'));
@@ -559,16 +557,20 @@ describe('slash handling - posix', () => {
     assert(isMatch('/a', '**/*'));
     assert(isMatch('/a', '*/*'));
     assert(isMatch('/a', '/*'));
-    assert(isMatch('/a/', '**/*'));
+    assert(isMatch('/a/', '**/*{,/}'));
+    assert(isMatch('/a/', '*/*'));
+    assert(isMatch('/a/', '*/*{,/}'));
+    assert(isMatch('/a/', '/*'));
     assert(isMatch('/a/', '/*/'));
+    assert(isMatch('/a/', '/*{,/}'));
     assert(isMatch('/b', '**/*'));
     assert(isMatch('/b', '*/*'));
     assert(isMatch('/b', '/*'));
     assert(isMatch('a', '*'));
     assert(isMatch('a', '**/*'));
-    assert(isMatch('a/', '*'));
-    assert(isMatch('a/', '**/*'));
+    assert(isMatch('a/', '**/*{,/}'));
     assert(isMatch('a/', '*/'));
+    assert(isMatch('a/', '*{,/}'));
     assert(isMatch('a/a', '**/*'));
     assert(isMatch('a/a', '*/*'));
     assert(isMatch('a/a', 'a/*'));
@@ -613,15 +615,16 @@ describe('slash handling - posix', () => {
     assert(isMatch('a/a', '**/a'));
     assert(isMatch('a/a/a', '**/a'));
     assert(isMatch('/a', '**/a'));
-    assert(isMatch('a/a/', '**/a/*'));
+    assert(isMatch('a/a/', '**/a/*{,/}'));
+    assert(!isMatch('a/a/', '**/a/*', { strictSlashes: true }));
     assert(isMatch('/a/a', '**/a'));
 
-    assert(!isMatch('a', 'a/**'));
+    assert(isMatch('a', 'a/**'));
     assert(!isMatch('/a', 'a/**'));
     assert(!isMatch('/a/', 'a/**'));
     assert(!isMatch('/a/a', 'a/**'));
     assert(!isMatch('/a/a/', 'a/**'));
-    assert(!isMatch('/a', '/a/**'));
+    assert(isMatch('/a', '/a/**'));
     assert(isMatch('/a/', '/a/**'));
     assert(isMatch('/a/a', '/a/**'));
     assert(isMatch('/a/a/', '/a/**'));
@@ -631,8 +634,8 @@ describe('slash handling - posix', () => {
     assert(isMatch('a/a/a', 'a/**'));
     assert(isMatch('a/a/a/', 'a/**'));
 
-    assert(!isMatch('a', '**/a/**'));
-    assert(!isMatch('/a', '**/a/**'));
+    assert(isMatch('a', '**/a/**'));
+    assert(isMatch('/a', '**/a/**'));
     assert(isMatch('/a/', '**/a/**'));
     assert(isMatch('/a/a', '**/a/**'));
     assert(isMatch('/a/a/', '**/a/**'));
@@ -1146,15 +1149,16 @@ describe('slash handling - posix', () => {
   });
 
   it('should match paths with leading `./` when pattern has `./`', () => {
-    assert(!isMatch('./a/b/c/d/e/z/c.md', './a/**/j/**/z/*.md'));
-    assert(!isMatch('./a/b/c/j/e/z/c.txt', './a/**/j/**/z/*.md'));
-    assert(isMatch('./a/b/c/d/e/j/n/p/o/z/c.md', './a/**/j/**/z/*.md'));
-    assert(isMatch('./a/b/c/d/e/z/c.md', './a/**/z/*.md'));
-    assert(isMatch('./a/b/c/j/e/z/c.md', './a/**/j/**/z/*.md'));
-    assert(isMatch('./a/b/z/.a', './a/**/z/.a'));
+    let format = str => str.replace(/^\.\//, '');
+    assert(!isMatch('./a/b/c/d/e/z/c.md', './a/**/j/**/z/*.md', { format }));
+    assert(!isMatch('./a/b/c/j/e/z/c.txt', './a/**/j/**/z/*.md', { format }));
+    assert(isMatch('./a/b/c/d/e/j/n/p/o/z/c.md', './a/**/j/**/z/*.md', { format }));
+    assert(isMatch('./a/b/c/d/e/z/c.md', './a/**/z/*.md', { format }));
+    assert(isMatch('./a/b/c/j/e/z/c.md', './a/**/j/**/z/*.md', { format }));
+    assert(isMatch('./a/b/z/.a', './a/**/z/.a', { format }));
   });
 
-  it('should leading slashes', () => {
+  it('should match leading slashes', () => {
     assert(!isMatch('ef', '/*'));
     assert(isMatch('/ef', '/*'));
     assert(isMatch('/foo/bar.txt', '/foo/*'));

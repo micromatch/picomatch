@@ -3,14 +3,12 @@
 require('mocha');
 const path = require('path');
 const assert = require('assert');
-const picomatch = require('..');
-const { isMatch } = require('./support');
-let sep = path.sep;
+const support = require('./support');
+const { isMatch, makeRe } = require('..');
 
 describe('slash handling - windows', () => {
-  beforeEach(() => picomatch.clearCache());
-  beforeEach(() => (path.sep = '\\'));
-  afterEach(() => (path.sep = sep));
+  beforeEach(() => support.windowsPathSep());
+  afterEach(() => support.resetPathSep());
 
   it('should match windows path separators with a string literal', () => {
     assert(!isMatch('a\\a', '(a/b)'));
@@ -28,20 +26,20 @@ describe('slash handling - windows', () => {
     assert(!isMatch('b\\c', 'a/b'));
   });
 
-  it('should not match literal backslashes with literal forward slashes when unixify is disabled', () => {
-    assert(!isMatch('a\\a', 'a\\\\b', { unixify: false }));
-    assert(isMatch('a\\b', 'a\\\\b', { unixify: false }));
-    assert(!isMatch('a\\c', 'a\\\\b', { unixify: false }));
-    assert(!isMatch('b\\a', 'a\\\\b', { unixify: false }));
-    assert(!isMatch('b\\b', 'a\\\\b', { unixify: false }));
-    assert(!isMatch('b\\c', 'a\\\\b', { unixify: false }));
+  it('should not match literal backslashes with literal forward slashes when windows is disabled', () => {
+    assert(!isMatch('a\\a', 'a\\b', { windows: false }));
+    assert(isMatch('a\\b', 'a\\b', { windows: false }));
+    assert(!isMatch('a\\c', 'a\\b', { windows: false }));
+    assert(!isMatch('b\\a', 'a\\b', { windows: false }));
+    assert(!isMatch('b\\b', 'a\\b', { windows: false }));
+    assert(!isMatch('b\\c', 'a\\b', { windows: false }));
 
-    assert(!isMatch('a\\a', 'a/b', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/b', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/b', { unixify: false }));
-    assert(!isMatch('b\\a', 'a/b', { unixify: false }));
-    assert(!isMatch('b\\b', 'a/b', { unixify: false }));
-    assert(!isMatch('b\\c', 'a/b', { unixify: false }));
+    assert(!isMatch('a\\a', 'a/b', { windows: false }));
+    assert(!isMatch('a\\b', 'a/b', { windows: false }));
+    assert(!isMatch('a\\c', 'a/b', { windows: false }));
+    assert(!isMatch('b\\a', 'a/b', { windows: false }));
+    assert(!isMatch('b\\b', 'a/b', { windows: false }));
+    assert(!isMatch('b\\c', 'a/b', { windows: false }));
   });
 
   it('should match an array of literal strings', () => {
@@ -53,32 +51,32 @@ describe('slash handling - windows', () => {
     assert(!isMatch('b\\c', '(a/b)'));
   });
 
-  it('should not match backslashes with forward slashes when unixify is disabled', () => {
-    assert(!isMatch('a\\a', 'a/(a|c)', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/(a|c)', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/(a|c)', { unixify: false }));
-    assert(!isMatch('a\\a', 'a/(a|b|c)', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/(a|b|c)', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/(a|b|c)', { unixify: false }));
-    assert(!isMatch('a\\a', '(a\\\\b)', { unixify: false }));
-    assert(isMatch('a\\b', '(a\\\\b)', { unixify: false }));
-    assert(!isMatch('a\\c', '(a\\\\b)', { unixify: false }));
-    assert(!isMatch('b\\a', '(a\\\\b)', { unixify: false }));
-    assert(!isMatch('b\\b', '(a\\\\b)', { unixify: false }));
-    assert(!isMatch('b\\c', '(a\\\\b)', { unixify: false }));
-    assert(!isMatch('a\\a', '(a/b)', { unixify: false }));
-    assert(!isMatch('a\\b', '(a/b)', { unixify: false }));
-    assert(!isMatch('a\\c', '(a/b)', { unixify: false }));
-    assert(!isMatch('b\\a', '(a/b)', { unixify: false }));
-    assert(!isMatch('b\\b', '(a/b)', { unixify: false }));
-    assert(!isMatch('b\\c', '(a/b)', { unixify: false }));
+  it('should not match backslashes with forward slashes when windows is disabled', () => {
+    assert(!isMatch('a\\a', 'a/(a|c)', { windows: false }));
+    assert(!isMatch('a\\b', 'a/(a|c)', { windows: false }));
+    assert(!isMatch('a\\c', 'a/(a|c)', { windows: false }));
+    assert(!isMatch('a\\a', 'a/(a|b|c)', { windows: false }));
+    assert(!isMatch('a\\b', 'a/(a|b|c)', { windows: false }));
+    assert(!isMatch('a\\c', 'a/(a|b|c)', { windows: false }));
+    assert(!isMatch('a\\a', '(a\\b)', { windows: false }));
+    assert(isMatch('a\\b', '(a\\\\b)', { windows: false }));
+    assert(!isMatch('a\\c', '(a\\b)', { windows: false }));
+    assert(!isMatch('b\\a', '(a\\b)', { windows: false }));
+    assert(!isMatch('b\\b', '(a\\b)', { windows: false }));
+    assert(!isMatch('b\\c', '(a\\b)', { windows: false }));
+    assert(!isMatch('a\\a', '(a/b)', { windows: false }));
+    assert(!isMatch('a\\b', '(a/b)', { windows: false }));
+    assert(!isMatch('a\\c', '(a/b)', { windows: false }));
+    assert(!isMatch('b\\a', '(a/b)', { windows: false }));
+    assert(!isMatch('b\\b', '(a/b)', { windows: false }));
+    assert(!isMatch('b\\c', '(a/b)', { windows: false }));
 
-    assert(!isMatch('a\\a', 'a/c', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/c', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/c', { unixify: false }));
-    assert(!isMatch('b\\a', 'a/c', { unixify: false }));
-    assert(!isMatch('b\\b', 'a/c', { unixify: false }));
-    assert(!isMatch('b\\c', 'a/c', { unixify: false }));
+    assert(!isMatch('a\\a', 'a/c', { windows: false }));
+    assert(!isMatch('a\\b', 'a/c', { windows: false }));
+    assert(!isMatch('a\\c', 'a/c', { windows: false }));
+    assert(!isMatch('b\\a', 'a/c', { windows: false }));
+    assert(!isMatch('b\\b', 'a/c', { windows: false }));
+    assert(!isMatch('b\\c', 'a/c', { windows: false }));
   });
 
   it('should match backslashes when followed by regex logical "or"', () => {
@@ -105,17 +103,17 @@ describe('slash handling - windows', () => {
     assert(isMatch('a\\x\\y', 'a/[a-z]/y'));
     assert(isMatch('a\\x', 'a/[a-z]'));
 
-    assert(!isMatch('a\\a', 'a/[b-c]', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/[b-c]', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/[b-c]', { unixify: false }));
-    assert(!isMatch('a\\x\\y', 'a/[b-c]', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/[b-c]', { unixify: false }));
+    assert(!isMatch('a\\a', 'a/[b-c]', { windows: false }));
+    assert(!isMatch('a\\b', 'a/[b-c]', { windows: false }));
+    assert(!isMatch('a\\c', 'a/[b-c]', { windows: false }));
+    assert(!isMatch('a\\x\\y', 'a/[b-c]', { windows: false }));
+    assert(!isMatch('a\\x', 'a/[b-c]', { windows: false }));
 
-    assert(!isMatch('a\\a', 'a/[a-z]', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/[a-z]', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/[a-z]', { unixify: false }));
-    assert(!isMatch('a\\x\\y', 'a/[a-z]', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/[a-z]', { unixify: false }));
+    assert(!isMatch('a\\a', 'a/[a-z]', { windows: false }));
+    assert(!isMatch('a\\b', 'a/[a-z]', { windows: false }));
+    assert(!isMatch('a\\c', 'a/[a-z]', { windows: false }));
+    assert(!isMatch('a\\x\\y', 'a/[a-z]', { windows: false }));
+    assert(!isMatch('a\\x', 'a/[a-z]', { windows: false }));
   });
 
   it('should not match slashes with single stars', () => {
@@ -262,135 +260,135 @@ describe('slash handling - windows', () => {
     assert(!isMatch('x\\y', 'a/*/b'));
     assert(!isMatch('z\\z', 'a/*/b'));
 
-    assert(!isMatch('a', '*/*', { unixify: false }));
-    assert(!isMatch('b', '*/*', { unixify: false }));
-    assert(!isMatch('a\\a', '*/*', { unixify: false }));
-    assert(!isMatch('a\\b', '*/*', { unixify: false }));
-    assert(!isMatch('a\\c', '*/*', { unixify: false }));
-    assert(!isMatch('a\\x', '*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a', '*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\b', '*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a', '*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a\\a', '*/*', { unixify: false }));
-    assert(!isMatch('x\\y', '*/*', { unixify: false }));
-    assert(!isMatch('z\\z', '*/*', { unixify: false }));
+    assert(!isMatch('a', '*/*', { windows: false }));
+    assert(!isMatch('b', '*/*', { windows: false }));
+    assert(!isMatch('a\\a', '*/*', { windows: false }));
+    assert(!isMatch('a\\b', '*/*', { windows: false }));
+    assert(!isMatch('a\\c', '*/*', { windows: false }));
+    assert(!isMatch('a\\x', '*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a', '*/*', { windows: false }));
+    assert(!isMatch('a\\a\\b', '*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a', '*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a\\a', '*/*', { windows: false }));
+    assert(!isMatch('x\\y', '*/*', { windows: false }));
+    assert(!isMatch('z\\z', '*/*', { windows: false }));
 
-    assert(!isMatch('a', '*/*/*', { unixify: false }));
-    assert(!isMatch('b', '*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a', '*/*/*', { unixify: false }));
-    assert(!isMatch('a\\b', '*/*/*', { unixify: false }));
-    assert(!isMatch('a\\c', '*/*/*', { unixify: false }));
-    assert(!isMatch('a\\x', '*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a', '*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\b', '*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a', '*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a\\a', '*/*/*', { unixify: false }));
-    assert(!isMatch('x\\y', '*/*/*', { unixify: false }));
-    assert(!isMatch('z\\z', '*/*/*', { unixify: false }));
+    assert(!isMatch('a', '*/*/*', { windows: false }));
+    assert(!isMatch('b', '*/*/*', { windows: false }));
+    assert(!isMatch('a\\a', '*/*/*', { windows: false }));
+    assert(!isMatch('a\\b', '*/*/*', { windows: false }));
+    assert(!isMatch('a\\c', '*/*/*', { windows: false }));
+    assert(!isMatch('a\\x', '*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a', '*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\b', '*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a', '*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a\\a', '*/*/*', { windows: false }));
+    assert(!isMatch('x\\y', '*/*/*', { windows: false }));
+    assert(!isMatch('z\\z', '*/*/*', { windows: false }));
 
-    assert(!isMatch('a', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('b', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\b', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\c', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\x', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\b', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a\\a', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('x\\y', '*/*/*/*', { unixify: false }));
-    assert(!isMatch('z\\z', '*/*/*/*', { unixify: false }));
+    assert(!isMatch('a', '*/*/*/*', { windows: false }));
+    assert(!isMatch('b', '*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a', '*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\b', '*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\c', '*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\x', '*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a', '*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\b', '*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a', '*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a\\a', '*/*/*/*', { windows: false }));
+    assert(!isMatch('x\\y', '*/*/*/*', { windows: false }));
+    assert(!isMatch('z\\z', '*/*/*/*', { windows: false }));
 
-    assert(!isMatch('a', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('b', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\b', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\c', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\x', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\b', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a\\a', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('x\\y', '*/*/*/*/*', { unixify: false }));
-    assert(!isMatch('z\\z', '*/*/*/*/*', { unixify: false }));
+    assert(!isMatch('a', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('b', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\b', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\c', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\x', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\b', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a\\a', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('x\\y', '*/*/*/*/*', { windows: false }));
+    assert(!isMatch('z\\z', '*/*/*/*/*', { windows: false }));
 
-    assert(!isMatch('a', 'a/*', { unixify: false }));
-    assert(!isMatch('b', 'a/*', { unixify: false }));
-    assert(!isMatch('a\\a', 'a/*', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/*', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/*', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a', 'a/*', { unixify: false }));
-    assert(!isMatch('a\\a\\b', 'a/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*', { unixify: false }));
-    assert(!isMatch('x\\y', 'a/*', { unixify: false }));
-    assert(!isMatch('z\\z', 'a/*', { unixify: false }));
+    assert(!isMatch('a', 'a/*', { windows: false }));
+    assert(!isMatch('b', 'a/*', { windows: false }));
+    assert(!isMatch('a\\a', 'a/*', { windows: false }));
+    assert(!isMatch('a\\b', 'a/*', { windows: false }));
+    assert(!isMatch('a\\c', 'a/*', { windows: false }));
+    assert(!isMatch('a\\x', 'a/*', { windows: false }));
+    assert(!isMatch('a\\a\\a', 'a/*', { windows: false }));
+    assert(!isMatch('a\\a\\b', 'a/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a', 'a/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a\\a', 'a/*', { windows: false }));
+    assert(!isMatch('x\\y', 'a/*', { windows: false }));
+    assert(!isMatch('z\\z', 'a/*', { windows: false }));
 
-    assert(!isMatch('a', 'a/*/*', { unixify: false }));
-    assert(!isMatch('b', 'a/*/*', { unixify: false }));
-    assert(!isMatch('a\\a', 'a/*/*', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/*/*', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/*/*', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a', 'a/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\b', 'a/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/*', { unixify: false }));
-    assert(!isMatch('x\\y', 'a/*/*', { unixify: false }));
-    assert(!isMatch('z\\z', 'a/*/*', { unixify: false }));
+    assert(!isMatch('a', 'a/*/*', { windows: false }));
+    assert(!isMatch('b', 'a/*/*', { windows: false }));
+    assert(!isMatch('a\\a', 'a/*/*', { windows: false }));
+    assert(!isMatch('a\\b', 'a/*/*', { windows: false }));
+    assert(!isMatch('a\\c', 'a/*/*', { windows: false }));
+    assert(!isMatch('a\\x', 'a/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a', 'a/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\b', 'a/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a', 'a/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/*', { windows: false }));
+    assert(!isMatch('x\\y', 'a/*/*', { windows: false }));
+    assert(!isMatch('z\\z', 'a/*/*', { windows: false }));
 
-    assert(!isMatch('a', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('b', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\b', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('x\\y', 'a/*/*/*', { unixify: false }));
-    assert(!isMatch('z\\z', 'a/*/*/*', { unixify: false }));
+    assert(!isMatch('a', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('b', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('a\\b', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('a\\c', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('a\\x', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\b', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('x\\y', 'a/*/*/*', { windows: false }));
+    assert(!isMatch('z\\z', 'a/*/*/*', { windows: false }));
 
-    assert(!isMatch('a', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('b', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\b', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('x\\y', 'a/*/*/*/*', { unixify: false }));
-    assert(!isMatch('z\\z', 'a/*/*/*/*', { unixify: false }));
+    assert(!isMatch('a', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('b', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\b', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\c', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\x', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\b', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('x\\y', 'a/*/*/*/*', { windows: false }));
+    assert(!isMatch('z\\z', 'a/*/*/*/*', { windows: false }));
 
-    assert(!isMatch('a', 'a/*/a', { unixify: false }));
-    assert(!isMatch('b', 'a/*/a', { unixify: false }));
-    assert(!isMatch('a\\a', 'a/*/a', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/*/a', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/*/a', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/*/a', { unixify: false }));
-    assert(!isMatch('a\\a\\a', 'a/*/a', { unixify: false }));
-    assert(!isMatch('a\\a\\b', 'a/*/a', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*/a', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/a', { unixify: false }));
-    assert(!isMatch('x\\y', 'a/*/a', { unixify: false }));
-    assert(!isMatch('z\\z', 'a/*/a', { unixify: false }));
+    assert(!isMatch('a', 'a/*/a', { windows: false }));
+    assert(!isMatch('b', 'a/*/a', { windows: false }));
+    assert(!isMatch('a\\a', 'a/*/a', { windows: false }));
+    assert(!isMatch('a\\b', 'a/*/a', { windows: false }));
+    assert(!isMatch('a\\c', 'a/*/a', { windows: false }));
+    assert(!isMatch('a\\x', 'a/*/a', { windows: false }));
+    assert(!isMatch('a\\a\\a', 'a/*/a', { windows: false }));
+    assert(!isMatch('a\\a\\b', 'a/*/a', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a', 'a/*/a', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/a', { windows: false }));
+    assert(!isMatch('x\\y', 'a/*/a', { windows: false }));
+    assert(!isMatch('z\\z', 'a/*/a', { windows: false }));
 
-    assert(!isMatch('a', 'a/*/b', { unixify: false }));
-    assert(!isMatch('b', 'a/*/b', { unixify: false }));
-    assert(!isMatch('a\\a', 'a/*/b', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/*/b', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/*/b', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/*/b', { unixify: false }));
-    assert(!isMatch('a\\a\\a', 'a/*/b', { unixify: false }));
-    assert(!isMatch('a\\a\\b', 'a/*/b', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*/b', { unixify: false }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/b', { unixify: false }));
-    assert(!isMatch('x\\y', 'a/*/b', { unixify: false }));
-    assert(!isMatch('z\\z', 'a/*/b', { unixify: false }));
+    assert(!isMatch('a', 'a/*/b', { windows: false }));
+    assert(!isMatch('b', 'a/*/b', { windows: false }));
+    assert(!isMatch('a\\a', 'a/*/b', { windows: false }));
+    assert(!isMatch('a\\b', 'a/*/b', { windows: false }));
+    assert(!isMatch('a\\c', 'a/*/b', { windows: false }));
+    assert(!isMatch('a\\x', 'a/*/b', { windows: false }));
+    assert(!isMatch('a\\a\\a', 'a/*/b', { windows: false }));
+    assert(!isMatch('a\\a\\b', 'a/*/b', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a', 'a/*/b', { windows: false }));
+    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/b', { windows: false }));
+    assert(!isMatch('x\\y', 'a/*/b', { windows: false }));
+    assert(!isMatch('z\\z', 'a/*/b', { windows: false }));
   });
 
   it('should support globstars (**)', () => {
@@ -414,27 +412,29 @@ describe('slash handling - windows', () => {
     assert(isMatch('a\\x', 'a/**/**/*'));
     assert(isMatch('a\\x\\y', 'a/**/**/*'));
     assert(isMatch('a\\x\\y\\z', 'a/**/**/*'));
+  });
 
-    assert(!isMatch('a\\a', 'a/**', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/**', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/**', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/**', { unixify: false }));
-    assert(!isMatch('a\\x\\y', 'a/**', { unixify: false }));
-    assert(!isMatch('a\\x\\y\\z', 'a/**', { unixify: false }));
+  it('should not match backslashes with globstars when disabled', () => {
+    assert(!isMatch('a\\a', 'a/**', { windows: false }));
+    assert(!isMatch('a\\b', 'a/**', { windows: false }));
+    assert(!isMatch('a\\c', 'a/**', { windows: false }));
+    assert(!isMatch('a\\x', 'a/**', { windows: false }));
+    assert(!isMatch('a\\x\\y', 'a/**', { windows: false }));
+    assert(!isMatch('a\\x\\y\\z', 'a/**', { windows: false }));
 
-    assert(!isMatch('a\\a', 'a/**/*', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/**/*', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/**/*', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/**/*', { unixify: false }));
-    assert(!isMatch('a\\x\\y', 'a/**/*', { unixify: false }));
-    assert(!isMatch('a\\x\\y\\z', 'a/**/*', { unixify: false }));
+    assert(!isMatch('a\\a', 'a/**/*', { windows: false }));
+    assert(!isMatch('a\\b', 'a/**/*', { windows: false }));
+    assert(!isMatch('a\\c', 'a/**/*', { windows: false }));
+    assert(!isMatch('a\\x', 'a/**/*', { windows: false }));
+    assert(!isMatch('a\\x\\y', 'a/**/*', { windows: false }));
+    assert(!isMatch('a\\x\\y\\z', 'a/**/*', { windows: false }));
 
-    assert(!isMatch('a\\a', 'a/**/**/*', { unixify: false }));
-    assert(!isMatch('a\\b', 'a/**/**/*', { unixify: false }));
-    assert(!isMatch('a\\c', 'a/**/**/*', { unixify: false }));
-    assert(!isMatch('a\\x', 'a/**/**/*', { unixify: false }));
-    assert(!isMatch('a\\x\\y', 'a/**/**/*', { unixify: false }));
-    assert(!isMatch('a\\x\\y\\z', 'a/**/**/*', { unixify: false }));
+    assert(!isMatch('a\\a', 'a/**/**/*', { windows: false }));
+    assert(!isMatch('a\\b', 'a/**/**/*', { windows: false }));
+    assert(!isMatch('a\\c', 'a/**/**/*', { windows: false }));
+    assert(!isMatch('a\\x', 'a/**/**/*', { windows: false }));
+    assert(!isMatch('a\\x\\y', 'a/**/**/*', { windows: false }));
+    assert(!isMatch('a\\x\\y\\z', 'a/**/**/*', { windows: false }));
   });
 
   it('should work with file extensions', () => {
@@ -453,30 +453,30 @@ describe('slash handling - windows', () => {
     assert(isMatch('a\\x\\y.txt', 'a/**/*.txt'));
     assert(!isMatch('a\\x\\y\\z', 'a/**/*.txt'));
 
-    assert(!isMatch('a.txt', 'a/**/*.txt', { unixify: false }));
-    assert(!isMatch('a\\b.txt', 'a/**/*.txt', { unixify: false }));
-    assert(!isMatch('a\\x\\y.txt', 'a/**/*.txt', { unixify: false }));
-    assert(!isMatch('a\\x\\y\\z', 'a/**/*.txt', { unixify: false }));
+    assert(!isMatch('a.txt', 'a/**/*.txt', { windows: false }));
+    assert(!isMatch('a\\b.txt', 'a/**/*.txt', { windows: false }));
+    assert(!isMatch('a\\x\\y.txt', 'a/**/*.txt', { windows: false }));
+    assert(!isMatch('a\\x\\y\\z', 'a/**/*.txt', { windows: false }));
 
     assert(!isMatch('a.txt', 'a/*.txt'));
     assert(isMatch('a\\b.txt', 'a/*.txt'));
     assert(!isMatch('a\\x\\y.txt', 'a/*.txt'));
     assert(!isMatch('a\\x\\y\\z', 'a/*.txt'));
 
-    assert(!isMatch('a.txt', 'a/*.txt', { unixify: false }));
-    assert(!isMatch('a\\b.txt', 'a/*.txt', { unixify: false }));
-    assert(!isMatch('a\\x\\y.txt', 'a/*.txt', { unixify: false }));
-    assert(!isMatch('a\\x\\y\\z', 'a/*.txt', { unixify: false }));
+    assert(!isMatch('a.txt', 'a/*.txt', { windows: false }));
+    assert(!isMatch('a\\b.txt', 'a/*.txt', { windows: false }));
+    assert(!isMatch('a\\x\\y.txt', 'a/*.txt', { windows: false }));
+    assert(!isMatch('a\\x\\y\\z', 'a/*.txt', { windows: false }));
 
     assert(!isMatch('a.txt', 'a/*/*.txt'));
     assert(!isMatch('a\\b.txt', 'a/*/*.txt'));
     assert(isMatch('a\\x\\y.txt', 'a/*/*.txt'));
     assert(!isMatch('a\\x\\y\\z', 'a/*/*.txt'));
 
-    assert(!isMatch('a.txt', 'a/*/*.txt', { unixify: false }));
-    assert(!isMatch('a\\b.txt', 'a/*/*.txt', { unixify: false }));
-    assert(!isMatch('a\\x\\y.txt', 'a/*/*.txt', { unixify: false }));
-    assert(!isMatch('a\\x\\y\\z', 'a/*/*.txt', { unixify: false }));
+    assert(!isMatch('a.txt', 'a/*/*.txt', { windows: false }));
+    assert(!isMatch('a\\b.txt', 'a/*/*.txt', { windows: false }));
+    assert(!isMatch('a\\x\\y.txt', 'a/*/*.txt', { windows: false }));
+    assert(!isMatch('a\\x\\y\\z', 'a/*/*.txt', { windows: false }));
   });
 
   it('should support negation patterns', () => {

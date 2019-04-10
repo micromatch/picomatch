@@ -1,5 +1,20 @@
-const mm = require('minimatch');
 const pm = require('..');
 
-console.log(mm.makeRe('!(foo)'));
-console.log(pm.makeRe('!(foo)'));
+
+console.log(pm.makeRe('(a|b|c)'));
+console.log(pm.makeRe('!(a|b|c)'));
+console.log(pm.makeRe('*(a|b|c)'));
+console.log(pm.makeRe('+(a|b|c)'));
+console.log(pm.makeRe('?(a|b|c)'));
+console.log(pm.makeRe('@(a|b|c)'));
+console.log('---');
+console.log();
+
+console.log(pm.makeRe('(a|b|c)', { noext: true }));
+console.log(pm.makeRe('!(a|b|c)', { noext: true }));
+console.log(pm.makeRe('*(a|b|c)', { noext: true }));
+console.log(pm.makeRe('+(a|b|c)', { noext: true }));
+console.log(pm.makeRe('?(a|b|c)', { noext: true }));
+console.log(pm.makeRe('@(a|b|c)', { noext: true }));
+console.log('---');
+console.log();

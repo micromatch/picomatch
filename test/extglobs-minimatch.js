@@ -2,687 +2,2583 @@
 
 require('mocha');
 const path = require('path');
-const util = require('util');
-const colors = require('ansi-colors');
-const argv = require('minimist')(process.argv.slice(2));
 const assert = require('assert');
-const picomatch = require('..');
-const pm = require('./support');
-let sep = path.sep;
+const support = require('./support');
+const { isMatch, makeRe } = require('..');
 
 /**
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.
  */
 
 describe('extglobs (minimatch)', () => {
-  let setup = { before: () => (path.sep = '\\'), after: () => (path.sep = sep) };
-  beforeEach(() => picomatch.clearCache());
-  afterEach(() => picomatch.clearCache());
-  after(() => (path.sep = sep));
+  beforeEach(() => support.windowsPathSep());
+  afterEach(() => support.resetPathSep());
 
-  let offset = 25;
-  let fixtures = [
-    [['', ''], false],
-    [['', '*(0|1|3|5|7|9)'], false],
-    [['*(a|b[)', '*(a|b\\[)'], false],
-    [['*(a|b[)', '\\*\\(a\\|b\\[\\)'], true],
-    [['***', '\\*\\*\\*'], true],
-    [['-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*'], false],
-    [['-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*'], true],
-    [['-adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*'], false],
-    [['/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*'], true],
-    [['/x/y/z', '/x/y/z'], true],
-    [['0377', '+([0-7])'], true, 'Should match octal numbers'],
-    [['07', '+([0-7])'], true, 'Should match octal numbers'],
-    [['09', '+([0-7])'], false, 'Should match octal numbers'],
-    [['1', '0|[1-9]*([0-9])'], true, 'Should match valid numbers'],
-    [['12', '0|[1-9]*([0-9])'], true, 'Should match valid numbers'],
-    [['123abc', '(a+|b)*'], false],
-    [['123abc', '(a+|b)+'], false],
-    [['123abc', '*?(a)bc'], true],
-    [['123abc', 'a(b*(foo|bar))d'], false],
-    [['123abc', 'ab*(e|f)'], false],
-    [['123abc', 'ab**'], false],
-    [['123abc', 'ab**(e|f)'], false],
-    [['123abc', 'ab**(e|f)g'], false],
-    [['123abc', 'ab***ef'], false],
-    [['123abc', 'ab*+(e|f)'], false],
-    [['123abc', 'ab*d+(e|f)'], false],
-    [['123abc', 'ab?*(e|f)'], false],
-    [['12abc', '0|[1-9]*([0-9])'], false, 'Should match valid numbers'],
-    [['137577991', '*(0|1|3|5|7|9)'], true],
-    [['2468', '*(0|1|3|5|7|9)'], false],
-    [['?a?b', '\\??\\?b'], true],
-    [['\\a\\b\\c', 'abc'], false],
-    [['a', '!(*.a|*.b|*.c)'], true],
-    [['a', '!(a)'], false],
-    [['a', '!(a)*'], false],
-    [['a', '(a)'], true],
-    [['a', '(b)'], false],
-    [['a', '*(a)'], true],
-    [['a', '+(a)'], true],
-    [['a', '?'], true],
-    [['a', '?(a|b)'], true],
-    [['a', '??'], false],
-    [['a', 'a!(b)*'], true],
-    [['a', 'a?(a|b)'], true],
-    [['a', 'a?(x)'], true],
-    [['a', 'a??b'], false],
-    [['a', 'b?(a|b)'], false],
-    [['a((((b', 'a(*b'], true],
-    [['a((((b', 'a(b'], false],
-    [['a((((b', 'a\\(b'], false],
-    [['a((b', 'a(*b'], true],
-    [['a((b', 'a(b'], false],
-    [['a((b', 'a\\(b'], false],
-    [['a(b', 'a(*b'], true],
-    [['a(b', 'a(b'], true],
-    [['a(b', 'a\\(b'], true],
-    [['a.', '!(*.a|*.b|*.c)'], true],
-    [['a.', '*!(.a|.b|.c)'], true],
-    [['a.', '*.!(a)'], true],
-    [['a.', '*.!(a|b|c)'], true],
-    [['a.', '*.(a|b|@(ab|a*@(b))*(c)d)'], false],
-    [['a.', '*.+(b|d)'], false],
-    [['a.a', '!(*.[a-b]*)'], false],
-    [['a.a', '!(*.a|*.b|*.c)'], false],
-    [['a.a', '!(*[a-b].[a-b]*)'], false],
-    [['a.a', '!*.(a|b)'], false],
-    [['a.a', '!*.(a|b)*'], false],
-    [['a.a', '(a|d).(a|b)*'], true],
-    [['a.a', '(b|a).(a)'], true],
-    [['a.a', '*!(.a|.b|.c)'], true],
-    [['a.a', '*.!(a)'], false],
-    [['a.a', '*.!(a|b|c)'], false],
-    [['a.a', '*.(a|b|@(ab|a*@(b))*(c)d)'], true],
-    [['a.a', '*.+(b|d)'], false],
-    [['a.a', '@(b|a).@(a)'], true],
-    [['a.a.a', '!(*.[a-b]*)'], false],
-    [['a.a.a', '!(*[a-b].[a-b]*)'], false],
-    [['a.a.a', '!*.(a|b)'], false],
-    [['a.a.a', '!*.(a|b)*'], false],
-    [['a.a.a', '*.!(a)'], true],
-    [['a.a.a', '*.+(b|d)'], false],
-    [['a.aa.a', '(b|a).(a)'], false],
-    [['a.aa.a', '@(b|a).@(a)'], false],
-    [['a.abcd', '!(*.a|*.b|*.c)'], true],
-    [['a.abcd', '!(*.a|*.b|*.c)*'], false],
-    [['a.abcd', '*!(*.a|*.b|*.c)*'], true],
-    [['a.abcd', '*!(.a|.b|.c)'], true],
-    [['a.abcd', '*.!(a|b|c)'], true],
-    [['a.abcd', '*.!(a|b|c)*'], false],
-    [['a.abcd', '*.(a|b|@(ab|a*@(b))*(c)d)'], true],
-    [['a.b', '!(*.*)'], false],
-    [['a.b', '!(*.[a-b]*)'], false],
-    [['a.b', '!(*.a|*.b|*.c)'], false],
-    [['a.b', '!(*[a-b].[a-b]*)'], false],
-    [['a.b', '!*.(a|b)'], false],
-    [['a.b', '!*.(a|b)*'], false],
-    [['a.b', '(a|d).(a|b)*'], true],
-    [['a.b', '*!(.a|.b|.c)'], true],
-    [['a.b', '*.!(a)'], true],
-    [['a.b', '*.!(a|b|c)'], false],
-    [['a.b', '*.(a|b|@(ab|a*@(b))*(c)d)'], true],
-    [['a.b', '*.+(b|d)'], true],
-    [['a.bb', '!(*.[a-b]*)'], false],
-    [['a.bb', '!(*[a-b].[a-b]*)'], false],
-    [['a.bb', '!*.(a|b)'], true],
-    [['a.bb', '!*.(a|b)*'], false],
-    [['a.bb', '!*.*(a|b)'], false],
-    [['a.bb', '(a|d).(a|b)*'], true],
-    [['a.bb', '(b|a).(a)'], false],
-    [['a.bb', '*.+(b|d)'], true],
-    [['a.bb', '@(b|a).@(a)'], false],
-    [['a.c', '!(*.a|*.b|*.c)'], false],
-    [['a.c', '*!(.a|.b|.c)'], true],
-    [['a.c', '*.!(a|b|c)'], false],
-    [['a.c', '*.(a|b|@(ab|a*@(b))*(c)d)'], false],
-    [['a.c.d', '!(*.a|*.b|*.c)'], true],
-    [['a.c.d', '*!(.a|.b|.c)'], true],
-    [['a.c.d', '*.!(a|b|c)'], true],
-    [['a.c.d', '*.(a|b|@(ab|a*@(b))*(c)d)'], false],
-    [['a.ccc', '!(*.[a-b]*)'], true],
-    [['a.ccc', '!(*[a-b].[a-b]*)'], true],
-    [['a.ccc', '!*.(a|b)'], true],
-    [['a.ccc', '!*.(a|b)*'], true],
-    [['a.ccc', '*.+(b|d)'], false],
-    [['a.js', '!(*.js)'], false],
-    [['a.js', '*!(.js)'], true],
-    [['a.js', '*.!(js)'], false],
-    [['a.js', 'a.!(js)'], false],
-    [['a.js', 'a.!(js)*'], false],
-    [['a.js.js', '!(*.js)'], false],
-    [['a.js.js', '*!(.js)'], true],
-    [['a.js.js', '*.!(js)'], true],
-    [['a.js.js', '*.*(js).js'], true],
-    [['a.md', '!(*.js)'], true],
-    [['a.md', '*!(.js)'], true],
-    [['a.md', '*.!(js)'], true],
-    [['a.md', 'a.!(js)'], true],
-    [['a.md', 'a.!(js)*'], true],
-    [['a.md.js', '*.*(js).js'], false],
-    [['a.txt', 'a.!(js)'], true],
-    [['a.txt', 'a.!(js)*'], true],
-    [['a/!(z)', 'a/!(z)'], true],
-    [['a/b', 'a/!(z)'], true],
-    [['a/b/c.txt', '*/b/!(*).txt'], false],
-    [['a/b/c.txt', '*/b/!(c).txt'], false],
-    [['a/b/c.txt', '*/b/!(cc).txt'], true],
-    [['a/b/cc.txt', '*/b/!(*).txt'], false],
-    [['a/b/cc.txt', '*/b/!(c).txt'], false],
-    [['a/b/cc.txt', '*/b/!(cc).txt'], false],
-    [['a/dir/foo.txt', '*/dir/**/!(bar).txt'], true],
-    [['a/z', 'a/!(z)'], false],
-    [['a\\(b', 'a(*b'], false],
-    [['a\\(b', 'a(b'], false],
-    [['a\\\\z', 'a\\\\z', { unixify: false }], true],
-    [['a\\\\z', 'a\\\\z'], true],
-    [['a\\b', 'a/b', { unixify: true }], true],
-    [['a\\z', 'a\\\\z', { unixify: false }], true],
-    [['a\\z', 'a\\\\z'], false, setup],
-    [['aa', '!(a!(b))'], false],
-    [['aa', '!(a)'], true],
-    [['aa', '!(a)*'], false],
-    [['aa', '?'], false],
-    [['aa', '@(a)b'], false],
-    [['aa', 'a!(b)*'], true],
-    [['aa', 'a??b'], false],
-    [['aa.aa', '(b|a).(a)'], false],
-    [['aa.aa', '@(b|a).@(a)'], false],
-    [['aaa', '!(a)*'], false],
-    [['aaa', 'a!(b)*'], true],
-    [['aaaaaaabababab', '*ab'], true],
-    [['aaac', '*(@(a))a@(c)'], true],
-    [['aaaz', '[a*(]*z'], true],
-    [['aab', '!(a)*'], false],
-    [['aab', '?'], false],
-    [['aab', '??'], false],
-    [['aab', '@(c)b'], false],
-    [['aab', 'a!(b)*'], true],
-    [['aab', 'a??b'], false],
-    [['aac', '*(@(a))a@(c)'], true],
-    [['aac', '*(@(a))b@(c)'], false],
-    [['aax', 'a!(a*|b)'], false],
-    [['aax', 'a!(x*|b)'], true],
-    [['aax', 'a?(a*|b)'], true],
-    [['aaz', '[a*(]*z'], true],
-    [['ab', '!(*.*)'], true],
-    [['ab', '!(a!(b))'], true],
-    [['ab', '!(a)*'], false],
-    [['ab', '(a+|b)*'], true],
-    [['ab', '(a+|b)+'], true],
-    [['ab', '*?(a)bc'], false],
-    [['ab', 'a!(*(b|B))'], false],
-    [['ab', 'a!(@(b|B))'], false],
-    [['aB', 'a!(@(b|B))'], false],
-    [['ab', 'a!(b)*'], false],
-    [['ab', 'a(*b'], false],
-    [['ab', 'a(b'], false],
-    [['ab', 'a(b*(foo|bar))d'], false],
-    [['ab', 'a/b', { unixify: true }], false],
-    [['ab', 'a\\(b'], false],
-    [['ab', 'ab*(e|f)'], true],
-    [['ab', 'ab**'], true],
-    [['ab', 'ab**(e|f)'], true],
-    [['ab', 'ab**(e|f)g'], false],
-    [['ab', 'ab***ef'], false],
-    [['ab', 'ab*+(e|f)'], false],
-    [['ab', 'ab*d+(e|f)'], false],
-    [['ab', 'ab?*(e|f)'], false],
-    [['ab/cXd/efXg/hi', '**/*X*/**/*i'], true],
-    [['ab/cXd/efXg/hi', '*/*X*/*/*i'], true],
-    [['ab/cXd/efXg/hi', '*X*i'], false],
-    [['ab/cXd/efXg/hi', '*Xg*i'], false],
-    [['ab]', 'a!(@(b|B))'], true],
-    [['abab', '(a+|b)*'], true],
-    [['abab', '(a+|b)+'], true],
-    [['abab', '*?(a)bc'], false],
-    [['abab', 'a(b*(foo|bar))d'], false],
-    [['abab', 'ab*(e|f)'], false],
-    [['abab', 'ab**'], true],
-    [['abab', 'ab**(e|f)'], true],
-    [['abab', 'ab**(e|f)g'], false],
-    [['abab', 'ab***ef'], false],
-    [['abab', 'ab*+(e|f)'], false],
-    [['abab', 'ab*d+(e|f)'], false],
-    [['abab', 'ab?*(e|f)'], false],
-    [['abb', '!(*.*)'], true],
-    [['abb', '!(a)*'], false],
-    [['abb', 'a!(b)*'], false],
-    [['abbcd', '@(ab|a*(b))*(c)d'], true],
-    [['abc', '\\a\\b\\c'], false],
-    [['aBc', 'a!(@(b|B))'], true],
-    [['abcd', '?@(a|b)*@(c)d'], true],
-    [['abcd', '@(ab|a*@(b))*(c)d'], true],
-    [['abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txt', '**/*a*b*g*n*t'], true],
-    [['abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txtz', '**/*a*b*g*n*t'], false],
-    [['abcdef', '(a+|b)*'], true],
-    [['abcdef', '(a+|b)+'], false],
-    [['abcdef', '*?(a)bc'], false],
-    [['abcdef', 'a(b*(foo|bar))d'], false],
-    [['abcdef', 'ab*(e|f)'], false],
-    [['abcdef', 'ab**'], true],
-    [['abcdef', 'ab**(e|f)'], true],
-    [['abcdef', 'ab**(e|f)g'], false],
-    [['abcdef', 'ab***ef'], true],
-    [['abcdef', 'ab*+(e|f)'], true],
-    [['abcdef', 'ab*d+(e|f)'], true],
-    [['abcdef', 'ab?*(e|f)'], false],
-    [['abcfef', '(a+|b)*'], true],
-    [['abcfef', '(a+|b)+'], false],
-    [['abcfef', '*?(a)bc'], false],
-    [['abcfef', 'a(b*(foo|bar))d'], false],
-    [['abcfef', 'ab*(e|f)'], false],
-    [['abcfef', 'ab**'], true],
-    [['abcfef', 'ab**(e|f)'], true],
-    [['abcfef', 'ab**(e|f)g'], false],
-    [['abcfef', 'ab***ef'], true],
-    [['abcfef', 'ab*+(e|f)'], true],
-    [['abcfef', 'ab*d+(e|f)'], false],
-    [['abcfef', 'ab?*(e|f)'], true],
-    [['abcfefg', '(a+|b)*'], true],
-    [['abcfefg', '(a+|b)+'], false],
-    [['abcfefg', '*?(a)bc'], false],
-    [['abcfefg', 'a(b*(foo|bar))d'], false],
-    [['abcfefg', 'ab*(e|f)'], false],
-    [['abcfefg', 'ab**'], true],
-    [['abcfefg', 'ab**(e|f)'], true],
-    [['abcfefg', 'ab**(e|f)g'], true],
-    [['abcfefg', 'ab***ef'], false],
-    [['abcfefg', 'ab*+(e|f)'], false],
-    [['abcfefg', 'ab*d+(e|f)'], false],
-    [['abcfefg', 'ab?*(e|f)'], false],
-    [['abcx', '!([[*])*'], true],
-    [['abcx', '+(a|b\\[)*'], true],
-    [['abcx', '[a*(]*z'], false],
-    [['abcXdefXghi', '*X*i'], true],
-    [['abcz', '!([[*])*'], true],
-    [['abcz', '+(a|b\\[)*'], true],
-    [['abcz', '[a*(]*z'], true],
-    [['abd', '(a+|b)*'], true],
-    [['abd', '(a+|b)+'], false],
-    [['abd', '*?(a)bc'], false],
-    [['abd', 'a!(*(b|B))'], true],
-    [['abd', 'a!(@(b|B))'], true],
-    [['abd', 'a!(@(b|B))d'], false],
-    [['abd', 'a(b*(foo|bar))d'], true],
-    [['abd', 'a+(b|c)d'], true],
-    [['abd', 'a[b*(foo|bar)]d'], true],
-    [['abd', 'ab*(e|f)'], false],
-    [['abd', 'ab**'], true],
-    [['abd', 'ab**(e|f)'], true],
-    [['abd', 'ab**(e|f)g'], false],
-    [['abd', 'ab***ef'], false],
-    [['abd', 'ab*+(e|f)'], false],
-    [['abd', 'ab*d+(e|f)'], false],
-    [['abd', 'ab?*(e|f)'], true],
-    [['abef', '(a+|b)*'], true],
-    [['abef', '(a+|b)+'], false],
-    [['abef', '*(a+|b)'], false],
-    [['abef', '*?(a)bc'], false],
-    [['abef', 'a(b*(foo|bar))d'], false],
-    [['abef', 'ab*(e|f)'], true],
-    [['abef', 'ab**'], true],
-    [['abef', 'ab**(e|f)'], true],
-    [['abef', 'ab**(e|f)g'], false],
-    [['abef', 'ab***ef'], true],
-    [['abef', 'ab*+(e|f)'], true],
-    [['abef', 'ab*d+(e|f)'], false],
-    [['abef', 'ab?*(e|f)'], true],
-    [['abz', 'a!(*)'], false],
-    [['abz', 'a!(z)'], true],
-    [['abz', 'a*!(z)'], true],
-    [['abz', 'a*(z)'], false],
-    [['abz', 'a**(z)'], true],
-    [['abz', 'a*@(z)'], true],
-    [['abz', 'a+(z)'], false],
-    [['abz', 'a?(z)'], false],
-    [['abz', 'a@(z)'], false],
-    [['ac', '!(a)*'], false],
-    [['ac', '*(@(a))a@(c)'], true],
-    [['ac', 'a!(*(b|B))'], true],
-    [['ac', 'a!(@(b|B))'], true],
-    [['ac', 'a!(b)*'], true],
-    [['accdef', '(a+|b)*'], true],
-    [['accdef', '(a+|b)+'], false],
-    [['accdef', '*?(a)bc'], false],
-    [['accdef', 'a(b*(foo|bar))d'], false],
-    [['accdef', 'ab*(e|f)'], false],
-    [['accdef', 'ab**'], false],
-    [['accdef', 'ab**(e|f)'], false],
-    [['accdef', 'ab**(e|f)g'], false],
-    [['accdef', 'ab***ef'], false],
-    [['accdef', 'ab*+(e|f)'], false],
-    [['accdef', 'ab*d+(e|f)'], false],
-    [['accdef', 'ab?*(e|f)'], false],
-    [['acd', '(a+|b)*'], true],
-    [['acd', '(a+|b)+'], false],
-    [['acd', '*?(a)bc'], false],
-    [['acd', '@(ab|a*(b))*(c)d'], true],
-    [['acd', 'a!(*(b|B))'], true],
-    [['acd', 'a!(@(b|B))'], true],
-    [['acd', 'a!(@(b|B))d'], true],
-    [['acd', 'a(b*(foo|bar))d'], false],
-    [['acd', 'a+(b|c)d'], true],
-    [['acd', 'a[b*(foo|bar)]d'], false],
-    [['acd', 'ab*(e|f)'], false],
-    [['acd', 'ab**'], false],
-    [['acd', 'ab**(e|f)'], false],
-    [['acd', 'ab**(e|f)g'], false],
-    [['acd', 'ab***ef'], false],
-    [['acd', 'ab*+(e|f)'], false],
-    [['acd', 'ab*d+(e|f)'], false],
-    [['acd', 'ab?*(e|f)'], false],
-    [['ax', '?(a*|b)'], true],
-    [['ax', 'a?(b*)'], false],
-    [['axz', 'a+(z)'], false],
-    [['az', 'a!(*)'], false],
-    [['az', 'a!(z)'], false],
-    [['az', 'a*!(z)'], true],
-    [['az', 'a*(z)'], true],
-    [['az', 'a**(z)'], true],
-    [['az', 'a*@(z)'], true],
-    [['az', 'a+(z)'], true],
-    [['az', 'a?(z)'], true],
-    [['az', 'a@(z)'], true],
-    [['az', 'a\\\\z', { unixify: false }], false],
-    [['az', 'a\\\\z'], false],
-    [['b', '!(a)*'], true],
-    [['b', '(a+|b)*'], true],
-    [['b', 'a!(b)*'], false],
-    [['b.a', '(b|a).(a)'], true],
-    [['b.a', '@(b|a).@(a)'], true],
-    [['b/a', '!(b/a)'], false],
-    [['b/b', '!(b/a)'], true],
-    [['b/c', '!(b/a)'], true],
-    [['b/c', 'b/!(c)'], false],
-    [['b/c', 'b/!(cc)'], true],
-    [['b/c.txt', 'b/!(c).txt'], false],
-    [['b/c.txt', 'b/!(cc).txt'], true],
-    [['b/cc', 'b/!(c)'], true],
-    [['b/cc', 'b/!(cc)'], false],
-    [['b/cc.txt', 'b/!(c).txt'], false],
-    [['b/cc.txt', 'b/!(cc).txt'], false],
-    [['b/ccc', 'b/!(c)'], true],
-    [['ba', '!(a!(b))'], true],
-    [['ba', 'b?(a|b)'], true],
-    [['baaac', '*(@(a))a@(c)'], false],
-    [['bar', '!(foo)'], true],
-    [['bar', '!(foo)*'], true],
-    [['bar', '!(foo)b*'], true],
-    [['bar', '*(!(foo))'], true],
-    [['baz', '!(foo)*'], true],
-    [['baz', '!(foo)b*'], true],
-    [['baz', '*(!(foo))'], true],
-    [['bb', '!(a!(b))'], true],
-    [['bb', '!(a)*'], true],
-    [['bb', 'a!(b)*'], false],
-    [['bb', 'a?(a|b)'], false],
-    [['bbc', '!([[*])*'], true],
-    [['bbc', '+(a|b\\[)*'], false],
-    [['bbc', '[a*(]*z'], false],
-    [['bz', 'a+(z)'], false],
-    [['c', '*(@(a))a@(c)'], false],
-    [['c.a', '!(*.[a-b]*)'], false],
-    [['c.a', '!(*[a-b].[a-b]*)'], true],
-    [['c.a', '!*.(a|b)'], false],
-    [['c.a', '!*.(a|b)*'], false],
-    [['c.a', '(b|a).(a)'], false],
-    [['c.a', '*.!(a)'], false],
-    [['c.a', '*.+(b|d)'], false],
-    [['c.a', '@(b|a).@(a)'], false],
-    [['c.c', '!(*.a|*.b|*.c)'], false],
-    [['c.c', '*!(.a|.b|.c)'], true],
-    [['c.c', '*.!(a|b|c)'], false],
-    [['c.c', '*.(a|b|@(ab|a*@(b))*(c)d)'], false],
-    [['c.ccc', '!(*.[a-b]*)'], true],
-    [['c.ccc', '!(*[a-b].[a-b]*)'], true],
-    [['c.js', '!(*.js)'], false],
-    [['c.js', '*!(.js)'], true],
-    [['c.js', '*.!(js)'], false],
-    [['c/a/v', 'c/!(z)/v'], true],
-    [['c/a/v', 'c/*(z)/v'], false],
-    [['c/a/v', 'c/+(z)/v'], false],
-    [['c/a/v', 'c/@(z)/v'], false],
-    [['c/z/v', '*(z)'], false],
-    [['c/z/v', '+(z)'], false],
-    [['c/z/v', '?(z)'], false],
-    [['c/z/v', 'c/!(z)/v'], false],
-    [['c/z/v', 'c/*(z)/v'], true],
-    [['c/z/v', 'c/+(z)/v'], true],
-    [['c/z/v', 'c/@(z)/v'], true],
-    [['c/z/v', 'c/z/v'], true],
-    [['cc.a', '(b|a).(a)'], false],
-    [['cc.a', '@(b|a).@(a)'], false],
-    [['ccc', '!(a)*'], true],
-    [['ccc', 'a!(b)*'], false],
-    [['cow', '!(*.*)'], true],
-    [['cow', '!(*.*).'], false],
-    [['cow', '.!(*.*)'], false],
-    [['cz', 'a!(*)'], false],
-    [['cz', 'a!(z)'], false],
-    [['cz', 'a*!(z)'], false],
-    [['cz', 'a*(z)'], false],
-    [['cz', 'a**(z)'], false],
-    [['cz', 'a*@(z)'], false],
-    [['cz', 'a+(z)'], false],
-    [['cz', 'a?(z)'], false],
-    [['cz', 'a@(z)'], false],
-    [['d.a.d', '!(*.[a-b]*)'], false],
-    [['d.a.d', '!(*[a-b].[a-b]*)'], true],
-    [['d.a.d', '!*.(a|b)*'], false],
-    [['d.a.d', '!*.*(a|b)'], true],
-    [['d.a.d', '!*.{a,b}*'], false],
-    [['d.a.d', '*.!(a)'], true],
-    [['d.a.d', '*.+(b|d)'], true],
-    [['d.d', '!(*.a|*.b|*.c)'], true],
-    [['d.d', '*!(.a|.b|.c)'], true],
-    [['d.d', '*.!(a|b|c)'], true],
-    [['d.d', '*.(a|b|@(ab|a*@(b))*(c)d)'], false],
-    [['d.js.d', '!(*.js)'], true],
-    [['d.js.d', '*!(.js)'], true],
-    [['d.js.d', '*.!(js)'], true],
-    [['dd.aa.d', '(b|a).(a)'], false],
-    [['dd.aa.d', '@(b|a).@(a)'], false],
-    [['def', '()ef'], false],
-    [['e.e', '!(*.a|*.b|*.c)'], true],
-    [['e.e', '*!(.a|.b|.c)'], true],
-    [['e.e', '*.!(a|b|c)'], true],
-    [['e.e', '*.(a|b|@(ab|a*@(b))*(c)d)'], false],
-    [['ef', '()ef'], true],
-    [['effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))'], true],
-    [['efgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))'], true],
-    [['egz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))'], true],
-    [['egz', '@(b+(c)d|e+(f)g?|?(h)i@(j|k))'], false],
-    [['egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))'], true],
-    [['f', '!(f!(o))'], false],
-    [['f', '!(f(o))'], true],
-    [['f', '!(f)'], false],
-    [['f', '*(!(f))'], false],
-    [['f', '+(!(f))'], false],
-    [['f.a', '!(*.a|*.b|*.c)'], false],
-    [['f.a', '*!(.a|.b|.c)'], true],
-    [['f.a', '*.!(a|b|c)'], false],
-    [['f.f', '!(*.a|*.b|*.c)'], true],
-    [['f.f', '*!(.a|.b|.c)'], true],
-    [['f.f', '*.!(a|b|c)'], true],
-    [['f.f', '*.(a|b|@(ab|a*@(b))*(c)d)'], false],
-    [['fa', '!(f!(o))'], false],
-    [['fa', '!(f(o))'], true],
-    [['fb', '!(f!(o))'], false],
-    [['fb', '!(f(o))'], true],
-    [['fff', '!(f)'], true],
-    [['fff', '*(!(f))'], true],
-    [['fff', '+(!(f))'], true],
-    [['fffooofoooooffoofffooofff', '*(*(f)*(o))'], true],
-    [['ffo', '*(f*(o))'], true],
-    [['file.C', '*.c?(c)'], false],
-    [['file.c', '*.c?(c)'], true],
-    [['file.cc', '*.c?(c)'], true],
-    [['file.ccc', '*.c?(c)'], false],
-    [['fo', '!(f!(o))'], true],
-    [['fo', '!(f(o))'], false],
-    [['fofo', '*(f*(o))'], true],
-    [['fofoofoofofoo', '*(fo|foo)'], true, 'Should backtrack in alternation matches'],
-    [['fofoofoofofoo', '*(fo|foo)'], true],
-    [['foo', '!(!(foo))'], true],
-    [['foo', '!(f)'], true],
-    [['foo', '!(foo)'], false],
-    [['foo', '!(foo)*'], false],
-    [['foo', '!(foo)*'], false], // bash 4.3 disagrees
-    [['foo', '!(foo)+'], false],
-    [['foo', '!(foo)b*'], false],
-    [['foo', '!(x)'], true],
-    [['foo', '!(x)*'], true],
-    [['foo', '*'], true],
-    [['foo', '*(!(f))'], true],
-    [['foo', '*(!(foo))'], false],
-    [['foo', '*(@(a))a@(c)'], false],
-    [['foo', '*(@(foo))'], true],
-    [['foo', '*(a|b\\[)'], false],
-    [['foo', '*(a|b\\[)|f*'], true],
-    [['foo', '@(*(a|b\\[)|f*)'], true],
-    [['foo', '*/*/*'], false],
-    [['foo', '*f'], false],
-    [['foo', '*foo*'], true],
-    [['foo', '+(!(f))'], true],
-    [['foo', '??'], false],
-    [['foo', '???'], true],
-    [['foo', 'bar'], false],
-    [['foo', 'f*'], true],
-    [['foo', 'fo'], false],
-    [['foo', 'foo'], true],
-    [['foo', '{*(a|b\\[),f*}'], true],
-    [['foo*', 'foo\\*', { unixify: false }], true],
-    [['foo*bar', 'foo\\*bar'], true],
-    [['foo.js', '!(foo).js'], false],
-    [['foo.js.js', '*.!(js)'], true],
-    [['foo.js.js', '*.!(js)*'], false],
-    [['foo.js.js', '*.!(js)*.!(js)'], false],
-    [['foo.js.js', '*.!(js)+'], false],
-    [['foo.txt', '**/!(bar).txt'], true],
-    [['foo/bar', '*/*/*'], false],
-    [['foo/bar', 'foo/!(foo)'], true],
-    [['foo/bar', 'foo/*'], true],
-    [['foo/bar', 'foo/bar'], true],
-    [['foo/bar', 'foo?bar'], false],
-    [['foo/bar', 'foo[/]bar'], true],
-    [['foo/bar/baz.jsx', 'foo/bar/**/*.+(js|jsx)'], true],
-    [['foo/bar/baz.jsx', 'foo/bar/*.+(js|jsx)'], true],
-    [['foo/bb/aa/rr', '**/**/**'], true],
-    [['foo/bb/aa/rr', '*/*/*'], false],
-    [['foo/bba/arr', '*/*/*'], true],
-    [['foo/bba/arr', 'foo*'], false], // bash disagrees when "globstar" is disabled
-    [['foo/bba/arr', 'foo**'], false], // bash disagrees when "globstar" is disabled
-    [['foo/bba/arr', 'foo/*'], false], // bash disagrees when "globstar" is disabled
-    [['foo/bba/arr', 'foo/**'], true],
-    [['foo/bba/arr', 'foo/**arr'], false], // bash disagrees when "globstar" is disabled
-    [['foo/bba/arr', 'foo/**z'], false],
-    [['foo/bba/arr', 'foo/*arr'], false], // bash disagrees when "globstar" is disabled
-    [['foo/bba/arr', 'foo/*z'], false],
-    [['foob', '!(foo)b*'], false],
-    [['foob', '(foo)bb'], false],
-    [['foobar', '!(foo)'], true],
-    [['foobar', '!(foo)*'], false], // bash 4.3 disagrees
-    // [['foobar', '!(foo)*'], false], // bash 4.3 disagrees
-    [['foobar', '!(foo)b*'], false],
-    [['foobar', '*(!(foo))'], true],
-    [['foobar', '*ob*a*r*'], true],
-    [['foobar', 'foo\\*bar'], false], // bash 4.3 disagrees since bash does not respect the escaped star
-    [['foobb', '!(foo)b*'], false], // bash 4.3 disagrees, since (in bash) the last star greedily captures everything. IMHO, this is a bug in bash.
-    [['foobb', '(foo)bb'], true], // bash 4.3 disagrees, since non-extglob parens have significance in bash
-    [['(foo)bb', '\\(foo\\)bb'], true], // bash 4.3 disagrees, since the escaping is not respected
-    [['foofoofo', '@(foo|f|fo)*(f|of+(o))'], true, 'Should match as fo+ofo+ofo'],
-    [['foofoofo', '@(foo|f|fo)*(f|of+(o))'], true],
-    [['fooofoofofooo', '*(f*(o))'], true],
-    [['foooofo', '*(f*(o))'], true],
-    [['foooofof', '*(f*(o))'], true],
-    [['foooofof', '*(f+(o))'], false],
-    [['foooofofx', '*(f*(o))'], false],
-    [['foooxfooxfoxfooox', '*(f*(o)x)'], true],
-    [['foooxfooxfxfooox', '*(f*(o)x)'], true],
-    [['foooxfooxofoxfooox', '*(f*(o)x)'], false],
-    [['foot', '@(!(z*)|*x)'], true],
-    [['foox', '@(!(z*)|*x)'], true],
-    [['fz', '*(z)'], false],
-    [['fz', '+(z)'], false],
-    [['fz', '?(z)'], false],
-    [['moo.cow', '!(moo).!(cow)'], false],
-    [['moo.cow', '!(*).!(*)'], false],
-    [['mad.moo.cow', '!(*.*).!(*.*)'], false],
-    [['mad.moo.cow', '.!(*.*)'], false],
-    [['Makefile', '!(*.c|*.h|Makefile.in|config*|README)'], true],
-    [['Makefile.in', '!(*.c|*.h|Makefile.in|config*|README)'], false],
-    [['moo', '!(*.*)'], true],
-    [['moo', '!(*.*).'], false],
-    [['moo', '.!(*.*)'], false],
-    [['moo.cow', '!(*.*)'], false],
-    [['moo.cow', '!(*.*).'], false],
-    [['moo.cow', '.!(*.*)'], false],
-    [['mucca.pazza', 'mu!(*(c))?.pa!(*(z))?'], false],
-    [['ofoofo', '*(of+(o))'], true],
-    [['ofoofo', '*(of+(o)|f)'], true],
-    [['ofooofoofofooo', '*(f*(o))'], false],
-    [['ofoooxoofxo', '*(*(of*(o)x)o)'], true],
-    [['ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)'], true],
-    [['ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)'], false],
-    [['ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)'], true],
-    [['ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)'], true],
-    [['ofxoofxo', '*(*(of*(o)x)o)'], true],
-    [['oofooofo', '*(of|oof+(o))'], true],
-    [['ooo', '!(f)'], true],
-    [['ooo', '*(!(f))'], true],
-    [['ooo', '+(!(f))'], true],
-    [['oxfoxfox', '*(oxf+(ox))'], false],
-    [['oxfoxoxfox', '*(oxf+(ox))'], true],
-    [['para', 'para*([0-9])'], true],
-    [['para', 'para+([0-9])'], false],
-    [['para.38', 'para!(*.[00-09])'], true],
-    [['para.graph', 'para!(*.[0-9])'], true],
-    [['para13829383746592', 'para*([0-9])'], true],
-    [['para381', 'para?([345]|99)1'], false],
-    [['para39', 'para!(*.[0-9])'], true],
-    [['para987346523', 'para+([0-9])'], true],
-    [['para991', 'para?([345]|99)1'], true],
-    [['paragraph', 'para!(*.[0-9])'], true],
-    [['paragraph', 'para*([0-9])'], false],
-    [['paragraph', 'para@(chute|graph)'], true],
-    [['paramour', 'para@(chute|graph)'], false],
-    [['parse.y', '!(*.c|*.h|Makefile.in|config*|README)'], true],
-    [['shell.c', '!(*.c|*.h|Makefile.in|config*|README)'], false],
-    [['VMS.FILE;', '*\\;[1-9]*([0-9])'], false],
-    [['VMS.FILE;0', '*\\;[1-9]*([0-9])'], false],
-    [['VMS.FILE;1', '*\\;[1-9]*([0-9])'], true], // bash 4.3 disagrees b/c of ";" in terminal usage
-    [['VMS.FILE;1', '*;[1-9]*([0-9])'], true], // bash 4.3 disagrees b/c of ";" in terminal usage
-    [['VMS.FILE;139', '*\\;[1-9]*([0-9])'], true], // bash 4.3 disagrees b/c of ";" in terminal usage
-    [['VMS.FILE;1N', '*\\;[1-9]*([0-9])'], false],
-    [['xfoooofof', '*(f*(o))'], false],
-    [['XXX/adobe/courier/bold/o/normal//12/120/75/75/m/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*', { unixify: false } ], true ],
-    [['XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*'], false],
-    [['z', '*(z)'], true],
-    [['z', '+(z)'], true],
-    [['z', '?(z)'], true],
-    [['zf', '*(z)'], false],
-    [['zf', '+(z)'], false],
-    [['zf', '?(z)'], false],
-    [['zoot', '@(!(z*)|*x)'], false],
-    [['zoox', '@(!(z*)|*x)'], true],
-    [['zz', '(a+|b)*'], false]
-  ];
+  it('should not match empty string with "*(0|1|3|5|7|9)"', () => {
+    assert(!isMatch('', '*(0|1|3|5|7|9)'));
+  });
 
-  fixtures.forEach((unit, i) => {
-    let n = i + offset; // add offset so line no. is correct in error messages
-    if (argv.n !== void 0 && n !== argv.n) return;
-    let args = unit[0];
-    let expected = unit[1];
-    let setup = unit[2];
-    let errMessage = `${colors.cyan('Line ' + n)}) ${colors.yellow(args[0])} should ${colors.red(expected ? '' : 'not ')}match ${colors.yellow(args[1])} (${colors.dim(util.inspect(args))})`;
+  it('"*(a|b[)" should not match "*(a|b\\[)"', () => {
+    assert(!isMatch('*(a|b[)', '*(a|b\\[)'));
+  });
 
-    it(`"${args[0]}" should ${expected ? '' : 'not '}match "${args[1]}"`, () => {
-      // console.log(bash.isMatch(...args))
-      if (setup && setup.before) setup.before();
-      assert.equal(pm.isMatch(...args), expected, errMessage);
-      if (setup && setup.after) setup.after();
-    });
+  it('"*(a|b[)" should match "\\*\\(a\\|b\\[\\)"', () => {
+    assert(isMatch('*(a|b[)', '\\*\\(a\\|b\\[\\)'));
+  });
+
+  it('"***" should match "\\*\\*\\*"', () => {
+    assert(isMatch('***', '\\*\\*\\*'));
+  });
+
+  it('"-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1" should not match "-*-*-*-*-*-*-12-*-*-*-m-*-*-*"', () => {
+    assert(!isMatch('-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*'));
+  });
+
+  it('"-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1" should match "-*-*-*-*-*-*-12-*-*-*-m-*-*-*"', () => {
+    assert(isMatch('-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*'));
+  });
+
+  it('"-adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1" should not match "-*-*-*-*-*-*-12-*-*-*-m-*-*-*"', () => {
+    assert(!isMatch('-adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*'));
+  });
+
+  it('"/dev/udp/129.22.8.102/45" should match "/dev\\/@(tcp|udp)\\/*\\/*"', () => {
+    assert(isMatch('/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*'));
+  });
+
+  it('"/x/y/z" should match "/x/y/z"', () => {
+    assert(isMatch('/x/y/z', '/x/y/z'));
+  });
+
+  it('"0377" should match "+([0-7])"', () => {
+    assert(isMatch('0377', '+([0-7])'));
+  });
+
+  it('"07" should match "+([0-7])"', () => {
+    assert(isMatch('07', '+([0-7])'));
+  });
+
+  it('"09" should not match "+([0-7])"', () => {
+    assert(!isMatch('09', '+([0-7])'));
+  });
+
+  it('"1" should match "0|[1-9]*([0-9])"', () => {
+    assert(isMatch('1', '0|[1-9]*([0-9])'));
+  });
+
+  it('"12" should match "0|[1-9]*([0-9])"', () => {
+    assert(isMatch('12', '0|[1-9]*([0-9])'));
+  });
+
+  it('"123abc" should not match "(a+|b)*"', () => {
+    assert(!isMatch('123abc', '(a+|b)*'));
+  });
+
+  it('"123abc" should not match "(a+|b)+"', () => {
+    assert(!isMatch('123abc', '(a+|b)+'));
+  });
+
+  it('"123abc" should match "*?(a)bc"', () => {
+    assert(isMatch('123abc', '*?(a)bc'));
+  });
+
+  it('"123abc" should not match "a(b*(foo|bar))d"', () => {
+    assert(!isMatch('123abc', 'a(b*(foo|bar))d'));
+  });
+
+  it('"123abc" should not match "ab*(e|f)"', () => {
+    assert(!isMatch('123abc', 'ab*(e|f)'));
+  });
+
+  it('"123abc" should not match "ab**"', () => {
+    assert(!isMatch('123abc', 'ab**'));
+  });
+
+  it('"123abc" should not match "ab**(e|f)"', () => {
+    assert(!isMatch('123abc', 'ab**(e|f)'));
+  });
+
+  it('"123abc" should not match "ab**(e|f)g"', () => {
+    assert(!isMatch('123abc', 'ab**(e|f)g'));
+  });
+
+  it('"123abc" should not match "ab***ef"', () => {
+    assert(!isMatch('123abc', 'ab***ef'));
+  });
+
+  it('"123abc" should not match "ab*+(e|f)"', () => {
+    assert(!isMatch('123abc', 'ab*+(e|f)'));
+  });
+
+  it('"123abc" should not match "ab*d+(e|f)"', () => {
+    assert(!isMatch('123abc', 'ab*d+(e|f)'));
+  });
+
+  it('"123abc" should not match "ab?*(e|f)"', () => {
+    assert(!isMatch('123abc', 'ab?*(e|f)'));
+  });
+
+  it('"12abc" should not match "0|[1-9]*([0-9])"', () => {
+    assert(!isMatch('12abc', '0|[1-9]*([0-9])'));
+  });
+
+  it('"137577991" should match "*(0|1|3|5|7|9)"', () => {
+    assert(isMatch('137577991', '*(0|1|3|5|7|9)'));
+  });
+
+  it('"2468" should not match "*(0|1|3|5|7|9)"', () => {
+    assert(!isMatch('2468', '*(0|1|3|5|7|9)'));
+  });
+
+  it('"?a?b" should match "\\??\\?b"', () => {
+    assert(isMatch('?a?b', '\\??\\?b'));
+  });
+
+  it('"\\a\\b\\c" should not match "abc"', () => {
+    assert(!isMatch('\\a\\b\\c', 'abc'));
+  });
+
+  it('"a" should match "!(*.a|*.b|*.c)"', () => {
+    assert(isMatch('a', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"a" should not match "!(a)"', () => {
+    assert(!isMatch('a', '!(a)'));
+  });
+
+  it('"a" should not match "!(a)*"', () => {
+    assert(!isMatch('a', '!(a)*'));
+  });
+
+  it('"a" should match "(a)"', () => {
+    assert(isMatch('a', '(a)'));
+  });
+
+  it('"a" should not match "(b)"', () => {
+    assert(!isMatch('a', '(b)'));
+  });
+
+  it('"a" should match "*(a)"', () => {
+    assert(isMatch('a', '*(a)'));
+  });
+
+  it('"a" should match "+(a)"', () => {
+    assert(isMatch('a', '+(a)'));
+  });
+
+  it('"a" should match "?"', () => {
+    assert(isMatch('a', '?'));
+  });
+
+  it('"a" should match "?(a|b)"', () => {
+    assert(isMatch('a', '?(a|b)'));
+  });
+
+  it('"a" should not match "??"', () => {
+    assert(!isMatch('a', '??'));
+  });
+
+  it('"a" should match "a!(b)*"', () => {
+    assert(isMatch('a', 'a!(b)*'));
+  });
+
+  it('"a" should match "a?(a|b)"', () => {
+    assert(isMatch('a', 'a?(a|b)'));
+  });
+
+  it('"a" should match "a?(x)"', () => {
+    assert(isMatch('a', 'a?(x)'));
+  });
+
+  it('"a" should not match "a??b"', () => {
+    assert(!isMatch('a', 'a??b'));
+  });
+
+  it('"a" should not match "b?(a|b)"', () => {
+    assert(!isMatch('a', 'b?(a|b)'));
+  });
+
+  it('"a((((b" should match "a(*b"', () => {
+    assert(isMatch('a((((b', 'a(*b'));
+  });
+
+  it('"a((((b" should not match "a(b"', () => {
+    assert(!isMatch('a((((b', 'a(b'));
+  });
+
+  it('"a((((b" should not match "a\\(b"', () => {
+    assert(!isMatch('a((((b', 'a\\(b'));
+  });
+
+  it('"a((b" should match "a(*b"', () => {
+    assert(isMatch('a((b', 'a(*b'));
+  });
+
+  it('"a((b" should not match "a(b"', () => {
+    assert(!isMatch('a((b', 'a(b'));
+  });
+
+  it('"a((b" should not match "a\\(b"', () => {
+    assert(!isMatch('a((b', 'a\\(b'));
+  });
+
+  it('"a(b" should match "a(*b"', () => {
+    assert(isMatch('a(b', 'a(*b'));
+  });
+
+  it('"a(b" should match "a(b"', () => {
+    assert(isMatch('a(b', 'a(b'));
+  });
+
+  it('"a(b" should match "a\\(b"', () => {
+    assert(isMatch('a(b', 'a\\(b'));
+  });
+
+  it('"a." should match "!(*.a|*.b|*.c)"', () => {
+    assert(isMatch('a.', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"a." should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('a.', '*!(.a|.b|.c)'));
+  });
+
+  it('"a." should match "*.!(a)"', () => {
+    assert(isMatch('a.', '*.!(a)'));
+  });
+
+  it('"a." should match "*.!(a|b|c)"', () => {
+    assert(isMatch('a.', '*.!(a|b|c)'));
+  });
+
+  it('"a." should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
+    assert(!isMatch('a.', '*.(a|b|@(ab|a*@(b))*(c)d)'));
+  });
+
+  it('"a." should not match "*.+(b|d)"', () => {
+    assert(!isMatch('a.', '*.+(b|d)'));
+  });
+
+  it('"a.a" should not match "!(*.[a-b]*)"', () => {
+    assert(!isMatch('a.a', '!(*.[a-b]*)'));
+  });
+
+  it('"a.a" should not match "!(*.a|*.b|*.c)"', () => {
+    assert(!isMatch('a.a', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"a.a" should not match "!(*[a-b].[a-b]*)"', () => {
+    assert(!isMatch('a.a', '!(*[a-b].[a-b]*)'));
+  });
+
+  it('"a.a" should not match "!*.(a|b)"', () => {
+    assert(!isMatch('a.a', '!*.(a|b)'));
+  });
+
+  it('"a.a" should not match "!*.(a|b)*"', () => {
+    assert(!isMatch('a.a', '!*.(a|b)*'));
+  });
+
+  it('"a.a" should match "(a|d).(a|b)*"', () => {
+    assert(isMatch('a.a', '(a|d).(a|b)*'));
+  });
+
+  it('"a.a" should match "(b|a).(a)"', () => {
+    assert(isMatch('a.a', '(b|a).(a)'));
+  });
+
+  it('"a.a" should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('a.a', '*!(.a|.b|.c)'));
+  });
+
+  it('"a.a" should not match "*.!(a)"', () => {
+    assert(!isMatch('a.a', '*.!(a)'));
+  });
+
+  it('"a.a" should not match "*.!(a|b|c)"', () => {
+    assert(!isMatch('a.a', '*.!(a|b|c)'));
+  });
+
+  it('"a.a" should match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
+    assert(isMatch('a.a', '*.(a|b|@(ab|a*@(b))*(c)d)'));
+  });
+
+  it('"a.a" should not match "*.+(b|d)"', () => {
+    assert(!isMatch('a.a', '*.+(b|d)'));
+  });
+
+  it('"a.a" should match "@(b|a).@(a)"', () => {
+    assert(isMatch('a.a', '@(b|a).@(a)'));
+  });
+
+  it('"a.a.a" should not match "!(*.[a-b]*)"', () => {
+    assert(!isMatch('a.a.a', '!(*.[a-b]*)'));
+  });
+
+  it('"a.a.a" should not match "!(*[a-b].[a-b]*)"', () => {
+    assert(!isMatch('a.a.a', '!(*[a-b].[a-b]*)'));
+  });
+
+  it('"a.a.a" should not match "!*.(a|b)"', () => {
+    assert(!isMatch('a.a.a', '!*.(a|b)'));
+  });
+
+  it('"a.a.a" should not match "!*.(a|b)*"', () => {
+    assert(!isMatch('a.a.a', '!*.(a|b)*'));
+  });
+
+  it('"a.a.a" should match "*.!(a)"', () => {
+    assert(isMatch('a.a.a', '*.!(a)'));
+  });
+
+  it('"a.a.a" should not match "*.+(b|d)"', () => {
+    assert(!isMatch('a.a.a', '*.+(b|d)'));
+  });
+
+  it('"a.aa.a" should not match "(b|a).(a)"', () => {
+    assert(!isMatch('a.aa.a', '(b|a).(a)'));
+  });
+
+  it('"a.aa.a" should not match "@(b|a).@(a)"', () => {
+    assert(!isMatch('a.aa.a', '@(b|a).@(a)'));
+  });
+
+  it('"a.abcd" should match "!(*.a|*.b|*.c)"', () => {
+    assert(isMatch('a.abcd', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"a.abcd" should not match "!(*.a|*.b|*.c)*"', () => {
+    assert(!isMatch('a.abcd', '!(*.a|*.b|*.c)*'));
+  });
+
+  it('"a.abcd" should match "*!(*.a|*.b|*.c)*"', () => {
+    assert(isMatch('a.abcd', '*!(*.a|*.b|*.c)*'));
+  });
+
+  it('"a.abcd" should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('a.abcd', '*!(.a|.b|.c)'));
+  });
+
+  it('"a.abcd" should match "*.!(a|b|c)"', () => {
+    assert(isMatch('a.abcd', '*.!(a|b|c)'));
+  });
+
+  it('"a.abcd" should not match "*.!(a|b|c)*"', () => {
+    assert(!isMatch('a.abcd', '*.!(a|b|c)*'));
+  });
+
+  it('"a.abcd" should match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
+    assert(isMatch('a.abcd', '*.(a|b|@(ab|a*@(b))*(c)d)'));
+  });
+
+  it('"a.b" should not match "!(*.*)"', () => {
+    assert(!isMatch('a.b', '!(*.*)'));
+  });
+
+  it('"a.b" should not match "!(*.[a-b]*)"', () => {
+    assert(!isMatch('a.b', '!(*.[a-b]*)'));
+  });
+
+  it('"a.b" should not match "!(*.a|*.b|*.c)"', () => {
+    assert(!isMatch('a.b', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"a.b" should not match "!(*[a-b].[a-b]*)"', () => {
+    assert(!isMatch('a.b', '!(*[a-b].[a-b]*)'));
+  });
+
+  it('"a.b" should not match "!*.(a|b)"', () => {
+    assert(!isMatch('a.b', '!*.(a|b)'));
+  });
+
+  it('"a.b" should not match "!*.(a|b)*"', () => {
+    assert(!isMatch('a.b', '!*.(a|b)*'));
+  });
+
+  it('"a.b" should match "(a|d).(a|b)*"', () => {
+    assert(isMatch('a.b', '(a|d).(a|b)*'));
+  });
+
+  it('"a.b" should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('a.b', '*!(.a|.b|.c)'));
+  });
+
+  it('"a.b" should match "*.!(a)"', () => {
+    assert(isMatch('a.b', '*.!(a)'));
+  });
+
+  it('"a.b" should not match "*.!(a|b|c)"', () => {
+    assert(!isMatch('a.b', '*.!(a|b|c)'));
+  });
+
+  it('"a.b" should match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
+    assert(isMatch('a.b', '*.(a|b|@(ab|a*@(b))*(c)d)'));
+  });
+
+  it('"a.b" should match "*.+(b|d)"', () => {
+    assert(isMatch('a.b', '*.+(b|d)'));
+  });
+
+  it('"a.bb" should not match "!(*.[a-b]*)"', () => {
+    assert(!isMatch('a.bb', '!(*.[a-b]*)'));
+  });
+
+  it('"a.bb" should not match "!(*[a-b].[a-b]*)"', () => {
+    assert(!isMatch('a.bb', '!(*[a-b].[a-b]*)'));
+  });
+
+  it('"a.bb" should match "!*.(a|b)"', () => {
+    assert(isMatch('a.bb', '!*.(a|b)'));
+  });
+
+  it('"a.bb" should not match "!*.(a|b)*"', () => {
+    assert(!isMatch('a.bb', '!*.(a|b)*'));
+  });
+
+  it('"a.bb" should not match "!*.*(a|b)"', () => {
+    assert(!isMatch('a.bb', '!*.*(a|b)'));
+  });
+
+  it('"a.bb" should match "(a|d).(a|b)*"', () => {
+    assert(isMatch('a.bb', '(a|d).(a|b)*'));
+  });
+
+  it('"a.bb" should not match "(b|a).(a)"', () => {
+    assert(!isMatch('a.bb', '(b|a).(a)'));
+  });
+
+  it('"a.bb" should match "*.+(b|d)"', () => {
+    assert(isMatch('a.bb', '*.+(b|d)'));
+  });
+
+  it('"a.bb" should not match "@(b|a).@(a)"', () => {
+    assert(!isMatch('a.bb', '@(b|a).@(a)'));
+  });
+
+  it('"a.c" should not match "!(*.a|*.b|*.c)"', () => {
+    assert(!isMatch('a.c', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"a.c" should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('a.c', '*!(.a|.b|.c)'));
+  });
+
+  it('"a.c" should not match "*.!(a|b|c)"', () => {
+    assert(!isMatch('a.c', '*.!(a|b|c)'));
+  });
+
+  it('"a.c" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
+    assert(!isMatch('a.c', '*.(a|b|@(ab|a*@(b))*(c)d)'));
+  });
+
+  it('"a.c.d" should match "!(*.a|*.b|*.c)"', () => {
+    assert(isMatch('a.c.d', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"a.c.d" should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('a.c.d', '*!(.a|.b|.c)'));
+  });
+
+  it('"a.c.d" should match "*.!(a|b|c)"', () => {
+    assert(isMatch('a.c.d', '*.!(a|b|c)'));
+  });
+
+  it('"a.c.d" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
+    assert(!isMatch('a.c.d', '*.(a|b|@(ab|a*@(b))*(c)d)'));
+  });
+
+  it('"a.ccc" should match "!(*.[a-b]*)"', () => {
+    assert(isMatch('a.ccc', '!(*.[a-b]*)'));
+  });
+
+  it('"a.ccc" should match "!(*[a-b].[a-b]*)"', () => {
+    assert(isMatch('a.ccc', '!(*[a-b].[a-b]*)'));
+  });
+
+  it('"a.ccc" should match "!*.(a|b)"', () => {
+    assert(isMatch('a.ccc', '!*.(a|b)'));
+  });
+
+  it('"a.ccc" should match "!*.(a|b)*"', () => {
+    assert(isMatch('a.ccc', '!*.(a|b)*'));
+  });
+
+  it('"a.ccc" should not match "*.+(b|d)"', () => {
+    assert(!isMatch('a.ccc', '*.+(b|d)'));
+  });
+
+  it('"a.js" should not match "!(*.js)"', () => {
+    assert(!isMatch('a.js', '!(*.js)'));
+  });
+
+  it('"a.js" should match "*!(.js)"', () => {
+    assert(isMatch('a.js', '*!(.js)'));
+  });
+
+  it('"a.js" should not match "*.!(js)"', () => {
+    assert(!isMatch('a.js', '*.!(js)'));
+  });
+
+  it('"a.js" should not match "a.!(js)"', () => {
+    assert(!isMatch('a.js', 'a.!(js)'));
+  });
+
+  it('"a.js" should not match "a.!(js)*"', () => {
+    assert(!isMatch('a.js', 'a.!(js)*'));
+  });
+
+  it('"a.js.js" should not match "!(*.js)"', () => {
+    assert(!isMatch('a.js.js', '!(*.js)'));
+  });
+
+  it('"a.js.js" should match "*!(.js)"', () => {
+    assert(isMatch('a.js.js', '*!(.js)'));
+  });
+
+  it('"a.js.js" should match "*.!(js)"', () => {
+    assert(isMatch('a.js.js', '*.!(js)'));
+  });
+
+  it('"a.js.js" should match "*.*(js).js"', () => {
+    assert(isMatch('a.js.js', '*.*(js).js'));
+  });
+
+  it('"a.md" should match "!(*.js)"', () => {
+    assert(isMatch('a.md', '!(*.js)'));
+  });
+
+  it('"a.md" should match "*!(.js)"', () => {
+    assert(isMatch('a.md', '*!(.js)'));
+  });
+
+  it('"a.md" should match "*.!(js)"', () => {
+    assert(isMatch('a.md', '*.!(js)'));
+  });
+
+  it('"a.md" should match "a.!(js)"', () => {
+    assert(isMatch('a.md', 'a.!(js)'));
+  });
+
+  it('"a.md" should match "a.!(js)*"', () => {
+    assert(isMatch('a.md', 'a.!(js)*'));
+  });
+
+  it('"a.md.js" should not match "*.*(js).js"', () => {
+    assert(!isMatch('a.md.js', '*.*(js).js'));
+  });
+
+  it('"a.txt" should match "a.!(js)"', () => {
+    assert(isMatch('a.txt', 'a.!(js)'));
+  });
+
+  it('"a.txt" should match "a.!(js)*"', () => {
+    assert(isMatch('a.txt', 'a.!(js)*'));
+  });
+
+  it('"a/!(z)" should match "a/!(z)"', () => {
+    assert(isMatch('a/!(z)', 'a/!(z)'));
+  });
+
+  it('"a/b" should match "a/!(z)"', () => {
+    assert(isMatch('a/b', 'a/!(z)'));
+  });
+
+  it('"a/b/c.txt" should not match "*/b/!(*).txt"', () => {
+    assert(!isMatch('a/b/c.txt', '*/b/!(*).txt'));
+  });
+
+  it('"a/b/c.txt" should not match "*/b/!(c).txt"', () => {
+    assert(!isMatch('a/b/c.txt', '*/b/!(c).txt'));
+  });
+
+  it('"a/b/c.txt" should match "*/b/!(cc).txt"', () => {
+    assert(isMatch('a/b/c.txt', '*/b/!(cc).txt'));
+  });
+
+  it('"a/b/cc.txt" should not match "*/b/!(*).txt"', () => {
+    assert(!isMatch('a/b/cc.txt', '*/b/!(*).txt'));
+  });
+
+  it('"a/b/cc.txt" should not match "*/b/!(c).txt"', () => {
+    assert(!isMatch('a/b/cc.txt', '*/b/!(c).txt'));
+  });
+
+  it('"a/b/cc.txt" should not match "*/b/!(cc).txt"', () => {
+    assert(!isMatch('a/b/cc.txt', '*/b/!(cc).txt'));
+  });
+
+  it('"a/dir/foo.txt" should match "*/dir/**/!(bar).txt"', () => {
+    assert(isMatch('a/dir/foo.txt', '*/dir/**/!(bar).txt'));
+  });
+
+  it('"a/z" should not match "a/!(z)"', () => {
+    assert(!isMatch('a/z', 'a/!(z)'));
+  });
+
+  it('"a\\(b" should not match "a(*b"', () => {
+    assert(!isMatch('a\\(b', 'a(*b'));
+  });
+
+  it('"a\\(b" should not match "a(b"', () => {
+    assert(!isMatch('a\\(b', 'a(b'));
+  });
+
+  it('"a\\z" should match "a\\z"', () => {
+    assert(isMatch('a\\\\z', 'a\\\\z', { windows: false }));
+  });
+
+  it('"a\\z" should match "a\\z"', () => {
+    assert(isMatch('a\\\\z', 'a\\\\z'));
+  });
+
+  it('"a\\b" should match "a/b"', () => {
+    assert(isMatch('a\\b', 'a/b', { windows: true }));
+  });
+
+  it('"a\\z" should match "a\\z"', () => {
+    assert(isMatch('a\\z', 'a\\\\z', { windows: false }));
+  });
+
+  it('"a\\z" should not match "a\\z"', () => {
+    assert(isMatch('a\\z', 'a\\z'));
+  });
+
+  it('"aa" should not match "!(a!(b))"', () => {
+    assert(!isMatch('aa', '!(a!(b))'));
+  });
+
+  it('"aa" should match "!(a)"', () => {
+    assert(isMatch('aa', '!(a)'));
+  });
+
+  it('"aa" should not match "!(a)*"', () => {
+    assert(!isMatch('aa', '!(a)*'));
+  });
+
+  it('"aa" should not match "?"', () => {
+    assert(!isMatch('aa', '?'));
+  });
+
+  it('"aa" should not match "@(a)b"', () => {
+    assert(!isMatch('aa', '@(a)b'));
+  });
+
+  it('"aa" should match "a!(b)*"', () => {
+    assert(isMatch('aa', 'a!(b)*'));
+  });
+
+  it('"aa" should not match "a??b"', () => {
+    assert(!isMatch('aa', 'a??b'));
+  });
+
+  it('"aa.aa" should not match "(b|a).(a)"', () => {
+    assert(!isMatch('aa.aa', '(b|a).(a)'));
+  });
+
+  it('"aa.aa" should not match "@(b|a).@(a)"', () => {
+    assert(!isMatch('aa.aa', '@(b|a).@(a)'));
+  });
+
+  it('"aaa" should not match "!(a)*"', () => {
+    assert(!isMatch('aaa', '!(a)*'));
+  });
+
+  it('"aaa" should match "a!(b)*"', () => {
+    assert(isMatch('aaa', 'a!(b)*'));
+  });
+
+  it('"aaaaaaabababab" should match "*ab"', () => {
+    assert(isMatch('aaaaaaabababab', '*ab'));
+  });
+
+  it('"aaac" should match "*(@(a))a@(c)"', () => {
+    assert(isMatch('aaac', '*(@(a))a@(c)'));
+  });
+
+  it('"aaaz" should match "[a*(]*z"', () => {
+    assert(isMatch('aaaz', '[a*(]*z'));
+  });
+
+  it('"aab" should not match "!(a)*"', () => {
+    assert(!isMatch('aab', '!(a)*'));
+  });
+
+  it('"aab" should not match "?"', () => {
+    assert(!isMatch('aab', '?'));
+  });
+
+  it('"aab" should not match "??"', () => {
+    assert(!isMatch('aab', '??'));
+  });
+
+  it('"aab" should not match "@(c)b"', () => {
+    assert(!isMatch('aab', '@(c)b'));
+  });
+
+  it('"aab" should match "a!(b)*"', () => {
+    assert(isMatch('aab', 'a!(b)*'));
+  });
+
+  it('"aab" should not match "a??b"', () => {
+    assert(!isMatch('aab', 'a??b'));
+  });
+
+  it('"aac" should match "*(@(a))a@(c)"', () => {
+    assert(isMatch('aac', '*(@(a))a@(c)'));
+  });
+
+  it('"aac" should not match "*(@(a))b@(c)"', () => {
+    assert(!isMatch('aac', '*(@(a))b@(c)'));
+  });
+
+  it('"aax" should not match "a!(a*|b)"', () => {
+    assert(!isMatch('aax', 'a!(a*|b)'));
+  });
+
+  it('"aax" should match "a!(x*|b)"', () => {
+    assert(isMatch('aax', 'a!(x*|b)'));
+  });
+
+  it('"aax" should match "a?(a*|b)"', () => {
+    assert(isMatch('aax', 'a?(a*|b)'));
+  });
+
+  it('"aaz" should match "[a*(]*z"', () => {
+    assert(isMatch('aaz', '[a*(]*z'));
+  });
+
+  it('"ab" should match "!(*.*)"', () => {
+    assert(isMatch('ab', '!(*.*)'));
+  });
+
+  it('"ab" should match "!(a!(b))"', () => {
+    assert(isMatch('ab', '!(a!(b))'));
+  });
+
+  it('"ab" should not match "!(a)*"', () => {
+    assert(!isMatch('ab', '!(a)*'));
+  });
+
+  it('"ab" should match "(a+|b)*"', () => {
+    assert(isMatch('ab', '(a+|b)*'));
+  });
+
+  it('"ab" should match "(a+|b)+"', () => {
+    assert(isMatch('ab', '(a+|b)+'));
+  });
+
+  it('"ab" should not match "*?(a)bc"', () => {
+    assert(!isMatch('ab', '*?(a)bc'));
+  });
+
+  it('"ab" should not match "a!(*(b|B))"', () => {
+    assert(!isMatch('ab', 'a!(*(b|B))'));
+  });
+
+  it('"ab" should not match "a!(@(b|B))"', () => {
+    assert(!isMatch('ab', 'a!(@(b|B))'));
+  });
+
+  it('"aB" should not match "a!(@(b|B))"', () => {
+    assert(!isMatch('aB', 'a!(@(b|B))'));
+  });
+
+  it('"ab" should not match "a!(b)*"', () => {
+    assert(!isMatch('ab', 'a!(b)*'));
+  });
+
+  it('"ab" should not match "a(*b"', () => {
+    assert(!isMatch('ab', 'a(*b'));
+  });
+
+  it('"ab" should not match "a(b"', () => {
+    assert(!isMatch('ab', 'a(b'));
+  });
+
+  it('"ab" should not match "a(b*(foo|bar))d"', () => {
+    assert(!isMatch('ab', 'a(b*(foo|bar))d'));
+  });
+
+  it('"ab" should not match "a/b"', () => {
+    assert(!isMatch('ab', 'a/b', { windows: true }));
+  });
+
+  it('"ab" should not match "a\\(b"', () => {
+    assert(!isMatch('ab', 'a\\(b'));
+  });
+
+  it('"ab" should match "ab*(e|f)"', () => {
+    assert(isMatch('ab', 'ab*(e|f)'));
+  });
+
+  it('"ab" should match "ab**"', () => {
+    assert(isMatch('ab', 'ab**'));
+  });
+
+  it('"ab" should match "ab**(e|f)"', () => {
+    assert(isMatch('ab', 'ab**(e|f)'));
+  });
+
+  it('"ab" should not match "ab**(e|f)g"', () => {
+    assert(!isMatch('ab', 'ab**(e|f)g'));
+  });
+
+  it('"ab" should not match "ab***ef"', () => {
+    assert(!isMatch('ab', 'ab***ef'));
+  });
+
+  it('"ab" should not match "ab*+(e|f)"', () => {
+    assert(!isMatch('ab', 'ab*+(e|f)'));
+  });
+
+  it('"ab" should not match "ab*d+(e|f)"', () => {
+    assert(!isMatch('ab', 'ab*d+(e|f)'));
+  });
+
+  it('"ab" should not match "ab?*(e|f)"', () => {
+    assert(!isMatch('ab', 'ab?*(e|f)'));
+  });
+
+  it('"ab/cXd/efXg/hi" should match "**/*X*/**/*i"', () => {
+    assert(isMatch('ab/cXd/efXg/hi', '**/*X*/**/*i'));
+  });
+
+  it('"ab/cXd/efXg/hi" should match "*/*X*/*/*i"', () => {
+    assert(isMatch('ab/cXd/efXg/hi', '*/*X*/*/*i'));
+  });
+
+  it('"ab/cXd/efXg/hi" should not match "*X*i"', () => {
+    assert(!isMatch('ab/cXd/efXg/hi', '*X*i'));
+  });
+
+  it('"ab/cXd/efXg/hi" should not match "*Xg*i"', () => {
+    assert(!isMatch('ab/cXd/efXg/hi', '*Xg*i'));
+  });
+
+  it('"ab]" should match "a!(@(b|B))"', () => {
+    assert(isMatch('ab]', 'a!(@(b|B))'));
+  });
+
+  it('"abab" should match "(a+|b)*"', () => {
+    assert(isMatch('abab', '(a+|b)*'));
+  });
+
+  it('"abab" should match "(a+|b)+"', () => {
+    assert(isMatch('abab', '(a+|b)+'));
+  });
+
+  it('"abab" should not match "*?(a)bc"', () => {
+    assert(!isMatch('abab', '*?(a)bc'));
+  });
+
+  it('"abab" should not match "a(b*(foo|bar))d"', () => {
+    assert(!isMatch('abab', 'a(b*(foo|bar))d'));
+  });
+
+  it('"abab" should not match "ab*(e|f)"', () => {
+    assert(!isMatch('abab', 'ab*(e|f)'));
+  });
+
+  it('"abab" should match "ab**"', () => {
+    assert(isMatch('abab', 'ab**'));
+  });
+
+  it('"abab" should match "ab**(e|f)"', () => {
+    assert(isMatch('abab', 'ab**(e|f)'));
+  });
+
+  it('"abab" should not match "ab**(e|f)g"', () => {
+    assert(!isMatch('abab', 'ab**(e|f)g'));
+  });
+
+  it('"abab" should not match "ab***ef"', () => {
+    assert(!isMatch('abab', 'ab***ef'));
+  });
+
+  it('"abab" should not match "ab*+(e|f)"', () => {
+    assert(!isMatch('abab', 'ab*+(e|f)'));
+  });
+
+  it('"abab" should not match "ab*d+(e|f)"', () => {
+    assert(!isMatch('abab', 'ab*d+(e|f)'));
+  });
+
+  it('"abab" should not match "ab?*(e|f)"', () => {
+    assert(!isMatch('abab', 'ab?*(e|f)'));
+  });
+
+  it('"abb" should match "!(*.*)"', () => {
+    assert(isMatch('abb', '!(*.*)'));
+  });
+
+  it('"abb" should not match "!(a)*"', () => {
+    assert(!isMatch('abb', '!(a)*'));
+  });
+
+  it('"abb" should not match "a!(b)*"', () => {
+    assert(!isMatch('abb', 'a!(b)*'));
+  });
+
+  it('"abbcd" should match "@(ab|a*(b))*(c)d"', () => {
+    assert(isMatch('abbcd', '@(ab|a*(b))*(c)d'));
+  });
+
+  it('"abc" should not match "\\a\\b\\c"', () => {
+    assert(!isMatch('abc', '\\a\\b\\c'));
+  });
+
+  it('"aBc" should match "a!(@(b|B))"', () => {
+    assert(isMatch('aBc', 'a!(@(b|B))'));
+  });
+
+  it('"abcd" should match "?@(a|b)*@(c)d"', () => {
+    assert(isMatch('abcd', '?@(a|b)*@(c)d'));
+  });
+
+  it('"abcd" should match "@(ab|a*@(b))*(c)d"', () => {
+    assert(isMatch('abcd', '@(ab|a*@(b))*(c)d'));
+  });
+
+  it('"abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txt" should match "**/*a*b*g*n*t"', () => {
+    assert(isMatch('abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txt', '**/*a*b*g*n*t'));
+  });
+
+  it('"abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txtz" should not match "**/*a*b*g*n*t"', () => {
+    assert(!isMatch('abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txtz', '**/*a*b*g*n*t'));
+  });
+
+  it('"abcdef" should match "(a+|b)*"', () => {
+    assert(isMatch('abcdef', '(a+|b)*'));
+  });
+
+  it('"abcdef" should not match "(a+|b)+"', () => {
+    assert(!isMatch('abcdef', '(a+|b)+'));
+  });
+
+  it('"abcdef" should not match "*?(a)bc"', () => {
+    assert(!isMatch('abcdef', '*?(a)bc'));
+  });
+
+  it('"abcdef" should not match "a(b*(foo|bar))d"', () => {
+    assert(!isMatch('abcdef', 'a(b*(foo|bar))d'));
+  });
+
+  it('"abcdef" should not match "ab*(e|f)"', () => {
+    assert(!isMatch('abcdef', 'ab*(e|f)'));
+  });
+
+  it('"abcdef" should match "ab**"', () => {
+    assert(isMatch('abcdef', 'ab**'));
+  });
+
+  it('"abcdef" should match "ab**(e|f)"', () => {
+    assert(isMatch('abcdef', 'ab**(e|f)'));
+  });
+
+  it('"abcdef" should not match "ab**(e|f)g"', () => {
+    assert(!isMatch('abcdef', 'ab**(e|f)g'));
+  });
+
+  it('"abcdef" should match "ab***ef"', () => {
+    assert(isMatch('abcdef', 'ab***ef'));
+  });
+
+  it('"abcdef" should match "ab*+(e|f)"', () => {
+    assert(isMatch('abcdef', 'ab*+(e|f)'));
+  });
+
+  it('"abcdef" should match "ab*d+(e|f)"', () => {
+    assert(isMatch('abcdef', 'ab*d+(e|f)'));
+  });
+
+  it('"abcdef" should not match "ab?*(e|f)"', () => {
+    assert(!isMatch('abcdef', 'ab?*(e|f)'));
+  });
+
+  it('"abcfef" should match "(a+|b)*"', () => {
+    assert(isMatch('abcfef', '(a+|b)*'));
+  });
+
+  it('"abcfef" should not match "(a+|b)+"', () => {
+    assert(!isMatch('abcfef', '(a+|b)+'));
+  });
+
+  it('"abcfef" should not match "*?(a)bc"', () => {
+    assert(!isMatch('abcfef', '*?(a)bc'));
+  });
+
+  it('"abcfef" should not match "a(b*(foo|bar))d"', () => {
+    assert(!isMatch('abcfef', 'a(b*(foo|bar))d'));
+  });
+
+  it('"abcfef" should not match "ab*(e|f)"', () => {
+    assert(!isMatch('abcfef', 'ab*(e|f)'));
+  });
+
+  it('"abcfef" should match "ab**"', () => {
+    assert(isMatch('abcfef', 'ab**'));
+  });
+
+  it('"abcfef" should match "ab**(e|f)"', () => {
+    assert(isMatch('abcfef', 'ab**(e|f)'));
+  });
+
+  it('"abcfef" should not match "ab**(e|f)g"', () => {
+    assert(!isMatch('abcfef', 'ab**(e|f)g'));
+  });
+
+  it('"abcfef" should match "ab***ef"', () => {
+    assert(isMatch('abcfef', 'ab***ef'));
+  });
+
+  it('"abcfef" should match "ab*+(e|f)"', () => {
+    assert(isMatch('abcfef', 'ab*+(e|f)'));
+  });
+
+  it('"abcfef" should not match "ab*d+(e|f)"', () => {
+    assert(!isMatch('abcfef', 'ab*d+(e|f)'));
+  });
+
+  it('"abcfef" should match "ab?*(e|f)"', () => {
+    assert(isMatch('abcfef', 'ab?*(e|f)'));
+  });
+
+  it('"abcfefg" should match "(a+|b)*"', () => {
+    assert(isMatch('abcfefg', '(a+|b)*'));
+  });
+
+  it('"abcfefg" should not match "(a+|b)+"', () => {
+    assert(!isMatch('abcfefg', '(a+|b)+'));
+  });
+
+  it('"abcfefg" should not match "*?(a)bc"', () => {
+    assert(!isMatch('abcfefg', '*?(a)bc'));
+  });
+
+  it('"abcfefg" should not match "a(b*(foo|bar))d"', () => {
+    assert(!isMatch('abcfefg', 'a(b*(foo|bar))d'));
+  });
+
+  it('"abcfefg" should not match "ab*(e|f)"', () => {
+    assert(!isMatch('abcfefg', 'ab*(e|f)'));
+  });
+
+  it('"abcfefg" should match "ab**"', () => {
+    assert(isMatch('abcfefg', 'ab**'));
+  });
+
+  it('"abcfefg" should match "ab**(e|f)"', () => {
+    assert(isMatch('abcfefg', 'ab**(e|f)'));
+  });
+
+  it('"abcfefg" should match "ab**(e|f)g"', () => {
+    assert(isMatch('abcfefg', 'ab**(e|f)g'));
+  });
+
+  it('"abcfefg" should not match "ab***ef"', () => {
+    assert(!isMatch('abcfefg', 'ab***ef'));
+  });
+
+  it('"abcfefg" should not match "ab*+(e|f)"', () => {
+    assert(!isMatch('abcfefg', 'ab*+(e|f)'));
+  });
+
+  it('"abcfefg" should not match "ab*d+(e|f)"', () => {
+    assert(!isMatch('abcfefg', 'ab*d+(e|f)'));
+  });
+
+  it('"abcfefg" should not match "ab?*(e|f)"', () => {
+    assert(!isMatch('abcfefg', 'ab?*(e|f)'));
+  });
+
+  it('"abcx" should match "!([[*])*"', () => {
+    assert(isMatch('abcx', '!([[*])*'));
+  });
+
+  it('"abcx" should match "+(a|b\\[)*"', () => {
+    assert(isMatch('abcx', '+(a|b\\[)*'));
+  });
+
+  it('"abcx" should not match "[a*(]*z"', () => {
+    assert(!isMatch('abcx', '[a*(]*z'));
+  });
+
+  it('"abcXdefXghi" should match "*X*i"', () => {
+    assert(isMatch('abcXdefXghi', '*X*i'));
+  });
+
+  it('"abcz" should match "!([[*])*"', () => {
+    assert(isMatch('abcz', '!([[*])*'));
+  });
+
+  it('"abcz" should match "+(a|b\\[)*"', () => {
+    assert(isMatch('abcz', '+(a|b\\[)*'));
+  });
+
+  it('"abcz" should match "[a*(]*z"', () => {
+    assert(isMatch('abcz', '[a*(]*z'));
+  });
+
+  it('"abd" should match "(a+|b)*"', () => {
+    assert(isMatch('abd', '(a+|b)*'));
+  });
+
+  it('"abd" should not match "(a+|b)+"', () => {
+    assert(!isMatch('abd', '(a+|b)+'));
+  });
+
+  it('"abd" should not match "*?(a)bc"', () => {
+    assert(!isMatch('abd', '*?(a)bc'));
+  });
+
+  it('"abd" should match "a!(*(b|B))"', () => {
+    assert(isMatch('abd', 'a!(*(b|B))'));
+  });
+
+  it('"abd" should match "a!(@(b|B))"', () => {
+    assert(isMatch('abd', 'a!(@(b|B))'));
+  });
+
+  it('"abd" should not match "a!(@(b|B))d"', () => {
+    assert(!isMatch('abd', 'a!(@(b|B))d'));
+  });
+
+  it('"abd" should match "a(b*(foo|bar))d"', () => {
+    assert(isMatch('abd', 'a(b*(foo|bar))d'));
+  });
+
+  it('"abd" should match "a+(b|c)d"', () => {
+    assert(isMatch('abd', 'a+(b|c)d'));
+  });
+
+  it('"abd" should match "a[b*(foo|bar)]d"', () => {
+    assert(isMatch('abd', 'a[b*(foo|bar)]d'));
+  });
+
+  it('"abd" should not match "ab*(e|f)"', () => {
+    assert(!isMatch('abd', 'ab*(e|f)'));
+  });
+
+  it('"abd" should match "ab**"', () => {
+    assert(isMatch('abd', 'ab**'));
+  });
+
+  it('"abd" should match "ab**(e|f)"', () => {
+    assert(isMatch('abd', 'ab**(e|f)'));
+  });
+
+  it('"abd" should not match "ab**(e|f)g"', () => {
+    assert(!isMatch('abd', 'ab**(e|f)g'));
+  });
+
+  it('"abd" should not match "ab***ef"', () => {
+    assert(!isMatch('abd', 'ab***ef'));
+  });
+
+  it('"abd" should not match "ab*+(e|f)"', () => {
+    assert(!isMatch('abd', 'ab*+(e|f)'));
+  });
+
+  it('"abd" should not match "ab*d+(e|f)"', () => {
+    assert(!isMatch('abd', 'ab*d+(e|f)'));
+  });
+
+  it('"abd" should match "ab?*(e|f)"', () => {
+    assert(isMatch('abd', 'ab?*(e|f)'));
+  });
+
+  it('"abef" should match "(a+|b)*"', () => {
+    assert(isMatch('abef', '(a+|b)*'));
+  });
+
+  it('"abef" should not match "(a+|b)+"', () => {
+    assert(!isMatch('abef', '(a+|b)+'));
+  });
+
+  it('"abef" should not match "*(a+|b)"', () => {
+    assert(!isMatch('abef', '*(a+|b)'));
+  });
+
+  it('"abef" should not match "*?(a)bc"', () => {
+    assert(!isMatch('abef', '*?(a)bc'));
+  });
+
+  it('"abef" should not match "a(b*(foo|bar))d"', () => {
+    assert(!isMatch('abef', 'a(b*(foo|bar))d'));
+  });
+
+  it('"abef" should match "ab*(e|f)"', () => {
+    assert(isMatch('abef', 'ab*(e|f)'));
+  });
+
+  it('"abef" should match "ab**"', () => {
+    assert(isMatch('abef', 'ab**'));
+  });
+
+  it('"abef" should match "ab**(e|f)"', () => {
+    assert(isMatch('abef', 'ab**(e|f)'));
+  });
+
+  it('"abef" should not match "ab**(e|f)g"', () => {
+    assert(!isMatch('abef', 'ab**(e|f)g'));
+  });
+
+  it('"abef" should match "ab***ef"', () => {
+    assert(isMatch('abef', 'ab***ef'));
+  });
+
+  it('"abef" should match "ab*+(e|f)"', () => {
+    assert(isMatch('abef', 'ab*+(e|f)'));
+  });
+
+  it('"abef" should not match "ab*d+(e|f)"', () => {
+    assert(!isMatch('abef', 'ab*d+(e|f)'));
+  });
+
+  it('"abef" should match "ab?*(e|f)"', () => {
+    assert(isMatch('abef', 'ab?*(e|f)'));
+  });
+
+  it('"abz" should not match "a!(*)"', () => {
+    assert(!isMatch('abz', 'a!(*)'));
+  });
+
+  it('"abz" should match "a!(z)"', () => {
+    assert(isMatch('abz', 'a!(z)'));
+  });
+
+  it('"abz" should match "a*!(z)"', () => {
+    assert(isMatch('abz', 'a*!(z)'));
+  });
+
+  it('"abz" should not match "a*(z)"', () => {
+    assert(!isMatch('abz', 'a*(z)'));
+  });
+
+  it('"abz" should match "a**(z)"', () => {
+    assert(isMatch('abz', 'a**(z)'));
+  });
+
+  it('"abz" should match "a*@(z)"', () => {
+    assert(isMatch('abz', 'a*@(z)'));
+  });
+
+  it('"abz" should not match "a+(z)"', () => {
+    assert(!isMatch('abz', 'a+(z)'));
+  });
+
+  it('"abz" should not match "a?(z)"', () => {
+    assert(!isMatch('abz', 'a?(z)'));
+  });
+
+  it('"abz" should not match "a@(z)"', () => {
+    assert(!isMatch('abz', 'a@(z)'));
+  });
+
+  it('"ac" should not match "!(a)*"', () => {
+    assert(!isMatch('ac', '!(a)*'));
+  });
+
+  it('"ac" should match "*(@(a))a@(c)"', () => {
+    assert(isMatch('ac', '*(@(a))a@(c)'));
+  });
+
+  it('"ac" should match "a!(*(b|B))"', () => {
+    assert(isMatch('ac', 'a!(*(b|B))'));
+  });
+
+  it('"ac" should match "a!(@(b|B))"', () => {
+    assert(isMatch('ac', 'a!(@(b|B))'));
+  });
+
+  it('"ac" should match "a!(b)*"', () => {
+    assert(isMatch('ac', 'a!(b)*'));
+  });
+
+  it('"accdef" should match "(a+|b)*"', () => {
+    assert(isMatch('accdef', '(a+|b)*'));
+  });
+
+  it('"accdef" should not match "(a+|b)+"', () => {
+    assert(!isMatch('accdef', '(a+|b)+'));
+  });
+
+  it('"accdef" should not match "*?(a)bc"', () => {
+    assert(!isMatch('accdef', '*?(a)bc'));
+  });
+
+  it('"accdef" should not match "a(b*(foo|bar))d"', () => {
+    assert(!isMatch('accdef', 'a(b*(foo|bar))d'));
+  });
+
+  it('"accdef" should not match "ab*(e|f)"', () => {
+    assert(!isMatch('accdef', 'ab*(e|f)'));
+  });
+
+  it('"accdef" should not match "ab**"', () => {
+    assert(!isMatch('accdef', 'ab**'));
+  });
+
+  it('"accdef" should not match "ab**(e|f)"', () => {
+    assert(!isMatch('accdef', 'ab**(e|f)'));
+  });
+
+  it('"accdef" should not match "ab**(e|f)g"', () => {
+    assert(!isMatch('accdef', 'ab**(e|f)g'));
+  });
+
+  it('"accdef" should not match "ab***ef"', () => {
+    assert(!isMatch('accdef', 'ab***ef'));
+  });
+
+  it('"accdef" should not match "ab*+(e|f)"', () => {
+    assert(!isMatch('accdef', 'ab*+(e|f)'));
+  });
+
+  it('"accdef" should not match "ab*d+(e|f)"', () => {
+    assert(!isMatch('accdef', 'ab*d+(e|f)'));
+  });
+
+  it('"accdef" should not match "ab?*(e|f)"', () => {
+    assert(!isMatch('accdef', 'ab?*(e|f)'));
+  });
+
+  it('"acd" should match "(a+|b)*"', () => {
+    assert(isMatch('acd', '(a+|b)*'));
+  });
+
+  it('"acd" should not match "(a+|b)+"', () => {
+    assert(!isMatch('acd', '(a+|b)+'));
+  });
+
+  it('"acd" should not match "*?(a)bc"', () => {
+    assert(!isMatch('acd', '*?(a)bc'));
+  });
+
+  it('"acd" should match "@(ab|a*(b))*(c)d"', () => {
+    assert(isMatch('acd', '@(ab|a*(b))*(c)d'));
+  });
+
+  it('"acd" should match "a!(*(b|B))"', () => {
+    assert(isMatch('acd', 'a!(*(b|B))'));
+  });
+
+  it('"acd" should match "a!(@(b|B))"', () => {
+    assert(isMatch('acd', 'a!(@(b|B))'));
+  });
+
+  it('"acd" should match "a!(@(b|B))d"', () => {
+    assert(isMatch('acd', 'a!(@(b|B))d'));
+  });
+
+  it('"acd" should not match "a(b*(foo|bar))d"', () => {
+    assert(!isMatch('acd', 'a(b*(foo|bar))d'));
+  });
+
+  it('"acd" should match "a+(b|c)d"', () => {
+    assert(isMatch('acd', 'a+(b|c)d'));
+  });
+
+  it('"acd" should not match "a[b*(foo|bar)]d"', () => {
+    assert(!isMatch('acd', 'a[b*(foo|bar)]d'));
+  });
+
+  it('"acd" should not match "ab*(e|f)"', () => {
+    assert(!isMatch('acd', 'ab*(e|f)'));
+  });
+
+  it('"acd" should not match "ab**"', () => {
+    assert(!isMatch('acd', 'ab**'));
+  });
+
+  it('"acd" should not match "ab**(e|f)"', () => {
+    assert(!isMatch('acd', 'ab**(e|f)'));
+  });
+
+  it('"acd" should not match "ab**(e|f)g"', () => {
+    assert(!isMatch('acd', 'ab**(e|f)g'));
+  });
+
+  it('"acd" should not match "ab***ef"', () => {
+    assert(!isMatch('acd', 'ab***ef'));
+  });
+
+  it('"acd" should not match "ab*+(e|f)"', () => {
+    assert(!isMatch('acd', 'ab*+(e|f)'));
+  });
+
+  it('"acd" should not match "ab*d+(e|f)"', () => {
+    assert(!isMatch('acd', 'ab*d+(e|f)'));
+  });
+
+  it('"acd" should not match "ab?*(e|f)"', () => {
+    assert(!isMatch('acd', 'ab?*(e|f)'));
+  });
+
+  it('"axz" should not match "a+(z)"', () => {
+    assert(!isMatch('axz', 'a+(z)'));
+  });
+
+  it('"az" should not match "a!(*)"', () => {
+    assert(!isMatch('az', 'a!(*)'));
+  });
+
+  it('"az" should not match "a!(z)"', () => {
+    assert(!isMatch('az', 'a!(z)'));
+  });
+
+  it('"az" should match "a*!(z)"', () => {
+    assert(isMatch('az', 'a*!(z)'));
+  });
+
+  it('"az" should match "a*(z)"', () => {
+    assert(isMatch('az', 'a*(z)'));
+  });
+
+  it('"az" should match "a**(z)"', () => {
+    assert(isMatch('az', 'a**(z)'));
+  });
+
+  it('"az" should match "a*@(z)"', () => {
+    assert(isMatch('az', 'a*@(z)'));
+  });
+
+  it('"az" should match "a+(z)"', () => {
+    assert(isMatch('az', 'a+(z)'));
+  });
+
+  it('"az" should match "a?(z)"', () => {
+    assert(isMatch('az', 'a?(z)'));
+  });
+
+  it('"az" should match "a@(z)"', () => {
+    assert(isMatch('az', 'a@(z)'));
+  });
+
+  it('"az" should not match "a\\z"', () => {
+    assert(!isMatch('az', 'a\\\\z', { windows: false }));
+  });
+
+  it('"az" should not match "a\\z"', () => {
+    assert(!isMatch('az', 'a\\\\z'));
+  });
+
+  it('"b" should match "!(a)*"', () => {
+    assert(isMatch('b', '!(a)*'));
+  });
+
+  it('"b" should match "(a+|b)*"', () => {
+    assert(isMatch('b', '(a+|b)*'));
+  });
+
+  it('"b" should not match "a!(b)*"', () => {
+    assert(!isMatch('b', 'a!(b)*'));
+  });
+
+  it('"b.a" should match "(b|a).(a)"', () => {
+    assert(isMatch('b.a', '(b|a).(a)'));
+  });
+
+  it('"b.a" should match "@(b|a).@(a)"', () => {
+    assert(isMatch('b.a', '@(b|a).@(a)'));
+  });
+
+  it('"b/a" should not match "!(b/a)"', () => {
+    assert(!isMatch('b/a', '!(b/a)'));
+  });
+
+  it('"b/b" should match "!(b/a)"', () => {
+    assert(isMatch('b/b', '!(b/a)'));
+  });
+
+  it('"b/c" should match "!(b/a)"', () => {
+    assert(isMatch('b/c', '!(b/a)'));
+  });
+
+  it('"b/c" should not match "b/!(c)"', () => {
+    assert(!isMatch('b/c', 'b/!(c)'));
+  });
+
+  it('"b/c" should match "b/!(cc)"', () => {
+    assert(isMatch('b/c', 'b/!(cc)'));
+  });
+
+  it('"b/c.txt" should not match "b/!(c).txt"', () => {
+    assert(!isMatch('b/c.txt', 'b/!(c).txt'));
+  });
+
+  it('"b/c.txt" should match "b/!(cc).txt"', () => {
+    assert(isMatch('b/c.txt', 'b/!(cc).txt'));
+  });
+
+  it('"b/cc" should match "b/!(c)"', () => {
+    assert(isMatch('b/cc', 'b/!(c)'));
+  });
+
+  it('"b/cc" should not match "b/!(cc)"', () => {
+    assert(!isMatch('b/cc', 'b/!(cc)'));
+  });
+
+  it('"b/cc.txt" should not match "b/!(c).txt"', () => {
+    assert(!isMatch('b/cc.txt', 'b/!(c).txt'));
+  });
+
+  it('"b/cc.txt" should not match "b/!(cc).txt"', () => {
+    assert(!isMatch('b/cc.txt', 'b/!(cc).txt'));
+  });
+
+  it('"b/ccc" should match "b/!(c)"', () => {
+    assert(isMatch('b/ccc', 'b/!(c)'));
+  });
+
+  it('"ba" should match "!(a!(b))"', () => {
+    assert(isMatch('ba', '!(a!(b))'));
+  });
+
+  it('"ba" should match "b?(a|b)"', () => {
+    assert(isMatch('ba', 'b?(a|b)'));
+  });
+
+  it('"baaac" should not match "*(@(a))a@(c)"', () => {
+    assert(!isMatch('baaac', '*(@(a))a@(c)'));
+  });
+
+  it('"bar" should match "!(foo)"', () => {
+    assert(isMatch('bar', '!(foo)'));
+  });
+
+  it('"bar" should match "!(foo)*"', () => {
+    assert(isMatch('bar', '!(foo)*'));
+  });
+
+  it('"bar" should match "!(foo)b*"', () => {
+    assert(isMatch('bar', '!(foo)b*'));
+  });
+
+  it('"bar" should match "*(!(foo))"', () => {
+    assert(isMatch('bar', '*(!(foo))'));
+  });
+
+  it('"baz" should match "!(foo)*"', () => {
+    assert(isMatch('baz', '!(foo)*'));
+  });
+
+  it('"baz" should match "!(foo)b*"', () => {
+    assert(isMatch('baz', '!(foo)b*'));
+  });
+
+  it('"baz" should match "*(!(foo))"', () => {
+    assert(isMatch('baz', '*(!(foo))'));
+  });
+
+  it('"bb" should match "!(a!(b))"', () => {
+    assert(isMatch('bb', '!(a!(b))'));
+  });
+
+  it('"bb" should match "!(a)*"', () => {
+    assert(isMatch('bb', '!(a)*'));
+  });
+
+  it('"bb" should not match "a!(b)*"', () => {
+    assert(!isMatch('bb', 'a!(b)*'));
+  });
+
+  it('"bb" should not match "a?(a|b)"', () => {
+    assert(!isMatch('bb', 'a?(a|b)'));
+  });
+
+  it('"bbc" should match "!([[*])*"', () => {
+    assert(isMatch('bbc', '!([[*])*'));
+  });
+
+  it('"bbc" should not match "+(a|b\\[)*"', () => {
+    assert(!isMatch('bbc', '+(a|b\\[)*'));
+  });
+
+  it('"bbc" should not match "[a*(]*z"', () => {
+    assert(!isMatch('bbc', '[a*(]*z'));
+  });
+
+  it('"bz" should not match "a+(z)"', () => {
+    assert(!isMatch('bz', 'a+(z)'));
+  });
+
+  it('"c" should not match "*(@(a))a@(c)"', () => {
+    assert(!isMatch('c', '*(@(a))a@(c)'));
+  });
+
+  it('"c.a" should not match "!(*.[a-b]*)"', () => {
+    assert(!isMatch('c.a', '!(*.[a-b]*)'));
+  });
+
+  it('"c.a" should match "!(*[a-b].[a-b]*)"', () => {
+    assert(isMatch('c.a', '!(*[a-b].[a-b]*)'));
+  });
+
+  it('"c.a" should not match "!*.(a|b)"', () => {
+    assert(!isMatch('c.a', '!*.(a|b)'));
+  });
+
+  it('"c.a" should not match "!*.(a|b)*"', () => {
+    assert(!isMatch('c.a', '!*.(a|b)*'));
+  });
+
+  it('"c.a" should not match "(b|a).(a)"', () => {
+    assert(!isMatch('c.a', '(b|a).(a)'));
+  });
+
+  it('"c.a" should not match "*.!(a)"', () => {
+    assert(!isMatch('c.a', '*.!(a)'));
+  });
+
+  it('"c.a" should not match "*.+(b|d)"', () => {
+    assert(!isMatch('c.a', '*.+(b|d)'));
+  });
+
+  it('"c.a" should not match "@(b|a).@(a)"', () => {
+    assert(!isMatch('c.a', '@(b|a).@(a)'));
+  });
+
+  it('"c.c" should not match "!(*.a|*.b|*.c)"', () => {
+    assert(!isMatch('c.c', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"c.c" should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('c.c', '*!(.a|.b|.c)'));
+  });
+
+  it('"c.c" should not match "*.!(a|b|c)"', () => {
+    assert(!isMatch('c.c', '*.!(a|b|c)'));
+  });
+
+  it('"c.c" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
+    assert(!isMatch('c.c', '*.(a|b|@(ab|a*@(b))*(c)d)'));
+  });
+
+  it('"c.ccc" should match "!(*.[a-b]*)"', () => {
+    assert(isMatch('c.ccc', '!(*.[a-b]*)'));
+  });
+
+  it('"c.ccc" should match "!(*[a-b].[a-b]*)"', () => {
+    assert(isMatch('c.ccc', '!(*[a-b].[a-b]*)'));
+  });
+
+  it('"c.js" should not match "!(*.js)"', () => {
+    assert(!isMatch('c.js', '!(*.js)'));
+  });
+
+  it('"c.js" should match "*!(.js)"', () => {
+    assert(isMatch('c.js', '*!(.js)'));
+  });
+
+  it('"c.js" should not match "*.!(js)"', () => {
+    assert(!isMatch('c.js', '*.!(js)'));
+  });
+
+  it('"c/a/v" should match "c/!(z)/v"', () => {
+    assert(isMatch('c/a/v', 'c/!(z)/v'));
+  });
+
+  it('"c/a/v" should not match "c/*(z)/v"', () => {
+    assert(!isMatch('c/a/v', 'c/*(z)/v'));
+  });
+
+  it('"c/a/v" should not match "c/+(z)/v"', () => {
+    assert(!isMatch('c/a/v', 'c/+(z)/v'));
+  });
+
+  it('"c/a/v" should not match "c/@(z)/v"', () => {
+    assert(!isMatch('c/a/v', 'c/@(z)/v'));
+  });
+
+  it('"c/z/v" should not match "*(z)"', () => {
+    assert(!isMatch('c/z/v', '*(z)'));
+  });
+
+  it('"c/z/v" should not match "+(z)"', () => {
+    assert(!isMatch('c/z/v', '+(z)'));
+  });
+
+  it('"c/z/v" should not match "?(z)"', () => {
+    assert(!isMatch('c/z/v', '?(z)'));
+  });
+
+  it('"c/z/v" should not match "c/!(z)/v"', () => {
+    assert(!isMatch('c/z/v', 'c/!(z)/v'));
+  });
+
+  it('"c/z/v" should match "c/*(z)/v"', () => {
+    assert(isMatch('c/z/v', 'c/*(z)/v'));
+  });
+
+  it('"c/z/v" should match "c/+(z)/v"', () => {
+    assert(isMatch('c/z/v', 'c/+(z)/v'));
+  });
+
+  it('"c/z/v" should match "c/@(z)/v"', () => {
+    assert(isMatch('c/z/v', 'c/@(z)/v'));
+  });
+
+  it('"c/z/v" should match "c/z/v"', () => {
+    assert(isMatch('c/z/v', 'c/z/v'));
+  });
+
+  it('"cc.a" should not match "(b|a).(a)"', () => {
+    assert(!isMatch('cc.a', '(b|a).(a)'));
+  });
+
+  it('"cc.a" should not match "@(b|a).@(a)"', () => {
+    assert(!isMatch('cc.a', '@(b|a).@(a)'));
+  });
+
+  it('"ccc" should match "!(a)*"', () => {
+    assert(isMatch('ccc', '!(a)*'));
+  });
+
+  it('"ccc" should not match "a!(b)*"', () => {
+    assert(!isMatch('ccc', 'a!(b)*'));
+  });
+
+  it('"cow" should match "!(*.*)"', () => {
+    assert(isMatch('cow', '!(*.*)'));
+  });
+
+  it('"cow" should not match "!(*.*)."', () => {
+    assert(!isMatch('cow', '!(*.*).'));
+  });
+
+  it('"cow" should not match ".!(*.*)"', () => {
+    assert(!isMatch('cow', '.!(*.*)'));
+  });
+
+  it('"cz" should not match "a!(*)"', () => {
+    assert(!isMatch('cz', 'a!(*)'));
+  });
+
+  it('"cz" should not match "a!(z)"', () => {
+    assert(!isMatch('cz', 'a!(z)'));
+  });
+
+  it('"cz" should not match "a*!(z)"', () => {
+    assert(!isMatch('cz', 'a*!(z)'));
+  });
+
+  it('"cz" should not match "a*(z)"', () => {
+    assert(!isMatch('cz', 'a*(z)'));
+  });
+
+  it('"cz" should not match "a**(z)"', () => {
+    assert(!isMatch('cz', 'a**(z)'));
+  });
+
+  it('"cz" should not match "a*@(z)"', () => {
+    assert(!isMatch('cz', 'a*@(z)'));
+  });
+
+  it('"cz" should not match "a+(z)"', () => {
+    assert(!isMatch('cz', 'a+(z)'));
+  });
+
+  it('"cz" should not match "a?(z)"', () => {
+    assert(!isMatch('cz', 'a?(z)'));
+  });
+
+  it('"cz" should not match "a@(z)"', () => {
+    assert(!isMatch('cz', 'a@(z)'));
+  });
+
+  it('"d.a.d" should not match "!(*.[a-b]*)"', () => {
+    assert(!isMatch('d.a.d', '!(*.[a-b]*)'));
+  });
+
+  it('"d.a.d" should match "!(*[a-b].[a-b]*)"', () => {
+    assert(isMatch('d.a.d', '!(*[a-b].[a-b]*)'));
+  });
+
+  it('"d.a.d" should not match "!*.(a|b)*"', () => {
+    assert(!isMatch('d.a.d', '!*.(a|b)*'));
+  });
+
+  it('"d.a.d" should match "!*.*(a|b)"', () => {
+    assert(isMatch('d.a.d', '!*.*(a|b)'));
+  });
+
+  it('"d.a.d" should not match "!*.{a,b}*"', () => {
+    assert(!isMatch('d.a.d', '!*.{a,b}*'));
+  });
+
+  it('"d.a.d" should match "*.!(a)"', () => {
+    assert(isMatch('d.a.d', '*.!(a)'));
+  });
+
+  it('"d.a.d" should match "*.+(b|d)"', () => {
+    assert(isMatch('d.a.d', '*.+(b|d)'));
+  });
+
+  it('"d.d" should match "!(*.a|*.b|*.c)"', () => {
+    assert(isMatch('d.d', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"d.d" should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('d.d', '*!(.a|.b|.c)'));
+  });
+
+  it('"d.d" should match "*.!(a|b|c)"', () => {
+    assert(isMatch('d.d', '*.!(a|b|c)'));
+  });
+
+  it('"d.d" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
+    assert(!isMatch('d.d', '*.(a|b|@(ab|a*@(b))*(c)d)'));
+  });
+
+  it('"d.js.d" should match "!(*.js)"', () => {
+    assert(isMatch('d.js.d', '!(*.js)'));
+  });
+
+  it('"d.js.d" should match "*!(.js)"', () => {
+    assert(isMatch('d.js.d', '*!(.js)'));
+  });
+
+  it('"d.js.d" should match "*.!(js)"', () => {
+    assert(isMatch('d.js.d', '*.!(js)'));
+  });
+
+  it('"dd.aa.d" should not match "(b|a).(a)"', () => {
+    assert(!isMatch('dd.aa.d', '(b|a).(a)'));
+  });
+
+  it('"dd.aa.d" should not match "@(b|a).@(a)"', () => {
+    assert(!isMatch('dd.aa.d', '@(b|a).@(a)'));
+  });
+
+  it('"def" should not match "()ef"', () => {
+    assert(!isMatch('def', '()ef'));
+  });
+
+  it('"e.e" should match "!(*.a|*.b|*.c)"', () => {
+    assert(isMatch('e.e', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"e.e" should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('e.e', '*!(.a|.b|.c)'));
+  });
+
+  it('"e.e" should match "*.!(a|b|c)"', () => {
+    assert(isMatch('e.e', '*.!(a|b|c)'));
+  });
+
+  it('"e.e" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
+    assert(!isMatch('e.e', '*.(a|b|@(ab|a*@(b))*(c)d)'));
+  });
+
+  it('"ef" should match "()ef"', () => {
+    assert(isMatch('ef', '()ef'));
+  });
+
+  it('"effgz" should match "@(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
+    assert(isMatch('effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))'));
+  });
+
+  it('"efgz" should match "@(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
+    assert(isMatch('efgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))'));
+  });
+
+  it('"egz" should match "@(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
+    assert(isMatch('egz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))'));
+  });
+
+  it('"egz" should not match "@(b+(c)d|e+(f)g?|?(h)i@(j|k))"', () => {
+    assert(!isMatch('egz', '@(b+(c)d|e+(f)g?|?(h)i@(j|k))'));
+  });
+
+  it('"egzefffgzbcdij" should match "*(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
+    assert(isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))'));
+  });
+
+  it('"f" should not match "!(f!(o))"', () => {
+    assert(!isMatch('f', '!(f!(o))'));
+  });
+
+  it('"f" should match "!(f(o))"', () => {
+    assert(isMatch('f', '!(f(o))'));
+  });
+
+  it('"f" should not match "!(f)"', () => {
+    assert(!isMatch('f', '!(f)'));
+  });
+
+  it('"f" should not match "*(!(f))"', () => {
+    assert(!isMatch('f', '*(!(f))'));
+  });
+
+  it('"f" should not match "+(!(f))"', () => {
+    assert(!isMatch('f', '+(!(f))'));
+  });
+
+  it('"f.a" should not match "!(*.a|*.b|*.c)"', () => {
+    assert(!isMatch('f.a', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"f.a" should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('f.a', '*!(.a|.b|.c)'));
+  });
+
+  it('"f.a" should not match "*.!(a|b|c)"', () => {
+    assert(!isMatch('f.a', '*.!(a|b|c)'));
+  });
+
+  it('"f.f" should match "!(*.a|*.b|*.c)"', () => {
+    assert(isMatch('f.f', '!(*.a|*.b|*.c)'));
+  });
+
+  it('"f.f" should match "*!(.a|.b|.c)"', () => {
+    assert(isMatch('f.f', '*!(.a|.b|.c)'));
+  });
+
+  it('"f.f" should match "*.!(a|b|c)"', () => {
+    assert(isMatch('f.f', '*.!(a|b|c)'));
+  });
+
+  it('"f.f" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
+    assert(!isMatch('f.f', '*.(a|b|@(ab|a*@(b))*(c)d)'));
+  });
+
+  it('"fa" should not match "!(f!(o))"', () => {
+    assert(!isMatch('fa', '!(f!(o))'));
+  });
+
+  it('"fa" should match "!(f(o))"', () => {
+    assert(isMatch('fa', '!(f(o))'));
+  });
+
+  it('"fb" should not match "!(f!(o))"', () => {
+    assert(!isMatch('fb', '!(f!(o))'));
+  });
+
+  it('"fb" should match "!(f(o))"', () => {
+    assert(isMatch('fb', '!(f(o))'));
+  });
+
+  it('"fff" should match "!(f)"', () => {
+    assert(isMatch('fff', '!(f)'));
+  });
+
+  it('"fff" should match "*(!(f))"', () => {
+    assert(isMatch('fff', '*(!(f))'));
+  });
+
+  it('"fff" should match "+(!(f))"', () => {
+    assert(isMatch('fff', '+(!(f))'));
+  });
+
+  it('"fffooofoooooffoofffooofff" should match "*(*(f)*(o))"', () => {
+    assert(isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))'));
+  });
+
+  it('"ffo" should match "*(f*(o))"', () => {
+    assert(isMatch('ffo', '*(f*(o))'));
+  });
+
+  it('"file.C" should not match "*.c?(c)"', () => {
+    assert(!isMatch('file.C', '*.c?(c)'));
+  });
+
+  it('"file.c" should match "*.c?(c)"', () => {
+    assert(isMatch('file.c', '*.c?(c)'));
+  });
+
+  it('"file.cc" should match "*.c?(c)"', () => {
+    assert(isMatch('file.cc', '*.c?(c)'));
+  });
+
+  it('"file.ccc" should not match "*.c?(c)"', () => {
+    assert(!isMatch('file.ccc', '*.c?(c)'));
+  });
+
+  it('"fo" should match "!(f!(o))"', () => {
+    assert(isMatch('fo', '!(f!(o))'));
+  });
+
+  it('"fo" should not match "!(f(o))"', () => {
+    assert(!isMatch('fo', '!(f(o))'));
+  });
+
+  it('"fofo" should match "*(f*(o))"', () => {
+    assert(isMatch('fofo', '*(f*(o))'));
+  });
+
+  it('"fofoofoofofoo" should match "*(fo|foo)"', () => {
+    assert(isMatch('fofoofoofofoo', '*(fo|foo)'));
+  });
+
+  it('"fofoofoofofoo" should match "*(fo|foo)"', () => {
+    assert(isMatch('fofoofoofofoo', '*(fo|foo)'));
+  });
+
+  it('"foo" should match "!(!(foo))"', () => {
+    assert(isMatch('foo', '!(!(foo))'));
+  });
+
+  it('"foo" should match "!(f)"', () => {
+    assert(isMatch('foo', '!(f)'));
+  });
+
+  it('"foo" should not match "!(foo)"', () => {
+    assert(!isMatch('foo', '!(foo)'));
+  });
+
+  it('"foo" should not match "!(foo)*"', () => {
+    assert(!isMatch('foo', '!(foo)*'));
+  });
+
+  it('"foo" should not match "!(foo)*"', () => {
+    assert(!isMatch('foo', '!(foo)*'));
+  });
+
+  it('"foo" should not match "!(foo)+"', () => {
+    assert(!isMatch('foo', '!(foo)+'));
+  });
+
+  it('"foo" should not match "!(foo)b*"', () => {
+    assert(!isMatch('foo', '!(foo)b*'));
+  });
+
+  it('"foo" should match "!(x)"', () => {
+    assert(isMatch('foo', '!(x)'));
+  });
+
+  it('"foo" should match "!(x)*"', () => {
+    assert(isMatch('foo', '!(x)*'));
+  });
+
+  it('"foo" should match "*"', () => {
+    assert(isMatch('foo', '*'));
+  });
+
+  it('"foo" should match "*(!(f))"', () => {
+    assert(isMatch('foo', '*(!(f))'));
+  });
+
+  it('"foo" should not match "*(!(foo))"', () => {
+    assert(!isMatch('foo', '*(!(foo))'));
+  });
+
+  it('"foo" should not match "*(@(a))a@(c)"', () => {
+    assert(!isMatch('foo', '*(@(a))a@(c)'));
+  });
+
+  it('"foo" should match "*(@(foo))"', () => {
+    assert(isMatch('foo', '*(@(foo))'));
+  });
+
+  it('"foo" should not match "*(a|b\\[)"', () => {
+    assert(!isMatch('foo', '*(a|b\\[)'));
+  });
+
+  it('"foo" should match "*(a|b\\[)|f*"', () => {
+    assert(isMatch('foo', '*(a|b\\[)|f*'));
+  });
+
+  it('"foo" should match "@(*(a|b\\[)|f*)"', () => {
+    assert(isMatch('foo', '@(*(a|b\\[)|f*)'));
+  });
+
+  it('"foo" should not match "*/*/*"', () => {
+    assert(!isMatch('foo', '*/*/*'));
+  });
+
+  it('"foo" should not match "*f"', () => {
+    assert(!isMatch('foo', '*f'));
+  });
+
+  it('"foo" should match "*foo*"', () => {
+    assert(isMatch('foo', '*foo*'));
+  });
+
+  it('"foo" should match "+(!(f))"', () => {
+    assert(isMatch('foo', '+(!(f))'));
+  });
+
+  it('"foo" should not match "??"', () => {
+    assert(!isMatch('foo', '??'));
+  });
+
+  it('"foo" should match "???"', () => {
+    assert(isMatch('foo', '???'));
+  });
+
+  it('"foo" should not match "bar"', () => {
+    assert(!isMatch('foo', 'bar'));
+  });
+
+  it('"foo" should match "f*"', () => {
+    assert(isMatch('foo', 'f*'));
+  });
+
+  it('"foo" should not match "fo"', () => {
+    assert(!isMatch('foo', 'fo'));
+  });
+
+  it('"foo" should match "foo"', () => {
+    assert(isMatch('foo', 'foo'));
+  });
+
+  it('"foo" should match "{*(a|b\\[),f*}"', () => {
+    assert(isMatch('foo', '{*(a|b\\[),f*}'));
+  });
+
+  it('"foo*" should match "foo\\*"', () => {
+    assert(isMatch('foo*', 'foo\\*', { windows: false }));
+  });
+
+  it('"foo*bar" should match "foo\\*bar"', () => {
+    assert(isMatch('foo*bar', 'foo\\*bar'));
+  });
+
+  it('"foo.js" should not match "!(foo).js"', () => {
+    assert(!isMatch('foo.js', '!(foo).js'));
+  });
+
+  it('"foo.js.js" should match "*.!(js)"', () => {
+    assert(isMatch('foo.js.js', '*.!(js)'));
+  });
+
+  it('"foo.js.js" should not match "*.!(js)*"', () => {
+    assert(!isMatch('foo.js.js', '*.!(js)*'));
+  });
+
+  it('"foo.js.js" should not match "*.!(js)*.!(js)"', () => {
+    assert(!isMatch('foo.js.js', '*.!(js)*.!(js)'));
+  });
+
+  it('"foo.js.js" should not match "*.!(js)+"', () => {
+    assert(!isMatch('foo.js.js', '*.!(js)+'));
+  });
+
+  it('"foo.txt" should match "**/!(bar).txt"', () => {
+    assert(isMatch('foo.txt', '**/!(bar).txt'));
+  });
+
+  it('"foo/bar" should not match "*/*/*"', () => {
+    assert(!isMatch('foo/bar', '*/*/*'));
+  });
+
+  it('"foo/bar" should match "foo/!(foo)"', () => {
+    assert(isMatch('foo/bar', 'foo/!(foo)'));
+  });
+
+  it('"foo/bar" should match "foo/*"', () => {
+    assert(isMatch('foo/bar', 'foo/*'));
+  });
+
+  it('"foo/bar" should match "foo/bar"', () => {
+    assert(isMatch('foo/bar', 'foo/bar'));
+  });
+
+  it('"foo/bar" should not match "foo?bar"', () => {
+    assert(!isMatch('foo/bar', 'foo?bar'));
+  });
+
+  it('"foo/bar" should match "foo[/]bar"', () => {
+    assert(isMatch('foo/bar', 'foo[/]bar'));
+  });
+
+  it('"foo/bar/baz.jsx" should match "foo/bar/**/*.+(js|jsx)"', () => {
+    assert(isMatch('foo/bar/baz.jsx', 'foo/bar/**/*.+(js|jsx)'));
+  });
+
+  it('"foo/bar/baz.jsx" should match "foo/bar/*.+(js|jsx)"', () => {
+    assert(isMatch('foo/bar/baz.jsx', 'foo/bar/*.+(js|jsx)'));
+  });
+
+  it('"foo/bb/aa/rr" should match "**/**/**"', () => {
+    assert(isMatch('foo/bb/aa/rr', '**/**/**'));
+  });
+
+  it('"foo/bb/aa/rr" should not match "*/*/*"', () => {
+    assert(!isMatch('foo/bb/aa/rr', '*/*/*'));
+  });
+
+  it('"foo/bba/arr" should match "*/*/*"', () => {
+    assert(isMatch('foo/bba/arr', '*/*/*'));
+  });
+
+  it('"foo/bba/arr" should not match "foo*"', () => {
+    assert(!isMatch('foo/bba/arr', 'foo*'));
+  });
+
+  it('"foo/bba/arr" should not match "foo**"', () => {
+    assert(!isMatch('foo/bba/arr', 'foo**'));
+  });
+
+  it('"foo/bba/arr" should not match "foo/*"', () => {
+    assert(!isMatch('foo/bba/arr', 'foo/*'));
+  });
+
+  it('"foo/bba/arr" should match "foo/**"', () => {
+    assert(isMatch('foo/bba/arr', 'foo/**'));
+  });
+
+  it('"foo/bba/arr" should not match "foo/**arr"', () => {
+    assert(!isMatch('foo/bba/arr', 'foo/**arr'));
+  });
+
+  it('"foo/bba/arr" should not match "foo/**z"', () => {
+    assert(!isMatch('foo/bba/arr', 'foo/**z'));
+  });
+
+  it('"foo/bba/arr" should not match "foo/*arr"', () => {
+    assert(!isMatch('foo/bba/arr', 'foo/*arr'));
+  });
+
+  it('"foo/bba/arr" should not match "foo/*z"', () => {
+    assert(!isMatch('foo/bba/arr', 'foo/*z'));
+  });
+
+  it('"foob" should not match "!(foo)b*"', () => {
+    assert(!isMatch('foob', '!(foo)b*'));
+  });
+
+  it('"foob" should not match "(foo)bb"', () => {
+    assert(!isMatch('foob', '(foo)bb'));
+  });
+
+  it('"foobar" should match "!(foo)"', () => {
+    assert(isMatch('foobar', '!(foo)'));
+  });
+
+  it('"foobar" should not match "!(foo)*"', () => {
+    assert(!isMatch('foobar', '!(foo)*'));
+  });
+
+  it('"foobar" should not match "!(foo)b*"', () => {
+    assert(!isMatch('foobar', '!(foo)b*'));
+  });
+
+  it('"foobar" should match "*(!(foo))"', () => {
+    assert(isMatch('foobar', '*(!(foo))'));
+  });
+
+  it('"foobar" should match "*ob*a*r*"', () => {
+    assert(isMatch('foobar', '*ob*a*r*'));
+  });
+
+  it('"foobar" should not match "foo\\*bar"', () => {
+    assert(!isMatch('foobar', 'foo\\*bar'));
+  });
+
+  it('"foobb" should not match "!(foo)b*"', () => {
+    assert(!isMatch('foobb', '!(foo)b*'));
+  });
+
+  it('"foobb" should match "(foo)bb"', () => {
+    assert(isMatch('foobb', '(foo)bb'));
+  });
+
+  it('"(foo)bb" should match "\\(foo\\)bb"', () => {
+    assert(isMatch('(foo)bb', '\\(foo\\)bb'));
+  });
+
+  it('"foofoofo" should match "@(foo|f|fo)*(f|of+(o))"', () => {
+    assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))'));
+  });
+
+  it('"foofoofo" should match "@(foo|f|fo)*(f|of+(o))"', () => {
+    assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))'));
+  });
+
+  it('"fooofoofofooo" should match "*(f*(o))"', () => {
+    assert(isMatch('fooofoofofooo', '*(f*(o))'));
+  });
+
+  it('"foooofo" should match "*(f*(o))"', () => {
+    assert(isMatch('foooofo', '*(f*(o))'));
+  });
+
+  it('"foooofof" should match "*(f*(o))"', () => {
+    assert(isMatch('foooofof', '*(f*(o))'));
+  });
+
+  it('"foooofof" should not match "*(f+(o))"', () => {
+    assert(!isMatch('foooofof', '*(f+(o))'));
+  });
+
+  it('"foooofofx" should not match "*(f*(o))"', () => {
+    assert(!isMatch('foooofofx', '*(f*(o))'));
+  });
+
+  it('"foooxfooxfoxfooox" should match "*(f*(o)x)"', () => {
+    assert(isMatch('foooxfooxfoxfooox', '*(f*(o)x)'));
+  });
+
+  it('"foooxfooxfxfooox" should match "*(f*(o)x)"', () => {
+    assert(isMatch('foooxfooxfxfooox', '*(f*(o)x)'));
+  });
+
+  it('"foooxfooxofoxfooox" should not match "*(f*(o)x)"', () => {
+    assert(!isMatch('foooxfooxofoxfooox', '*(f*(o)x)'));
+  });
+
+  it('"foot" should match "@(!(z*)|*x)"', () => {
+    assert(isMatch('foot', '@(!(z*)|*x)'));
+  });
+
+  it('"foox" should match "@(!(z*)|*x)"', () => {
+    assert(isMatch('foox', '@(!(z*)|*x)'));
+  });
+
+  it('"fz" should not match "*(z)"', () => {
+    assert(!isMatch('fz', '*(z)'));
+  });
+
+  it('"fz" should not match "+(z)"', () => {
+    assert(!isMatch('fz', '+(z)'));
+  });
+
+  it('"fz" should not match "?(z)"', () => {
+    assert(!isMatch('fz', '?(z)'));
+  });
+
+  it('"moo.cow" should not match "!(moo).!(cow)"', () => {
+    assert(!isMatch('moo.cow', '!(moo).!(cow)'));
+  });
+
+  it('"moo.cow" should not match "!(*).!(*)"', () => {
+    assert(!isMatch('moo.cow', '!(*).!(*)'));
+  });
+
+  it('"mad.moo.cow" should not match "!(*.*).!(*.*)"', () => {
+    assert(!isMatch('mad.moo.cow', '!(*.*).!(*.*)'));
+  });
+
+  it('"mad.moo.cow" should not match ".!(*.*)"', () => {
+    assert(!isMatch('mad.moo.cow', '.!(*.*)'));
+  });
+
+  it('"Makefile" should match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
+    assert(isMatch('Makefile', '!(*.c|*.h|Makefile.in|config*|README)'));
+  });
+
+  it('"Makefile.in" should not match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
+    assert(!isMatch('Makefile.in', '!(*.c|*.h|Makefile.in|config*|README)'));
+  });
+
+  it('"moo" should match "!(*.*)"', () => {
+    assert(isMatch('moo', '!(*.*)'));
+  });
+
+  it('"moo" should not match "!(*.*)."', () => {
+    assert(!isMatch('moo', '!(*.*).'));
+  });
+
+  it('"moo" should not match ".!(*.*)"', () => {
+    assert(!isMatch('moo', '.!(*.*)'));
+  });
+
+  it('"moo.cow" should not match "!(*.*)"', () => {
+    assert(!isMatch('moo.cow', '!(*.*)'));
+  });
+
+  it('"moo.cow" should not match "!(*.*)."', () => {
+    assert(!isMatch('moo.cow', '!(*.*).'));
+  });
+
+  it('"moo.cow" should not match ".!(*.*)"', () => {
+    assert(!isMatch('moo.cow', '.!(*.*)'));
+  });
+
+  it('"mucca.pazza" should not match "mu!(*(c))?.pa!(*(z))?"', () => {
+    assert(!isMatch('mucca.pazza', 'mu!(*(c))?.pa!(*(z))?'));
+  });
+
+  it('"ofoofo" should match "*(of+(o))"', () => {
+    assert(isMatch('ofoofo', '*(of+(o))'));
+  });
+
+  it('"ofoofo" should match "*(of+(o)|f)"', () => {
+    assert(isMatch('ofoofo', '*(of+(o)|f)'));
+  });
+
+  it('"ofooofoofofooo" should not match "*(f*(o))"', () => {
+    assert(!isMatch('ofooofoofofooo', '*(f*(o))'));
+  });
+
+  it('"ofoooxoofxo" should match "*(*(of*(o)x)o)"', () => {
+    assert(isMatch('ofoooxoofxo', '*(*(of*(o)x)o)'));
+  });
+
+  it('"ofoooxoofxoofoooxoofxo" should match "*(*(of*(o)x)o)"', () => {
+    assert(isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)'));
+  });
+
+  it('"ofoooxoofxoofoooxoofxofo" should not match "*(*(of*(o)x)o)"', () => {
+    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)'));
+  });
+
+  it('"ofoooxoofxoofoooxoofxoo" should match "*(*(of*(o)x)o)"', () => {
+    assert(isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)'));
+  });
+
+  it('"ofoooxoofxoofoooxoofxooofxofxo" should match "*(*(of*(o)x)o)"', () => {
+    assert(isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)'));
+  });
+
+  it('"ofxoofxo" should match "*(*(of*(o)x)o)"', () => {
+    assert(isMatch('ofxoofxo', '*(*(of*(o)x)o)'));
+  });
+
+  it('"oofooofo" should match "*(of|oof+(o))"', () => {
+    assert(isMatch('oofooofo', '*(of|oof+(o))'));
+  });
+
+  it('"ooo" should match "!(f)"', () => {
+    assert(isMatch('ooo', '!(f)'));
+  });
+
+  it('"ooo" should match "*(!(f))"', () => {
+    assert(isMatch('ooo', '*(!(f))'));
+  });
+
+  it('"ooo" should match "+(!(f))"', () => {
+    assert(isMatch('ooo', '+(!(f))'));
+  });
+
+  it('"oxfoxfox" should not match "*(oxf+(ox))"', () => {
+    assert(!isMatch('oxfoxfox', '*(oxf+(ox))'));
+  });
+
+  it('"oxfoxoxfox" should match "*(oxf+(ox))"', () => {
+    assert(isMatch('oxfoxoxfox', '*(oxf+(ox))'));
+  });
+
+  it('"para" should match "para*([0-9])"', () => {
+    assert(isMatch('para', 'para*([0-9])'));
+  });
+
+  it('"para" should not match "para+([0-9])"', () => {
+    assert(!isMatch('para', 'para+([0-9])'));
+  });
+
+  it('"para.38" should match "para!(*.[00-09])"', () => {
+    assert(isMatch('para.38', 'para!(*.[00-09])'));
+  });
+
+  it('"para.graph" should match "para!(*.[0-9])"', () => {
+    assert(isMatch('para.graph', 'para!(*.[0-9])'));
+  });
+
+  it('"para13829383746592" should match "para*([0-9])"', () => {
+    assert(isMatch('para13829383746592', 'para*([0-9])'));
+  });
+
+  it('"para381" should not match "para?([345]|99)1"', () => {
+    assert(!isMatch('para381', 'para?([345]|99)1'));
+  });
+
+  it('"para39" should match "para!(*.[0-9])"', () => {
+    assert(isMatch('para39', 'para!(*.[0-9])'));
+  });
+
+  it('"para987346523" should match "para+([0-9])"', () => {
+    assert(isMatch('para987346523', 'para+([0-9])'));
+  });
+
+  it('"para991" should match "para?([345]|99)1"', () => {
+    assert(isMatch('para991', 'para?([345]|99)1'));
+  });
+
+  it('"paragraph" should match "para!(*.[0-9])"', () => {
+    assert(isMatch('paragraph', 'para!(*.[0-9])'));
+  });
+
+  it('"paragraph" should not match "para*([0-9])"', () => {
+    assert(!isMatch('paragraph', 'para*([0-9])'));
+  });
+
+  it('"paragraph" should match "para@(chute|graph)"', () => {
+    assert(isMatch('paragraph', 'para@(chute|graph)'));
+  });
+
+  it('"paramour" should not match "para@(chute|graph)"', () => {
+    assert(!isMatch('paramour', 'para@(chute|graph)'));
+  });
+
+  it('"parse.y" should match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
+    assert(isMatch('parse.y', '!(*.c|*.h|Makefile.in|config*|README)'));
+  });
+
+  it('"shell.c" should not match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
+    assert(!isMatch('shell.c', '!(*.c|*.h|Makefile.in|config*|README)'));
+  });
+
+  it('"VMS.FILE;" should not match "*\\;[1-9]*([0-9])"', () => {
+    assert(!isMatch('VMS.FILE;', '*\\;[1-9]*([0-9])'));
+  });
+
+  it('"VMS.FILE;0" should not match "*\\;[1-9]*([0-9])"', () => {
+    assert(!isMatch('VMS.FILE;0', '*\\;[1-9]*([0-9])'));
+  });
+
+  it('"VMS.FILE;1" should match "*\\;[1-9]*([0-9])"', () => {
+    assert(isMatch('VMS.FILE;1', '*\\;[1-9]*([0-9])'));
+  });
+
+  it('"VMS.FILE;1" should match "*;[1-9]*([0-9])"', () => {
+    assert(isMatch('VMS.FILE;1', '*;[1-9]*([0-9])'));
+  });
+
+  it('"VMS.FILE;139" should match "*\\;[1-9]*([0-9])"', () => {
+    assert(isMatch('VMS.FILE;139', '*\\;[1-9]*([0-9])'));
+  });
+
+  it('"VMS.FILE;1N" should not match "*\\;[1-9]*([0-9])"', () => {
+    assert(!isMatch('VMS.FILE;1N', '*\\;[1-9]*([0-9])'));
+  });
+
+  it('"xfoooofof" should not match "*(f*(o))"', () => {
+    assert(!isMatch('xfoooofof', '*(f*(o))'));
+  });
+
+  it('"XXX/adobe/courier/bold/o/normal//12/120/75/75/m/70/iso8859/1" should match "XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*"', () => {
+    assert(isMatch('XXX/adobe/courier/bold/o/normal//12/120/75/75/m/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*', { windows: false }));
+  });
+
+  it('"XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1" should not match "XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*"', () => {
+    assert(!isMatch('XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*'));
+  });
+
+  it('"z" should match "*(z)"', () => {
+    assert(isMatch('z', '*(z)'));
+  });
+
+  it('"z" should match "+(z)"', () => {
+    assert(isMatch('z', '+(z)'));
+  });
+
+  it('"z" should match "?(z)"', () => {
+    assert(isMatch('z', '?(z)'));
+  });
+
+  it('"zf" should not match "*(z)"', () => {
+    assert(!isMatch('zf', '*(z)'));
+  });
+
+  it('"zf" should not match "+(z)"', () => {
+    assert(!isMatch('zf', '+(z)'));
+  });
+
+  it('"zf" should not match "?(z)"', () => {
+    assert(!isMatch('zf', '?(z)'));
+  });
+
+  it('"zoot" should not match "@(!(z*)|*x)"', () => {
+    assert(!isMatch('zoot', '@(!(z*)|*x)'));
+  });
+
+  it('"zoox" should match "@(!(z*)|*x)"', () => {
+    assert(isMatch('zoox', '@(!(z*)|*x)'));
+  });
+
+  it('"zz" should not match "(a+|b)*"', () => {
+    assert(!isMatch('zz', '(a+|b)*'));
   });
 });

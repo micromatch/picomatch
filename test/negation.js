@@ -2,12 +2,9 @@
 
 require('mocha');
 const assert = require('assert');
-const picomatch = require('..');
-const { isMatch } = require('./support');
+const { isMatch, makeRe } = require('..');
 
 describe('negation patterns - "!"', () => {
-  beforeEach(() => picomatch.clearCache());
-
   it('should patterns with a leading "!" as negated/inverted globs', () => {
     assert(!isMatch('abc', '!*'));
     assert(!isMatch('abc', '!abc'));
@@ -49,6 +46,28 @@ describe('negation patterns - "!"', () => {
     assert(isMatch('b/a', '!a/b'));
     assert(isMatch('b/b', '!a/b'));
     assert(isMatch('b/c', '!a/b'));
+  });
+
+  it('should support multiple leading ! to toggle negation', () => {
+    assert(!isMatch('abc', '!abc'));
+    assert(isMatch('abc',  '!!abc'));
+    assert(!isMatch('abc', '!!!abc'));
+    assert(isMatch('abc',  '!!!!abc'));
+    assert(!isMatch('abc', '!!!!!abc'));
+    assert(isMatch('abc',  '!!!!!!abc'));
+    assert(!isMatch('abc', '!!!!!!!abc'));
+    assert(isMatch('abc',  '!!!!!!!!abc'));
+  });
+
+  it('should support negation extglobs after leading !', () => {
+    assert(!isMatch('abc', '!(abc)'));
+    assert(isMatch('abc',  '!!(abc)'));
+    assert(!isMatch('abc', '!!!(abc)'));
+    assert(isMatch('abc',  '!!!!(abc)'));
+    assert(!isMatch('abc', '!!!!!(abc)'));
+    assert(isMatch('abc',  '!!!!!!(abc)'));
+    assert(!isMatch('abc', '!!!!!!!(abc)'));
+    assert(isMatch('abc',  '!!!!!!!!(abc)'));
   });
 
   it('should support negation with globs', () => {
@@ -209,7 +228,7 @@ describe('negation patterns - "!"', () => {
     assert(isMatch('c.txt', '!**/*.md'));
   });
 
-  it('should support quoted strings', () => {
+  it('should not negate when inside quoted strings', () => {
     assert(!isMatch('foo.md', '"!*".md'));
     assert(isMatch('"!*".md', '"!*".md'));
     assert(isMatch('!*.md', '"!*".md'));
@@ -244,33 +263,12 @@ describe('negation patterns - "!"', () => {
   });
 
   it('should match nested directories with globstars', () => {
+    assert(!isMatch('a', '!a/**'));
     assert(!isMatch('a/', '!a/**'));
     assert(!isMatch('a/b', '!a/**'));
     assert(!isMatch('a/b/c', '!a/**'));
-    assert(isMatch('a', '!a/**'));
     assert(isMatch('b', '!a/**'));
     assert(isMatch('b/c', '!a/**'));
-
-    assert(isMatch('a', '!(a/**)'));
-    assert(!isMatch('a/', '!(a/**)'));
-    assert(!isMatch('a/b', '!(a/**)'));
-    assert(!isMatch('a/b/c', '!(a/**)'));
-    assert(isMatch('b', '!(a/**)'));
-    assert(isMatch('b/c', '!(a/**)'));
-
-    assert(isMatch('a/a', 'a/!(b*)'));
-    assert(!isMatch('a/b', 'a/!(b*)'));
-    assert(!isMatch('a/b/c', 'a/!(b*)'));
-    assert(isMatch('a/c', 'a/!(b*)'));
-
-    assert(isMatch('a/a/', 'a/!(b*)/**'));
-    assert(isMatch('a/a', 'a/!(b*)'));
-    assert(!isMatch('a/a', 'a/!(b*)/**'));
-    assert(!isMatch('a/b', 'a/!(b*)/**'));
-    assert(!isMatch('a/b/c', 'a/!(b*)/**'));
-    assert(!isMatch('a/c', 'a/!(b*)/**'));
-    assert(isMatch('a/c', 'a/!(b*)'));
-    assert(isMatch('a/c/', 'a/!(b*)/**'));
 
     assert(isMatch('foo', '!f*b'));
     assert(isMatch('bar', '!f*b'));
