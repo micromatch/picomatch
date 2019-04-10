@@ -18,11 +18,11 @@ describe('extglobs', () => {
 
   it('should escape special characters immediately following opening parens', () => {
     if (process.platform === 'win32') {
-      assert.equal(makeRe('c!(.)z').source, '^(?:c(?:(?!(?:\\.))[^\\\\/]*?)z)$');
-      assert.equal(makeRe('c!(*)z').source, '^(?:c(?:(?!(?:[^\\\\/]*?))[^\\\\/]*?)z)$');
-      assert.equal(makeRe('c!(+)z').source, '^(?:c(?:(?!(?:\\\\+))[^\\\\/]*?)z)$');
-      assert.equal(makeRe('c!(?)z').source, '^(?:c(?:(?!(?:\\\\?))[^\\\\/]*?)z)$');
-      assert.equal(makeRe('c!(@)z').source, '^(?:c(?:(?!(?:@))[^\\\\/]*?)z)$');
+      assert.equal(makeRe('c!(.)z').source, '^(?:c(?:(?!(?:\\.))[^\\\\\\/]*?)z)$');
+      assert.equal(makeRe('c!(*)z').source, '^(?:c(?:(?!(?:[^\\\\\\/]*?))[^\\\\\\/]*?)z)$');
+      assert.equal(makeRe('c!(+)z').source, '^(?:c(?:(?!(?:\\\\\\+))[^\\\\\\/]*?)z)$');
+      assert.equal(makeRe('c!(?)z').source, '^(?:c(?:(?!(?:\\\\\\?))[^\\\\\\/]*?)z)$');
+      assert.equal(makeRe('c!(@)z').source, '^(?:c(?:(?!(?:@))[^\\\\\\/]*?)z)$');
     } else {
       assert.equal(makeRe('c!(.)z').source, '^(?:c(?:(?!(?:\\.))[^\\/]*?)z)$');
       assert.equal(makeRe('c!(*)z').source, '^(?:c(?:(?!(?:[^\\/]*?))[^\\/]*?)z)$');
