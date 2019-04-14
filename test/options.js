@@ -1,16 +1,9 @@
 'use strict';
 
-const path = require('path');
-const assert = require('assert');
+const assert = require('assert').strict;
 const support = require('./support');
 const match = require('./support/match');
-const { isMatch, makeRe } = require('..');
-
-const compare = (a, b) => {
-  a = a.toLowerCase();
-  b = b.toLowerCase();
-  return a > b ? 1 : a < b ? -1 : 0;
-};
+const { isMatch } = require('..');
 
 describe('options', () => {
   beforeEach(() => support.windowsPathSep());

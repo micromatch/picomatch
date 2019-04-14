@@ -1,10 +1,9 @@
 'use strict';
 
 require('mocha');
-const path = require('path');
-const assert = require('assert');
+const assert = require('assert').strict;
 const support = require('./support');
-const { isMatch, makeRe } = require('..');
+const { isMatch } = require('..');
 
 /**
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.

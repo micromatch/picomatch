@@ -2,7 +2,7 @@
 
 require('mocha');
 const version = process.version;
-const assert = require('assert');
+const assert = require('assert').strict;
 const { isMatch } = require('..');
 
 describe('regex features', () => {

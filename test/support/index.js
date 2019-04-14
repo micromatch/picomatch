@@ -6,7 +6,6 @@ const path = require('path');
 // modified somewhere by the user. Node.js only handles these two path separators
 // with similar logic, and this is only for unit tests, so we should be fine.
 const sep = process.platform === 'win32' ? '\\' : '/';
-const origSep = process.env.ORIGINAL_PATH_SEP || (process.env.ORIGINAL_PATH_SEP = sep);
 
 module.exports = {
   windowsPathSep() {

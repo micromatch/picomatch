@@ -1,7 +1,7 @@
 'use strict';
 
 require('mocha');
-const assert = require('assert');
+const assert = require('assert').strict;
 const pm = require('..');
 const { makeRe, parse } = pm;
 
@@ -346,9 +346,9 @@ describe('posix classes', () => {
 
     it('graph', () => {
       assert(isMatch('A', '[[:graph:]]'));
-      assert(!isMatch('\b', '[[:graph:]]'));
-      assert(!isMatch('\n', '[[:graph:]]'));
-      assert(isMatch('\s', '[[:graph:]]'));
+      assert(!isMatch('\\b', '[[:graph:]]'));
+      assert(!isMatch('\\n', '[[:graph:]]'));
+      assert(!isMatch('\\s', '[[:graph:]]'));
     });
   });
 });

@@ -2,7 +2,7 @@
 
 require('mocha');
 const path = require('path');
-const assert = require('assert');
+const assert = require('assert').strict;
 const { isMatch } = require('..');
 
 describe('non-globs', () => {

@@ -1,8 +1,8 @@
 'use strict';
 
 require('./support');
-const assert = require('assert');
-const { isMatch, makeRe } = require('..');
+const assert = require('assert').strict;
+const { isMatch } = require('..');
 const repeat = n => '\\'.repeat(n);
 
 /**

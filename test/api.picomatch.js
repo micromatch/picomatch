@@ -2,11 +2,9 @@
 
 require('./support');
 require('mocha');
-const path = require('path');
-const fill = require('fill-range');
-const assert = require('assert');
+const assert = require('assert').strict;
 const picomatch = require('..');
-const { isMatch, makeRe } = picomatch;
+const { isMatch } = picomatch;
 
 describe('picomatch', () => {
   describe('validation', () => {

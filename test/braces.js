@@ -1,12 +1,10 @@
 'use strict';
 
-process.env.PICOMATCH_NO_CACHE = 'true';
-
 require('mocha');
-const assert = require('assert');
+const assert = require('assert').strict;
 const fill = require('fill-range');
 const match = require('./support/match');
-const { isMatch, makeRe } = require('..');
+const { isMatch } = require('..');
 
 describe('braces', () => {
   it('should not match with brace patterns when disabled', () => {

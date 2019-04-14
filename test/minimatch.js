@@ -1,7 +1,6 @@
 'use strict';
 
-const path = require('path');
-const assert = require('assert');
+const assert = require('assert').strict;
 const format = str => str.replace(/^\.\//, '');
 const { isMatch, makeRe } = require('..');
 

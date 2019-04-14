@@ -1,9 +1,7 @@
 'use strict';
 
 require('mocha');
-const path = require('path');
-const isWindows = process.platform === 'win32';
-const assert = require('assert');
+const assert = require('assert').strict;
 const scan = require('../lib/scan');
 const base = (...args) => scan(...args).base;
 const both = (...args) => {
@@ -282,10 +280,10 @@ describe('picomatch', () => {
       assert.deepEqual(both('[a-j]*[^c]bc'), ['', '[a-j]*[^c]bc']);
       assert.deepEqual(both('[ab][ab]'), ['', '[ab][ab]']);
       assert.deepEqual(both('foo/[a-b].min.js'), ['foo', '[a-b].min.js']);
-      assert.equal(base('path/foo[a\\\/]/', opts), 'path');
-      assert.equal(base('path/foo\\[a\\\/]/', opts), 'path/foo[a\\/]/');
-      assert.equal(base('foo[a\\\/]', opts), '');
-      assert.equal(base('foo\\[a\\\/]', opts), 'foo[a\\/]');
+      assert.equal(base('path/foo[a\\/]/', opts), 'path');
+      assert.equal(base('path/foo\\[a\\/]/', opts), 'path/foo[a\\/]/');
+      assert.equal(base('foo[a\\/]', opts), '');
+      assert.equal(base('foo\\[a\\/]', opts), 'foo[a\\/]');
     });
 
     it('should support qmarks', () => {

@@ -1,8 +1,8 @@
 'use strict';
 
 require('mocha');
+const assert = require('assert').strict;
 const path = require('path');
-const assert = require('assert');
 const { isMatch, makeRe } = require('..');
 
 describe('special characters', () => {

@@ -1,7 +1,6 @@
 'use strict';
 
-const path = require('path');
-const assert = require('assert');
+const assert = require('assert').strict;
 const match = require('./support/match');
 const { isMatch } = require('..');
 
@@ -96,7 +95,7 @@ describe('qmarks and stars', () => {
     assert.deepEqual(match(fixtures, '?/?'), ['a/a']);
     assert.deepEqual(match(fixtures, '?/???/?'), ['a/aaa/a']);
     assert.deepEqual(match(fixtures, '?/????/?'), ['a/aaaa/a']);
-    assert.deepEqual(match(fixtures, '?/?????/?'), ['a/aaaaa/a']);;
+    assert.deepEqual(match(fixtures, '?/?????/?'), ['a/aaaaa/a']);
     assert.deepEqual(match(fixtures, 'a/?'), ['a/a']);
     assert.deepEqual(match(fixtures, 'a/?/a'), ['a/a/a']);
     assert.deepEqual(match(fixtures, 'a/??/a'), ['a/aa/a']);

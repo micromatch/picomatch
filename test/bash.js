@@ -1,8 +1,8 @@
 'use strict';
 
 require('mocha');
-const assert = require('assert');
-const { isMatch, makeRe } = require('..');
+const assert = require('assert').strict;
+const { isMatch } = require('..');
 
 // $echo a/{1..3}/b
 describe('from the Bash 4.3 spec/unit tests', () => {

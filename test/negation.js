@@ -1,8 +1,8 @@
 'use strict';
 
 require('mocha');
-const assert = require('assert');
-const { isMatch, makeRe } = require('..');
+const assert = require('assert').strict;
+const { isMatch } = require('..');
 
 describe('negation patterns - "!"', () => {
   it('should patterns with a leading "!" as negated/inverted globs', () => {
