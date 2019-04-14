@@ -32,7 +32,7 @@
 * **Accurate matching** - Using wildcards (`*` and `?`), globstars (`**`) for nested directories, [advanced globbing](#advanced-globbing) with extglobs, braces, and POSIX brackets, and support for escaping special characters with `\` or quotes.
 * **Well tested** - Thousands of unit tests
 
-See the [feature comparison](#feature-comparison) to other libraries.
+See the [library comparison](#library-comparisons) to other libraries.
 
 <br>
 <br>
