@@ -63,6 +63,174 @@ console.log(isMatch('a/b.js')); //=> false
 
 <br>
 
+## API
+
+### [picomatch](lib/picomatch.js#L30)
+
+Creates a matcher function from one or more glob patterns. The returned function takes a string to match as its first argument, and returns true if the string is a match. The returned matcher function also takes a boolean as the second argument that, when true, returns an object with additional information.
+
+**Params**
+
+* `globs` **{String|Array}**: One or more glob patterns.
+* `options` **{Object=}**
+* `returns` **{Function=}**: Returns a matcher function.
+
+**Example**
+
+```js
+const picomatch = require('picomatch');
+// picomatch(glob[, options]);
+
+const isMatch = picomatch('*.!(*a)');
+console.log(isMatch('a.a')); //=> false
+console.log(isMatch('a.b')); //=> true
+```
+
+### [.test](lib/picomatch.js#L109)
+
+Test `input` with the given `regex`. This is used by the main `picomatch()` function to test the input string.
+
+**Params**
+
+* `input` **{String}**: String to test.
+* `regex` **{RegExp}**
+* `returns` **{Object}**: Returns an object with matching info.
+
+**Example**
+
+```js
+const picomatch = require('picomatch');
+// picomatch.test(input, regex[, options]);
+
+console.log(picomatch.test('foo/bar', /^(?:([^/]*?)\/([^/]*?))$/));
+// { isMatch: true, match: [ 'foo/', 'foo', 'bar' ], output: 'foo/bar' }
+```
+
+### [.matchBase](lib/picomatch.js#L153)
+
+Match the basename of a filepath.
+
+**Params**
+
+* `input` **{String}**: String to test.
+* `glob` **{RegExp|String}**: Glob pattern or regex created by [.makeRe](#makeRe).
+* `returns` **{Boolean}**
+
+**Example**
+
+```js
+const picomatch = require('picomatch');
+// picomatch.matchBase(input, glob[, options]);
+console.log(picomatch.matchBase('foo/bar.js', '*.js'); // true
+```
+
+### [.isMatch](lib/picomatch.js#L175)
+
+Returns true if **any** of the given glob `patterns` match the specified `string`.
+
+**Params**
+
+* **{String|Array}**: str The string to test.
+* **{String|Array}**: patterns One or more glob patterns to use for matching.
+* **{Object}**: See available [options](#options).
+* `returns` **{Boolean}**: Returns true if any patterns match `str`
+
+**Example**
+
+```js
+const picomatch = require('picomatch');
+// picomatch.isMatch(string, patterns[, options]);
+
+console.log(picomatch.isMatch('a.a', ['b.*', '*.a'])); //=> true
+console.log(picomatch.isMatch('a.a', 'b.*')); //=> false
+```
+
+### [.parse](lib/picomatch.js#L191)
+
+Parse a glob pattern to create the source string for a regular expression.
+
+**Params**
+
+* `glob` **{String}**
+* `options` **{Object}**
+* `returns` **{Object}**: Returns an object with useful properties and output to be used as a regex source string.
+
+**Example**
+
+```js
+const picomatch = require('picomatch');
+const result = picomatch.parse(glob[, options]);
+```
+
+### [.scan](lib/picomatch.js#L215)
+
+Scan a glob pattern to separate the pattern into segments.
+
+**Params**
+
+* `input` **{String}**: Glob pattern to scan.
+* `options` **{Object}**
+* `returns` **{Object}**: Returns an object with
+
+**Example**
+
+```js
+const picomatch = require('picomatch');
+// picomatch.scan(input[, options]);
+
+const result = picomatch.scan('!./foo/*.js');
+console.log(result);
+// { prefix: '!./',
+//   input: '!./foo/*.js',
+//   base: 'foo',
+//   glob: '*.js',
+//   negated: true,
+//   isGlob: true }
+```
+
+### [.makeRe](lib/picomatch.js#L233)
+
+Create a regular expression from a glob pattern.
+
+**Params**
+
+* `input` **{String}**: A glob pattern to convert to regex.
+* `options` **{Object}**
+* `returns` **{RegExp}**: Returns a regex created from the given pattern.
+
+**Example**
+
+```js
+const picomatch = require('picomatch');
+// picomatch.makeRe(input[, options]);
+
+console.log(picomatch.makeRe('*.js'));
+//=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
+```
+
+### [.toRegex](lib/picomatch.js#L294)
+
+Create a regular expression from the given regex source string.
+
+**Params**
+
+* `source` **{String}**: Regular expression source string.
+* `options` **{Object}**
+* `returns` **{RegExp}**
+
+**Example**
+
+```js
+const picomatch = require('picomatch');
+// picomatch.toRegex(source[, options]);
+
+const { output } = picomatch.parse('*.js');
+console.log(picomatch.toRegex(output));
+//=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
+```
+
+<br>
+
 ## Options
 
 | **Option** | **Type** | **Default value** | **Description** |
@@ -433,5 +601,5 @@ $ npm install -g verbose/verb#dev verb-generate-readme && verb
 
 ### License
 
-Copyright © 2018, [Jon Schlinkert](https://github.com/jonschlinkert).
+Copyright © 2017-present, [Jon Schlinkert](https://github.com/jonschlinkert).
 Released under the [MIT License](LICENSE).

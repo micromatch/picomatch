@@ -32,6 +32,13 @@ Changelog entries are classified using the following labels _(from [keep-a-chang
 
 </details>
 
+## [2.0.4] - 2019-04-10
+
+### Fixed
+
+- Readme link [fixed](https://github.com/micromatch/picomatch/pull/13/commits/a96ab3aa2b11b6861c23289964613d85563b05df) by @danez.
+- `options.capture` now works as expected when fastpaths are enabled. See https://github.com/micromatch/picomatch/pull/12/commits/26aefd71f1cfaf95c37f1c1fcab68a693b037304. Thanks to @DrPizza.
+
 ## [2.0.0] - 2019-04-10
 
 ### Added
@@ -56,6 +63,7 @@ Changelog entries are classified using the following labels _(from [keep-a-chang
 First release.
 
 
+[2.0.4]: https://github.com/jonschlinkert/micromatch/compare/2.0.0...2.0.4
 [2.0.0]: https://github.com/jonschlinkert/micromatch/compare/1.0.0...2.0.0
 [1.0.0]: https://github.com/jonschlinkert/micromatch/compare/0.1.0...1.0.0
 [keep-a-changelog]: https://github.com/olivierlacan/keep-a-changelog
