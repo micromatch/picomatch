@@ -3,11 +3,16 @@
 require('mocha');
 const assert = require('assert').strict;
 const support = require('./support');
-const { isMatch } = require('..');
+const { isMatch, makeRe } = require('..');
 
 describe('slash handling - windows', () => {
   beforeEach(() => support.windowsPathSep());
   afterEach(() => support.resetPathSep());
+
+  it('should match absolute windows paths with regex from makeRe', () => {
+    let regex = makeRe('**/path/**', { windows: true });
+    assert(regex.test('C:\\Users\\user\\Projects\\project\\path\\image.jpg'));
+  });
 
   it('should match windows path separators with a string literal', () => {
     assert(!isMatch('a\\a', '(a/b)'));
