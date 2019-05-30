@@ -3,7 +3,6 @@
 require('mocha');
 const version = process.version;
 const assert = require('assert').strict;
-const utils = require('../lib/utils');
 const { isMatch } = require('..');
 
 describe('regex features', () => {
@@ -19,7 +18,7 @@ describe('regex features', () => {
 
   describe('regex lookarounds', () => {
     it('should support regex lookbehinds', () => {
-      if (utils.supportsLookbehinds()) {
+      if (parseInt(version.slice(1), 10) >= 10) {
         assert(isMatch('foo/cbaz', 'foo/*(?<!d)baz'));
         assert(!isMatch('foo/cbaz', 'foo/*(?<!c)baz'));
         assert(!isMatch('foo/cbaz', 'foo/*(?<=d)baz'));

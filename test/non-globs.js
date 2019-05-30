@@ -3,9 +3,14 @@
 require('mocha');
 const path = require('path');
 const assert = require('assert').strict;
+const support = require('./support');
 const { isMatch } = require('..');
 
 describe('non-globs', () => {
+  before(() => support.resetPathSep());
+  after(() => support.resetPathSep());
+  afterEach(() => support.resetPathSep());
+
   it('should match non-globs', () => {
     assert(!isMatch('/ab', '/a'));
     assert(!isMatch('a/a', 'a/b'));
@@ -50,9 +55,9 @@ describe('non-globs', () => {
   });
 
   it('should match windows paths', () => {
-    path.sep = '\\';
+    support.windowsPathSep()
     assert(isMatch('aaa\\bbb', 'aaa/bbb'));
     assert(isMatch('aaa/bbb', 'aaa/bbb'));
-    path.sep = process.env.ORIGINAL_PATH_SEP;
+    support.resetPathSep();
   });
 });

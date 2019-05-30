@@ -8,7 +8,7 @@ const { makeRe, parse } = pm;
 const opts = { strictSlashes: true, posix: true, regex: true };
 const isMatch = (...args) => pm.isMatch(...args, opts);
 const convert = (...args) => {
-  let state = parse(...args, opts);
+  let state = parse(...args, { wrap: false, ...opts });
   return state.output;
 };
 

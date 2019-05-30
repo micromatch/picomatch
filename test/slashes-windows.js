@@ -8,6 +8,8 @@ const { isMatch, makeRe } = require('..');
 describe('slash handling - windows', () => {
   beforeEach(() => support.windowsPathSep());
   afterEach(() => support.resetPathSep());
+  before(() => support.resetPathSep());
+  after(() => support.resetPathSep());
 
   it('should match absolute windows paths with regex from makeRe', () => {
     let regex = makeRe('**/path/**', { windows: true });

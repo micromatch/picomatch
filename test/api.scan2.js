@@ -2,7 +2,7 @@
 
 require('mocha');
 const assert = require('assert').strict;
-const scan = require('../lib/scan');
+const scan = require('../lib/scan2');
 const base = (...args) => scan(...args).base;
 const both = (...args) => {
   let { base, glob } = scan(...args);
@@ -166,16 +166,11 @@ describe('picomatch', () => {
       assert.equal(base('foo/(b c)/baz'), 'foo');
       assert.equal(base('a/(b c)/'), 'a');
       assert.equal(base('a/(b c)/d'), 'a');
-      assert.equal(base('path/(foo bar)/subdir/foo.*'), 'path', 'parens must be escaped');
-      assert.equal(base('a/(b c)', { noparen: true }), 'a/(b c)');
-      assert.equal(base('a/(b c)/', { noparen: true }), 'a/(b c)/');
-      assert.equal(base('a/(b c)/d', { noparen: true }), 'a/(b c)/d');
-      assert.equal(base('foo/(b c)/baz', { noparen: true }), 'foo/(b c)/baz');
-      assert.equal(base('path/(foo bar)/subdir/foo.*', { noparen: true }), 'path/(foo bar)/subdir');
       assert.equal(base('a/\\(b c)'), 'a/\\(b c)', 'parens must be escaped');
       assert.equal(base('a/\\+\\(b c)/foo'), 'a/\\+\\(b c)/foo', 'parens must be escaped');
       assert.equal(base('js/t(wo|est)/*.js'), 'js');
       assert.equal(base('js/t/(wo|est)/*.js'), 'js/t');
+      assert.equal(base('path/(foo bar)/subdir/foo.*'), 'path', 'parens must be escaped');
       assert.equal(base('path/(foo/bar|baz)'), 'path');
       assert.equal(base('path/(foo/bar|baz)/'), 'path');
       assert.equal(base('path/(to|from)'), 'path');
