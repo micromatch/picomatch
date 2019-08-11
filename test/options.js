@@ -1,13 +1,10 @@
 'use strict';
 
 const assert = require('assert').strict;
-const support = require('./support');
 const match = require('./support/match');
 const { isMatch } = require('..');
 
 describe('options', () => {
-  beforeEach(() => support.windowsPathSep());
-  afterEach(() => support.resetPathSep());
 
   describe('options.matchBase', () => {
     it('should match the basename of file paths when `options.matchBase` is true', () => {

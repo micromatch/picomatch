@@ -2,12 +2,9 @@
 
 require('mocha');
 const assert = require('assert').strict;
-const support = require('./support');
 const { isMatch, makeRe } = require('..');
 
 describe('slash handling - windows', () => {
-  beforeEach(() => support.windowsPathSep());
-  afterEach(() => support.resetPathSep());
 
   it('should match absolute windows paths with regex from makeRe', () => {
     let regex = makeRe('**/path/**', { windows: true });
