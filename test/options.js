@@ -147,4 +147,16 @@ describe('options', () => {
       assert.deepEqual(match(fixtures, 'a/*/a', { ...opts, windows: false }), ['a/a/a']);
     });
   });
+
+  describe('windows', () => {
+    it('should convert file paths to posix slashes', () => {
+      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md'), ['a/b/c.md']);
+      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md', { windows: false }), ['a\\b\\c.md']);
+    });
+
+    it('should convert absolute paths to posix slashes', () => {
+      assert.deepEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md'), ['E:/a/b/c.md']);
+      assert.deepEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md', { windows: false }), []);
+    });
+  });
 });
