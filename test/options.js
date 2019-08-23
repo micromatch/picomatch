@@ -86,9 +86,9 @@ describe('options', () => {
   describe('options.unescape', () => {
     it('should remove backslashes in glob patterns:', () => {
       let fixtures = ['abc', '/a/b/c', '\\a\\b\\c'];
-      assert.deepEqual(match(fixtures, '\\a\\b\\c'), ['/a/b/c']);
-      assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: true }), ['abc', '/a/b/c']);
-      assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: false }), ['/a/b/c']);
+      assert.deepEqual(match(fixtures, '\\a\\b\\c', { windows: true }), ['/a/b/c']);
+      assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: true, windows: true }), ['abc', '/a/b/c']);
+      assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: false, windows: true }), ['/a/b/c']);
     });
   });
 
@@ -103,12 +103,12 @@ describe('options', () => {
 
   describe('options.windows', () => {
     it('should windows file paths by default', () => {
-      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md'), ['a/b/c.md']);
-      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md', { windows: false }), ['a\\b\\c.md']);
+      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md', { windows: true }), ['a/b/c.md']);
+      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md', { windows: true }), ['a/b/c.md']);
     });
 
     it('should windows absolute paths', () => {
-      assert.deepEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md'), ['E:/a/b/c.md']);
+      assert.deepEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md', { windows: true }), ['E:/a/b/c.md']);
       assert.deepEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md', { windows: false }), []);
     });
 
@@ -145,18 +145,6 @@ describe('options', () => {
       assert.deepEqual(match(fixtures, 'a/*/*/*', { ...opts, windows: false }), ['a/a/a/a']);
       assert.deepEqual(match(fixtures, 'a/*/*/*/*', { ...opts, windows: false }), ['a/a/a/a/a']);
       assert.deepEqual(match(fixtures, 'a/*/a', { ...opts, windows: false }), ['a/a/a']);
-    });
-  });
-
-  describe('windows', () => {
-    it('should convert file paths to posix slashes', () => {
-      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md'), ['a/b/c.md']);
-      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md', { windows: false }), ['a\\b\\c.md']);
-    });
-
-    it('should convert absolute paths to posix slashes', () => {
-      assert.deepEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md'), ['E:/a/b/c.md']);
-      assert.deepEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md', { windows: false }), []);
     });
   });
 });
