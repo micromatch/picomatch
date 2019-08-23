@@ -1,13 +1,10 @@
 'use strict';
 
 const assert = require('assert').strict;
-const support = require('./support');
 const match = require('./support/match');
 const { isMatch } = require('..');
 
 describe('options', () => {
-  beforeEach(() => support.windowsPathSep());
-  afterEach(() => support.resetPathSep());
 
   describe('options.matchBase', () => {
     it('should match the basename of file paths when `options.matchBase` is true', () => {
@@ -89,9 +86,9 @@ describe('options', () => {
   describe('options.unescape', () => {
     it('should remove backslashes in glob patterns:', () => {
       let fixtures = ['abc', '/a/b/c', '\\a\\b\\c'];
-      assert.deepEqual(match(fixtures, '\\a\\b\\c'), ['/a/b/c']);
-      assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: true }), ['abc', '/a/b/c']);
-      assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: false }), ['/a/b/c']);
+      assert.deepEqual(match(fixtures, '\\a\\b\\c', { windows: true }), ['/a/b/c']);
+      assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: true, windows: true }), ['abc', '/a/b/c']);
+      assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: false, windows: true }), ['/a/b/c']);
     });
   });
 
@@ -106,12 +103,12 @@ describe('options', () => {
 
   describe('options.windows', () => {
     it('should windows file paths by default', () => {
-      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md'), ['a/b/c.md']);
-      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md', { windows: false }), ['a\\b\\c.md']);
+      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md', { windows: true }), ['a/b/c.md']);
+      assert.deepEqual(match(['a\\b\\c.md'], '**/*.md', { windows: true }), ['a/b/c.md']);
     });
 
     it('should windows absolute paths', () => {
-      assert.deepEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md'), ['E:/a/b/c.md']);
+      assert.deepEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md', { windows: true }), ['E:/a/b/c.md']);
       assert.deepEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md', { windows: false }), []);
     });
 

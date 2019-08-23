@@ -1,7 +1,6 @@
 'use strict';
 
 require('mocha');
-const path = require('path');
 const assert = require('assert').strict;
 const { isMatch } = require('..');
 
@@ -47,12 +46,5 @@ describe('non-globs', () => {
   it('should handle escaped characters as literals', () => {
     assert(!isMatch('abc', 'abc\\*'));
     assert(isMatch('abc*', 'abc\\*'));
-  });
-
-  it('should match windows paths', () => {
-    path.sep = '\\';
-    assert(isMatch('aaa\\bbb', 'aaa/bbb'));
-    assert(isMatch('aaa/bbb', 'aaa/bbb'));
-    path.sep = process.env.ORIGINAL_PATH_SEP;
   });
 });

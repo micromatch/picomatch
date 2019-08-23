@@ -2,7 +2,6 @@
 
 require('mocha');
 const assert = require('assert').strict;
-const path = require('path');
 const { isMatch, makeRe } = require('..');
 
 describe('special characters', () => {
@@ -258,15 +257,12 @@ describe('special characters', () => {
     });
 
     it('should not match multiple windows directories with a single star', () => {
-      path.sep = '\\';
       assert(isMatch('c:\\', '*{,/}'));
       assert(!isMatch('C:\\Users\\', '*'));
       assert(!isMatch('C:cwd\\another', '*'));
-      path.sep = '/';
     });
 
     it('should match mixed slashes on windows', () => {
-      path.sep = '\\';
       assert(isMatch('//C://user\\docs\\Letter.txt', '**'));
       assert(isMatch('//C:\\\\user/docs/Letter.txt', '**'));
       assert(isMatch(':\\', '*{,/}'));
@@ -278,7 +274,6 @@ describe('special characters', () => {
       assert(isMatch('\\\\unc\\admin$\\system32', '//*/*$/*32'));
       assert(isMatch('\\\\unc\\share\\foo', '//u*/s*/f*'));
       assert(isMatch('foo\\bar\\baz', 'f*/*/*'));
-      path.sep = '/';
     });
 
     it('should match mixed slashes when options.windows is true', () => {
