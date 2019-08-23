@@ -4,7 +4,7 @@ require('mocha');
 const assert = require('assert').strict;
 const { isMatch, makeRe } = require('..');
 
-describe.only('slash handling - windows', () => {
+describe('slash handling - windows', () => {
 
   it('should match absolute windows paths with regex from makeRe', () => {
     let regex = makeRe('**/path/**', { windows: true });
@@ -46,7 +46,7 @@ describe.only('slash handling - windows', () => {
     assert(isMatch('a\\c', 'a/(a|b|c)', { windows: true }));
   });
 
-  it.only('should support matching backslashes with regex ranges', () => {
+  it('should support matching backslashes with regex ranges', () => {
     assert(!isMatch('a\\a', 'a/[b-c]', { windows: true }));
     assert(isMatch('a\\b', 'a/[b-c]', { windows: true }));
     assert(isMatch('a\\c', 'a/[b-c]', { windows: true }));
@@ -59,18 +59,6 @@ describe.only('slash handling - windows', () => {
     assert(!isMatch('a\\x\\y', 'a/[a-z]', { windows: true }));
     assert(isMatch('a\\x\\y', 'a/[a-z]/y', { windows: true }));
     assert(isMatch('a\\x', 'a/[a-z]', { windows: true }));
-
-    assert(!isMatch('a\\a', 'a/[b-c]', { windows: true }));
-    assert(isMatch('a\\b', 'a/[b-c]', { windows: true }));
-    assert(!isMatch('a\\c', 'a/[b-c]', { windows: true }));
-    assert(!isMatch('a\\x\\y', 'a/[b-c]', { windows: true }));
-    assert(!isMatch('a\\x', 'a/[b-c]', { windows: true }));
-
-    assert(!isMatch('a\\a', 'a/[a-z]', { windows: true }));
-    assert(!isMatch('a\\b', 'a/[a-z]', { windows: true }));
-    assert(!isMatch('a\\c', 'a/[a-z]', { windows: true }));
-    assert(!isMatch('a\\x\\y', 'a/[a-z]', { windows: true }));
-    assert(!isMatch('a\\x', 'a/[a-z]', { windows: true }));
   });
 
   it('should not match slashes with single stars', () => {
@@ -216,136 +204,6 @@ describe.only('slash handling - windows', () => {
     assert(!isMatch('a\\a\\a\\a\\a', 'a/*/b', { windows: true }));
     assert(!isMatch('x\\y', 'a/*/b', { windows: true }));
     assert(!isMatch('z\\z', 'a/*/b', { windows: true }));
-
-    assert(!isMatch('a', '*/*', { windows: true }));
-    assert(!isMatch('b', '*/*', { windows: true }));
-    assert(!isMatch('a\\a', '*/*', { windows: true }));
-    assert(!isMatch('a\\b', '*/*', { windows: true }));
-    assert(!isMatch('a\\c', '*/*', { windows: true }));
-    assert(!isMatch('a\\x', '*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a', '*/*', { windows: true }));
-    assert(!isMatch('a\\a\\b', '*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a', '*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a\\a', '*/*', { windows: true }));
-    assert(!isMatch('x\\y', '*/*', { windows: true }));
-    assert(!isMatch('z\\z', '*/*', { windows: true }));
-
-    assert(!isMatch('a', '*/*/*', { windows: true }));
-    assert(!isMatch('b', '*/*/*', { windows: true }));
-    assert(!isMatch('a\\a', '*/*/*', { windows: true }));
-    assert(!isMatch('a\\b', '*/*/*', { windows: true }));
-    assert(!isMatch('a\\c', '*/*/*', { windows: true }));
-    assert(!isMatch('a\\x', '*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a', '*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\b', '*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a', '*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a\\a', '*/*/*', { windows: true }));
-    assert(!isMatch('x\\y', '*/*/*', { windows: true }));
-    assert(!isMatch('z\\z', '*/*/*', { windows: true }));
-
-    assert(!isMatch('a', '*/*/*/*', { windows: true }));
-    assert(!isMatch('b', '*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a', '*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\b', '*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\c', '*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\x', '*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a', '*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\b', '*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a', '*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a\\a', '*/*/*/*', { windows: true }));
-    assert(!isMatch('x\\y', '*/*/*/*', { windows: true }));
-    assert(!isMatch('z\\z', '*/*/*/*', { windows: true }));
-
-    assert(!isMatch('a', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('b', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\b', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\c', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\x', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\b', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a\\a', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('x\\y', '*/*/*/*/*', { windows: true }));
-    assert(!isMatch('z\\z', '*/*/*/*/*', { windows: true }));
-
-    assert(!isMatch('a', 'a/*', { windows: true }));
-    assert(!isMatch('b', 'a/*', { windows: true }));
-    assert(!isMatch('a\\a', 'a/*', { windows: true }));
-    assert(!isMatch('a\\b', 'a/*', { windows: true }));
-    assert(!isMatch('a\\c', 'a/*', { windows: true }));
-    assert(!isMatch('a\\x', 'a/*', { windows: true }));
-    assert(!isMatch('a\\a\\a', 'a/*', { windows: true }));
-    assert(!isMatch('a\\a\\b', 'a/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*', { windows: true }));
-    assert(!isMatch('x\\y', 'a/*', { windows: true }));
-    assert(!isMatch('z\\z', 'a/*', { windows: true }));
-
-    assert(!isMatch('a', 'a/*/*', { windows: true }));
-    assert(!isMatch('b', 'a/*/*', { windows: true }));
-    assert(!isMatch('a\\a', 'a/*/*', { windows: true }));
-    assert(!isMatch('a\\b', 'a/*/*', { windows: true }));
-    assert(!isMatch('a\\c', 'a/*/*', { windows: true }));
-    assert(!isMatch('a\\x', 'a/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a', 'a/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\b', 'a/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/*', { windows: true }));
-    assert(!isMatch('x\\y', 'a/*/*', { windows: true }));
-    assert(!isMatch('z\\z', 'a/*/*', { windows: true }));
-
-    assert(!isMatch('a', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('b', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('a\\b', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('a\\c', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('a\\x', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\b', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('x\\y', 'a/*/*/*', { windows: true }));
-    assert(!isMatch('z\\z', 'a/*/*/*', { windows: true }));
-
-    assert(!isMatch('a', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('b', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\b', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\c', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\x', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\b', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('x\\y', 'a/*/*/*/*', { windows: true }));
-    assert(!isMatch('z\\z', 'a/*/*/*/*', { windows: true }));
-
-    assert(!isMatch('a', 'a/*/a', { windows: true }));
-    assert(!isMatch('b', 'a/*/a', { windows: true }));
-    assert(!isMatch('a\\a', 'a/*/a', { windows: true }));
-    assert(!isMatch('a\\b', 'a/*/a', { windows: true }));
-    assert(!isMatch('a\\c', 'a/*/a', { windows: true }));
-    assert(!isMatch('a\\x', 'a/*/a', { windows: true }));
-    assert(!isMatch('a\\a\\a', 'a/*/a', { windows: true }));
-    assert(!isMatch('a\\a\\b', 'a/*/a', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*/a', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/a', { windows: true }));
-    assert(!isMatch('x\\y', 'a/*/a', { windows: true }));
-    assert(!isMatch('z\\z', 'a/*/a', { windows: true }));
-
-    assert(!isMatch('a', 'a/*/b', { windows: true }));
-    assert(!isMatch('b', 'a/*/b', { windows: true }));
-    assert(!isMatch('a\\a', 'a/*/b', { windows: true }));
-    assert(!isMatch('a\\b', 'a/*/b', { windows: true }));
-    assert(!isMatch('a\\c', 'a/*/b', { windows: true }));
-    assert(!isMatch('a\\x', 'a/*/b', { windows: true }));
-    assert(!isMatch('a\\a\\a', 'a/*/b', { windows: true }));
-    assert(!isMatch('a\\a\\b', 'a/*/b', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a', 'a/*/b', { windows: true }));
-    assert(!isMatch('a\\a\\a\\a\\a', 'a/*/b', { windows: true }));
-    assert(!isMatch('x\\y', 'a/*/b', { windows: true }));
-    assert(!isMatch('z\\z', 'a/*/b', { windows: true }));
   });
 
   it('should support globstars (**)', () => {
@@ -387,29 +245,14 @@ describe.only('slash handling - windows', () => {
     assert(isMatch('a\\x\\y.txt', 'a/**/*.txt', { windows: true }));
     assert(!isMatch('a\\x\\y\\z', 'a/**/*.txt', { windows: true }));
 
-    assert(!isMatch('a.txt', 'a/**/*.txt', { windows: true }));
-    assert(!isMatch('a\\b.txt', 'a/**/*.txt', { windows: true }));
-    assert(!isMatch('a\\x\\y.txt', 'a/**/*.txt', { windows: true }));
-    assert(!isMatch('a\\x\\y\\z', 'a/**/*.txt', { windows: true }));
-
     assert(!isMatch('a.txt', 'a/*.txt', { windows: true }));
     assert(isMatch('a\\b.txt', 'a/*.txt', { windows: true }));
-    assert(!isMatch('a\\x\\y.txt', 'a/*.txt', { windows: true }));
-    assert(!isMatch('a\\x\\y\\z', 'a/*.txt', { windows: true }));
-
-    assert(!isMatch('a.txt', 'a/*.txt', { windows: true }));
-    assert(!isMatch('a\\b.txt', 'a/*.txt', { windows: true }));
     assert(!isMatch('a\\x\\y.txt', 'a/*.txt', { windows: true }));
     assert(!isMatch('a\\x\\y\\z', 'a/*.txt', { windows: true }));
 
     assert(!isMatch('a.txt', 'a/*/*.txt', { windows: true }));
     assert(!isMatch('a\\b.txt', 'a/*/*.txt', { windows: true }));
     assert(isMatch('a\\x\\y.txt', 'a/*/*.txt', { windows: true }));
-    assert(!isMatch('a\\x\\y\\z', 'a/*/*.txt', { windows: true }));
-
-    assert(!isMatch('a.txt', 'a/*/*.txt', { windows: true }));
-    assert(!isMatch('a\\b.txt', 'a/*/*.txt', { windows: true }));
-    assert(!isMatch('a\\x\\y.txt', 'a/*/*.txt', { windows: true }));
     assert(!isMatch('a\\x\\y\\z', 'a/*/*.txt', { windows: true }));
   });
 
