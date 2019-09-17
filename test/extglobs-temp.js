@@ -1058,7 +1058,7 @@ describe('extglobs', () => {
     });
 
     it('should work with character classes', () => {
-      let opts = { posix: true };
+      const opts = { posix: true };
       assert(isMatch('a.b', 'a[^[:alnum:]]b', opts));
       assert(isMatch('a,b', 'a[^[:alnum:]]b', opts));
       assert(isMatch('a:b', 'a[^[:alnum:]]b', opts));
@@ -1133,7 +1133,7 @@ describe('extglobs', () => {
     });
 
     it('should support POSIX character classes in extglobs', () => {
-      let opts = { posix: true };
+      const opts = { posix: true };
       assert(isMatch('a.c', '+([[:alpha:].])', opts));
       assert(isMatch('a.c', '+([[:alpha:].])+([[:alpha:].])', opts));
       assert(isMatch('a.c', '*([[:alpha:].])', opts));

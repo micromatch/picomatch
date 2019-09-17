@@ -233,13 +233,13 @@ describe('special characters', () => {
     });
 
     it('should throw an error on imbalanced, unescaped parens', () => {
-      let opts = { strictBrackets: true };
+      const opts = { strictBrackets: true };
       assert.throws(() => makeRe('*)', opts), /Missing opening: "\("/);
       assert.throws(() => makeRe('*(', opts), /Missing closing: "\)"/);
     });
 
     it('should throw an error on imbalanced, unescaped brackets', () => {
-      let opts = { strictBrackets: true };
+      const opts = { strictBrackets: true };
       assert.throws(() => makeRe('*]', opts), /Missing opening: "\["/);
       assert.throws(() => makeRe('*[', opts), /Missing closing: "\]"/);
     });

@@ -50,7 +50,7 @@ describe('qmarks and stars', () => {
   });
 
   it('should match one character per question mark', () => {
-    let fixtures = ['a', 'aa', 'ab', 'aaa', 'abcdefg'];
+    const fixtures = ['a', 'aa', 'ab', 'aaa', 'abcdefg'];
     assert.deepEqual(match(fixtures, '?'), ['a']);
     assert.deepEqual(match(fixtures, '??'), ['aa', 'ab']);
     assert.deepEqual(match(fixtures, '???'), ['aaa']);
@@ -64,7 +64,7 @@ describe('qmarks and stars', () => {
   });
 
   it('should not match slashes question marks', () => {
-    let fixtures = ['//', 'a/', '/a', '/a/', 'aa', '/aa', 'a/a', 'aaa', '/aaa'];
+    const fixtures = ['//', 'a/', '/a', '/a/', 'aa', '/aa', 'a/a', 'aaa', '/aaa'];
     assert.deepEqual(match(fixtures, '/?'), ['/a']);
     assert.deepEqual(match(fixtures, '/??'), ['/aa']);
     assert.deepEqual(match(fixtures, '/???'), ['/aaa']);
@@ -91,7 +91,7 @@ describe('qmarks and stars', () => {
   });
 
   it('should match no more than one character between slashes', () => {
-    let fixtures = ['a/a', 'a/a/a', 'a/aa/a', 'a/aaa/a', 'a/aaaa/a', 'a/aaaaa/a'];
+    const fixtures = ['a/a', 'a/a/a', 'a/aa/a', 'a/aaa/a', 'a/aaaa/a', 'a/aaaaa/a'];
     assert.deepEqual(match(fixtures, '?/?'), ['a/a']);
     assert.deepEqual(match(fixtures, '?/???/?'), ['a/aaa/a']);
     assert.deepEqual(match(fixtures, '?/????/?'), ['a/aaaa/a']);
@@ -105,7 +105,7 @@ describe('qmarks and stars', () => {
   });
 
   it('should not match non-leading dots with question marks', () => {
-    let fixtures = ['.', '.a', 'a', 'aa', 'a.a', 'aa.a', 'aaa', 'aaa.a', 'aaaa.a', 'aaaaa'];
+    const fixtures = ['.', '.a', 'a', 'aa', 'a.a', 'aa.a', 'aaa', 'aaa.a', 'aaaa.a', 'aaaaa'];
     assert.deepEqual(match(fixtures, '?'), ['a']);
     assert.deepEqual(match(fixtures, '.?'), ['.a']);
     assert.deepEqual(match(fixtures, '?a'), ['aa']);
@@ -118,8 +118,8 @@ describe('qmarks and stars', () => {
   });
 
   it('should match non-leading dots with question marks when options.dot is true', () => {
-    let fixtures = ['.', '.a', 'a', 'aa', 'a.a', 'aa.a', '.aa', 'aaa.a', 'aaaa.a', 'aaaaa'];
-    let opts = { dot: true };
+    const fixtures = ['.', '.a', 'a', 'aa', 'a.a', 'aa.a', '.aa', 'aaa.a', 'aaaa.a', 'aaaaa'];
+    const opts = { dot: true };
     assert.deepEqual(match(fixtures, '?', opts), ['.', 'a']);
     assert.deepEqual(match(fixtures, '.?', opts), ['.a']);
     assert.deepEqual(match(fixtures, '?a', opts), ['.a', 'aa']);

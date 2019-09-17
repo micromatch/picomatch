@@ -15,8 +15,8 @@ const match = (list, pattern, options = {}) => {
     normalize = true;
   }
 
-  let isMatch = pm(pattern, options);
-  let matches = new Set();
+  const isMatch = pm(pattern, options);
+  const matches = new Set();
   for (let ele of list) {
     if (normalize === true || options.normalize === true) {
       ele = path.posix.normalize(ele);
@@ -28,7 +28,7 @@ const match = (list, pattern, options = {}) => {
   return [...matches];
 };
 
-let fixtures = ['a.md', 'a/b.md', './a.md', './a/b.md', 'a/b/c.md', './a/b/c.md', '.\\a\\b\\c.md', 'a\\b\\c.md'];
+const fixtures = ['a.md', 'a/b.md', './a.md', './a/b.md', 'a/b/c.md', './a/b/c.md', '.\\a\\b\\c.md', 'a\\b\\c.md'];
 
 console.log(path.posix.normalize('./{a,b,c}/*.md'));
 console.log(match(fixtures, './**/*.md'));

@@ -50,7 +50,7 @@ describe('options', () => {
     });
 
     it('should not double-set `i` when both `nocase` and the `i` flag are set', () => {
-      let opts = { nocase: true, flags: 'i' };
+      const opts = { nocase: true, flags: 'i' };
       assert.deepEqual(match(['a/b/d/e.md'], 'a/b/D/*.md', opts), ['a/b/d/e.md']);
       assert.deepEqual(match(['a/b/c/e.md'], 'A/b/*/E.md', opts), ['a/b/c/e.md']);
       assert.deepEqual(match(['a/b/c/e.md'], 'A/b/C/*.MD', opts), ['a/b/c/e.md']);
@@ -88,7 +88,7 @@ describe('options', () => {
 
   describe('options.unescape', () => {
     it('should remove backslashes in glob patterns:', () => {
-      let fixtures = ['abc', '/a/b/c', '\\a\\b\\c'];
+      const fixtures = ['abc', '/a/b/c', '\\a\\b\\c'];
       assert.deepEqual(match(fixtures, '\\a\\b\\c'), ['/a/b/c']);
       assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: true }), ['abc', '/a/b/c']);
       assert.deepEqual(match(fixtures, '\\a\\b\\c', { unescape: false }), ['/a/b/c']);
@@ -116,9 +116,9 @@ describe('options', () => {
     });
 
     it('should strip leading `./`', () => {
-      let fixtures = ['./a', './a/a/a', './a/a/a/a', './a/a/a/a/a', './a/b', './a/x', './z/z', 'a', 'a/a', 'a/a/b', 'a/c', 'b', 'x/y'].sort();
-      let format = str => str.replace(/^\.\//, '');
-      let opts = { format };
+      const fixtures = ['./a', './a/a/a', './a/a/a/a', './a/a/a/a/a', './a/b', './a/x', './z/z', 'a', 'a/a', 'a/a/b', 'a/c', 'b', 'x/y'].sort();
+      const format = str => str.replace(/^\.\//, '');
+      const opts = { format };
       assert.deepEqual(match(fixtures, '*', opts), ['a', 'b']);
       assert.deepEqual(match(fixtures, '**/a/**', opts), ['a', 'a/a/a', 'a/a/a/a', 'a/a/a/a/a', 'a/b', 'a/x', 'a/a', 'a/a/b', 'a/c']);
       assert.deepEqual(match(fixtures, '*/*', opts), ['a/b', 'a/x', 'z/z', 'a/a', 'a/c', 'x/y']);

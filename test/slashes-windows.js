@@ -10,7 +10,7 @@ describe('slash handling - windows', () => {
   afterEach(() => support.resetPathSep());
 
   it('should match absolute windows paths with regex from makeRe', () => {
-    let regex = makeRe('**/path/**', { windows: true });
+    const regex = makeRe('**/path/**', { windows: true });
     assert(regex.test('C:\\Users\\user\\Projects\\project\\path\\image.jpg'));
   });
 

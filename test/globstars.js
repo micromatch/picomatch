@@ -35,7 +35,7 @@ describe('stars', () => {
     });
 
     it('should respect trailing slashes on paterns', () => {
-      let fixtures = ['a', 'a/', 'a/a', 'a/a/', 'a/a/a', 'a/a/a/', 'a/a/a/a', 'a/a/a/a/', 'a/a/a/a/a', 'a/a/a/a/a/', 'a/a/b', 'a/a/b/', 'a/b', 'a/b/', 'a/b/c/.d/e/', 'a/c', 'a/c/', 'a/b', 'a/x/', 'b', 'b/', 'x/y', 'x/y/', 'z/z', 'z/z/'];
+      const fixtures = ['a', 'a/', 'a/a', 'a/a/', 'a/a/a', 'a/a/a/', 'a/a/a/a', 'a/a/a/a/', 'a/a/a/a/a', 'a/a/a/a/a/', 'a/a/b', 'a/a/b/', 'a/b', 'a/b/', 'a/b/c/.d/e/', 'a/c', 'a/c/', 'a/b', 'a/x/', 'b', 'b/', 'x/y', 'x/y/', 'z/z', 'z/z/'];
 
       assert.deepEqual(match(fixtures, '**/*/a/'), ['a/a/', 'a/a/a/', 'a/a/a/a/', 'a/a/a/a/a/']);
       assert.deepEqual(match(fixtures, '**/*/a/*/'), ['a/a/a/', 'a/a/a/a/', 'a/a/a/a/a/', 'a/a/b/']);
@@ -52,7 +52,7 @@ describe('stars', () => {
     });
 
     it('should match literal globstars when stars are escaped', () => {
-      let fixtures = ['.md', '**a.md', '**.md', '.md', '**'];
+      const fixtures = ['.md', '**a.md', '**.md', '.md', '**'];
       assert.deepEqual(match(fixtures, '\\*\\**.md'), ['**a.md', '**.md']);
       assert.deepEqual(match(fixtures, '\\*\\*.md'), ['**.md']);
     });
@@ -286,7 +286,7 @@ describe('stars', () => {
     });
 
     it('should match leading dots when defined in pattern', () => {
-      let fixtures = ['.gitignore', 'a/b/z/.dotfile', 'a/b/z/.dotfile.md', 'a/b/z/.dotfile.md', 'a/b/z/.dotfile.md'];
+      const fixtures = ['.gitignore', 'a/b/z/.dotfile', 'a/b/z/.dotfile.md', 'a/b/z/.dotfile.md', 'a/b/z/.dotfile.md'];
       assert(!isMatch('.gitignore', 'a/**/z/*.md'));
       assert(!isMatch('a/b/z/.dotfile', 'a/**/z/*.md'));
       assert(!isMatch('a/b/z/.dotfile.md', '**/c/.*.md'));

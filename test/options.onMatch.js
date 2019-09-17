@@ -27,7 +27,7 @@ const options = () => {
 
 describe('options.onMatch', () => {
   it('should call options.onMatch on each matching string', () => {
-    let fixtures = ['a', './a', 'b', 'a/a', './a/b', 'a/c', './a/x', './a/a/a', 'a/a/b', './a/a/a/a', './a/a/a/a/a', 'x/y', './z/z'];
+    const fixtures = ['a', './a', 'b', 'a/a', './a/b', 'a/c', './a/x', './a/a/a', 'a/a/b', './a/a/a/a', './a/a/a/a/a', 'x/y', './z/z'];
 
     assert(!isMatch('./.a', '*.a', { format }));
     assert(!isMatch('./.a', './*.a', { format }));
