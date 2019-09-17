@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const assert = require('assert');
+// const assert = require('assert');
 const pm = require('..');
 
 /**

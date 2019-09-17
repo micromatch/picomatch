@@ -1,6 +1,5 @@
 const pm = require('..');
 
-
 console.log(pm.makeRe('(a|b|c)'));
 console.log(pm.makeRe('!(a|b|c)'));
 console.log(pm.makeRe('*(a|b|c)'));

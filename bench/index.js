@@ -1,7 +1,7 @@
 'use strict';
 
 const { Suite } = require('benchmark');
-const { cyan, red, green } = require('ansi-colors');
+const { red } = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2));
 const mm = require('../node_modules/minimatch');
 const pm = require('..');
@@ -11,7 +11,7 @@ const pm = require('..');
  */
 
 const cycle = (e, newline) => {
-  process.stdout.write(`\u001b[G  ${e.target}${newline ? `\n` : ''}`);
+  process.stdout.write(`\u001b[G  ${e.target}${newline ? '\n' : ''}`);
 };
 
 const bench = (name, options) => {

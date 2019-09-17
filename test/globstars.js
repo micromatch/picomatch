@@ -3,7 +3,7 @@
 require('mocha');
 const assert = require('assert').strict;
 const match = require('./support/match');
-const { isMatch, makeRe } = require('..');
+const { isMatch } = require('..');
 
 describe('stars', () => {
   describe('issue related', () => {
