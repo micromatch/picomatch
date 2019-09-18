@@ -28,7 +28,7 @@ describe('dotfiles', () => {
     });
 
     it('should match dotfiles when there is a leading dot:', () => {
-      let opts = { dot: true };
+      const opts = { dot: true };
       assert.deepEqual(match(['.dotfile'], '*', opts), ['.dotfile']);
       assert.deepEqual(match(['.dotfile'], '**', opts), ['.dotfile']);
       assert.deepEqual(match(['a/b', 'a/.b', '.a/b', '.a/.b'], '**', opts), ['a/b', 'a/.b', '.a/b', '.a/.b']);
@@ -40,7 +40,7 @@ describe('dotfiles', () => {
     });
 
     it('should match dotfiles when there is not a leading dot:', () => {
-      let opts = { dot: true };
+      const opts = { dot: true };
       assert.deepEqual(match(['.dotfile'], '*.*', opts), ['.dotfile']);
       assert.deepEqual(match(['.a', '.b', 'c', 'c.md'], '*.*', opts), ['.a', '.b', 'c.md']);
       assert.deepEqual(match(['.dotfile'], '*.md', opts), []);
@@ -61,7 +61,7 @@ describe('dotfiles', () => {
 
   describe('options.dot', () => {
     it('should match dotfiles when `options.dot` is true:', () => {
-      let fixtures = ['a/./b', 'a/../b', 'a/c/b', 'a/.d/b'];
+      const fixtures = ['a/./b', 'a/../b', 'a/c/b', 'a/.d/b'];
       assert.deepEqual(match(['.dotfile'], '*.*', { dot: true }), ['.dotfile']);
       assert.deepEqual(match(['.dotfile'], '*.md', { dot: true }), []);
       assert.deepEqual(match(['.dotfile'], '.dotfile', { dot: true }), ['.dotfile']);

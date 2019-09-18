@@ -1,7 +1,7 @@
 'use strict';
 
 const { Suite } = require('benchmark');
-const { cyan, red, green } = require('ansi-colors');
+const { red } = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2));
 const parent = require('glob-parent');
 const scan = require('../lib/scan');
@@ -11,7 +11,7 @@ const scan = require('../lib/scan');
  */
 
 const cycle = (e, newline) => {
-  process.stdout.write(`\u001b[G  ${e.target}${newline ? `\n` : ''}`);
+  process.stdout.write(`\u001b[G  ${e.target}${newline ? '\n' : ''}`);
 };
 
 function bench(name, options) {

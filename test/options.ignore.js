@@ -13,12 +13,12 @@ describe('options.ignore', () => {
     assert(!isMatch('+b/src/glimini.js', '+b/src/*', { ignore: ['**/*.js'] }));
   });
 
-  let negations = ['a/a', 'a/b', 'a/c', 'a/d', 'a/e', 'b/a', 'b/b', 'b/c'];
-  let globs = ['.a', '.a/a', '.a/a/a', '.a/a/a/a', 'a', 'a/.a', 'a/a', 'a/a/.a', 'a/a/a', 'a/a/a/a', 'a/a/a/a/a', 'a/a/b', 'a/b', 'a/b/c', 'a/c', 'a/x', 'b', 'b/b/b', 'b/b/c', 'c/c/c', 'e/f/g', 'h/i/a', 'x/x/x', 'x/y', 'z/z', 'z/z/z'].sort();
+  const negations = ['a/a', 'a/b', 'a/c', 'a/d', 'a/e', 'b/a', 'b/b', 'b/c'];
+  const globs = ['.a', '.a/a', '.a/a/a', '.a/a/a/a', 'a', 'a/.a', 'a/a', 'a/a/.a', 'a/a/a', 'a/a/a/a', 'a/a/a/a/a', 'a/a/b', 'a/b', 'a/b/c', 'a/c', 'a/x', 'b', 'b/b/b', 'b/b/c', 'c/c/c', 'e/f/g', 'h/i/a', 'x/x/x', 'x/y', 'z/z', 'z/z/z'].sort();
 
   it('should filter out ignored patterns', () => {
-    let opts = { ignore: ['a/**'], strictSlashes: true };
-    let dotOpts = { ...opts, dot: true };
+    const opts = { ignore: ['a/**'], strictSlashes: true };
+    const dotOpts = { ...opts, dot: true };
 
     assert.deepEqual(match(globs, '*', opts), ['b']);
     assert.deepEqual(match(globs, '*', { ignore: '**/a' }), ['b']);

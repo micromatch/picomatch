@@ -1149,7 +1149,7 @@ describe('slash handling - posix', () => {
   });
 
   it('should match paths with leading `./` when pattern has `./`', () => {
-    let format = str => str.replace(/^\.\//, '');
+    const format = str => str.replace(/^\.\//, '');
     assert(!isMatch('./a/b/c/d/e/z/c.md', './a/**/j/**/z/*.md', { format }));
     assert(!isMatch('./a/b/c/j/e/z/c.txt', './a/**/j/**/z/*.md', { format }));
     assert(isMatch('./a/b/c/d/e/j/n/p/o/z/c.md', './a/**/j/**/z/*.md', { format }));

@@ -11,7 +11,7 @@ const { isMatch, makeRe } = require('..');
 
 describe('extglobs', () => {
   it('should throw on imbalanced sets when `options.strictBrackets` is true', () => {
-    let opts = { strictBrackets: true };
+    const opts = { strictBrackets: true };
     assert.throws(() => makeRe('a(b', opts), /Missing closing: "\)"/i);
     assert.throws(() => makeRe('a)b', opts), /Missing opening: "\("/i);
   });
@@ -713,7 +713,7 @@ describe('extglobs', () => {
   // these are not extglobs, and do not need to pass, but they are included
   // to test integration with other features
   it('should support regex characters', () => {
-    let fixtures = ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'abq', 'axy zc', 'axy', 'axy.zc', 'axyzc'];
+    const fixtures = ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'abq', 'axy zc', 'axy', 'axy.zc', 'axyzc'];
 
     if (process.platform !== 'win32') {
       assert.deepEqual(match(['a\\b', 'a/b', 'ab'], 'a/b'), ['a/b']);
