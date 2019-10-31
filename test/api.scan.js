@@ -136,6 +136,17 @@ describe('picomatch', () => {
       assert.equal(base('path/foo/bar.js'), 'path/foo/bar.js');
     });
 
+    it('should not return glob when noext is true', () => {
+      assert.deepEqual(scan('./foo/bar/*.js', { noext: true }), {
+        input: './foo/bar/*.js',
+        glob: '',
+        isGlob: false,
+        base: 'foo/bar/*.js',
+        negated: false,
+        prefix: './'
+      });
+    });
+    
     it('should respect nonegate opts', () => {
       assert.deepEqual(scan('!foo/bar/*.js', { nonegate: true }), {
         input: '!foo/bar/*.js',
