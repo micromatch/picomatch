@@ -18,7 +18,7 @@
     "node": ">=8.6"
   },
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --reporter dot",
     "cover": "nyc --reporter=text --reporter=html mocha"
   },
   "devDependencies": {
