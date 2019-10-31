@@ -4,8 +4,11 @@
 <a href="https://npmjs.org/package/picomatch">
 <img src="https://img.shields.io/npm/v/picomatch.svg" alt="version">
 </a>
-<a href="https://travis-ci.org/micromatch/picomatch">
-<img src="https://img.shields.io/travis/micromatch/picomatch.svg" alt="travis">
+<a href="https://github.com/micromatch/picomatch/actions?workflow=Tests">
+<img src="https://github.com/micromatch/picomatch/workflows/Tests/badge.svg" alt="test status">
+</a>
+<a href="https://coveralls.io/github/micromatch/picomatch">
+<img src="https://img.shields.io/coveralls/github/micromatch/picomatch/master.svg" alt="coverage status">
 </a>
 <a href="https://npmjs.org/package/picomatch">
 <img src="https://img.shields.io/npm/dm/picomatch.svg" alt="downloads">
