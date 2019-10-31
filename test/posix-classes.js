@@ -256,7 +256,7 @@ describe('posix classes', () => {
       assert(!isMatch('Aa', '[[:lower:]][[:upper:]]'));
     });
 
-    it('should match hexidecimal digits', () => {
+    it('should match hexadecimal digits', () => {
       assert(isMatch('ababab', '[[:xdigit:]]*'));
       assert(isMatch('020202', '[[:xdigit:]]*'));
       assert(isMatch('900', '[[:xdigit:]]*'));

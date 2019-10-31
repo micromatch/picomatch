@@ -12,7 +12,7 @@ describe('extglobs (bash)', () => {
   beforeEach(() => support.windowsPathSep());
   afterEach(() => support.resetPathSep());
 
-  it('should not match empty string iwth "*(0|1|3|5|7|9)"', () => {
+  it('should not match empty string with "*(0|1|3|5|7|9)"', () => {
     assert(!isMatch('', '*(0|1|3|5|7|9)', { bash: true }));
   });
 
