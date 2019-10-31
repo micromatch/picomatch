@@ -1,8 +1,7 @@
 'use strict';
 
-require('mocha');
-const version = process.version;
-const assert = require('assert');
+const { version } = process;
+const assert = require('assert').strict;
 const utils = require('../lib/utils');
 const { isMatch } = require('..');
 

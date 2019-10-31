@@ -1,9 +1,8 @@
 'use strict';
 
-require('mocha');
-const assert = require('assert');
-const picomatch = require('..');
+const assert = require('assert').strict;
 const match = require('./support/match');
+const picomatch = require('..');
 const { isMatch } = picomatch;
 
 const equal = (actual, expected, msg) => {

@@ -1,7 +1,6 @@
 'use strict';
 
-require('mocha');
-const assert = require('assert');
+const assert = require('assert').strict;
 const match = require('./support/match');
 const { isMatch } = require('..');
 
@@ -321,7 +320,7 @@ describe('stars', () => {
       assert.deepEqual(match(['.md', 'a.md', 'a/b/c.md', '.txt'], '**/*.md'), ['a.md', 'a/b/c.md']);
       assert.deepEqual(match(['.md/.md', '.md', 'a/.md', 'a/b/.md'], '**/.md'), ['.md', 'a/.md', 'a/b/.md']);
       assert.deepEqual(match(['.md/.md', '.md/foo/.md', '.md', 'a/.md', 'a/b/.md'], '.md/**/.md'), ['.md/.md', '.md/foo/.md']);
-      assert.deepEqual(match(fixtures, 'a/**/z/.*.md'), [ 'a/b/z/.dotfile.md' ]);
+      assert.deepEqual(match(fixtures, 'a/**/z/.*.md'), ['a/b/z/.dotfile.md']);
     });
 
     it('todo... (micromatch/#24)', () => {

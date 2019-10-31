@@ -1,7 +1,6 @@
 'use strict';
 
-require('mocha');
-const assert = require('assert');
+const assert = require('assert').strict;
 const scan = require('../lib/scan');
 const base = (...args) => scan(...args).base;
 const both = (...args) => {

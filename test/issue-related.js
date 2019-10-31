@@ -1,6 +1,6 @@
 'use strict';
 
-const assert = require('assert');
+const assert = require('assert').strict;
 const { isMatch } = require('..');
 
 describe('issue-related tests', () => {

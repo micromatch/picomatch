@@ -1,6 +1,6 @@
 'use strict';
 
-const assert = require('assert');
+const assert = require('assert').strict;
 const support = require('./support');
 const match = require('./support/match');
 const { isMatch } = require('..');

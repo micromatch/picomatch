@@ -1,7 +1,6 @@
 'use strict';
 
-require('mocha');
-const assert = require('assert');
+const assert = require('assert').strict;
 const { isMatch } = require('..');
 
 describe('stars', () => {

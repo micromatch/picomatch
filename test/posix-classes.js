@@ -1,7 +1,6 @@
 'use strict';
 
-require('mocha');
-const assert = require('assert');
+const assert = require('assert').strict;
 const pm = require('..');
 const { makeRe, parse } = pm;
 
