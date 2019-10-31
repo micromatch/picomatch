@@ -18,12 +18,10 @@
     "node": ">=8.6"
   },
   "scripts": {
-    "pretest": "eslint .",
     "test": "mocha",
     "cover": "nyc --reporter=text --reporter=html mocha"
   },
   "devDependencies": {
-    "eslint": "^6.4.0",
     "fill-range": "^7.0.1",
     "gulp-format-md": "^2.0.0",
     "mocha": "^6.0.2",
