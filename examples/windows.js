@@ -2,7 +2,7 @@
 
 const path = require('path');
 const pm = require('..');
-const sep = path.sep;
+const { sep } = path;
 
 console.log();
 console.log('======= POSIX =======');

@@ -1,6 +1,5 @@
 'use strict';
 
-require('mocha');
 const path = require('path');
 const assert = require('assert');
 const support = require('./support');

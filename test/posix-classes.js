@@ -1,6 +1,5 @@
 'use strict';
 
-require('mocha');
 const assert = require('assert');
 const pm = require('..');
 const { makeRe, parse } = pm;
@@ -15,17 +14,17 @@ const convert = (...args) => {
 describe('posix classes', () => {
   describe('posix bracket type conversion', () => {
     it('should create regex character classes from POSIX bracket expressions:', () => {
-      assert.equal(convert('foo[[:lower:]]bar'), 'foo[a-z]bar');
-      assert.equal(convert('foo[[:lower:][:upper:]]bar'), 'foo[a-zA-Z]bar');
-      assert.equal(convert('[[:alpha:]123]'), '(?=.)[a-zA-Z123]');
-      assert.equal(convert('[[:lower:]]'), '(?=.)[a-z]');
-      assert.equal(convert('[![:lower:]]'), '(?=.)[^a-z]');
-      assert.equal(convert('[[:digit:][:upper:][:space:]]'), '(?=.)[0-9A-Z \\t\\r\\n\\v\\f]');
-      assert.equal(convert('[[:xdigit:]]'), '(?=.)[A-Fa-f0-9]');
-      assert.equal(convert('[[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:graph:][:lower:][:print:][:punct:][:space:][:upper:][:xdigit:]]'), '(?=.)[a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9\\x21-\\x7Ea-z\\x20-\\x7E \\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~ \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
-      assert.equal(convert('[^[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:lower:][:space:][:upper:][:xdigit:]]'), '(?=.)[^a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9a-z \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
-      assert.equal(convert('[a-c[:digit:]x-z]'), '(?=.)[a-c0-9x-z]');
-      assert.equal(convert('[_[:alpha:]][_[:alnum:]][_[:alnum:]]*'), '(?=.)[_a-zA-Z][_a-zA-Z0-9][_a-zA-Z0-9]*', []);
+      assert.strictEqual(convert('foo[[:lower:]]bar'), 'foo[a-z]bar');
+      assert.strictEqual(convert('foo[[:lower:][:upper:]]bar'), 'foo[a-zA-Z]bar');
+      assert.strictEqual(convert('[[:alpha:]123]'), '(?=.)[a-zA-Z123]');
+      assert.strictEqual(convert('[[:lower:]]'), '(?=.)[a-z]');
+      assert.strictEqual(convert('[![:lower:]]'), '(?=.)[^a-z]');
+      assert.strictEqual(convert('[[:digit:][:upper:][:space:]]'), '(?=.)[0-9A-Z \\t\\r\\n\\v\\f]');
+      assert.strictEqual(convert('[[:xdigit:]]'), '(?=.)[A-Fa-f0-9]');
+      assert.strictEqual(convert('[[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:graph:][:lower:][:print:][:punct:][:space:][:upper:][:xdigit:]]'), '(?=.)[a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9\\x21-\\x7Ea-z\\x20-\\x7E \\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~ \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
+      assert.strictEqual(convert('[^[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:lower:][:space:][:upper:][:xdigit:]]'), '(?=.)[^a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9a-z \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
+      assert.strictEqual(convert('[a-c[:digit:]x-z]'), '(?=.)[a-c0-9x-z]');
+      assert.strictEqual(convert('[_[:alpha:]][_[:alnum:]][_[:alnum:]]*'), '(?=.)[_a-zA-Z][_a-zA-Z0-9][_a-zA-Z0-9]*', []);
     });
   });
 
@@ -133,8 +132,8 @@ describe('posix classes', () => {
     });
 
     it('should not create an invalid posix character class:', () => {
-      assert.equal(convert('[:al:]'), '(?:\\[:al:\\]|[:al:])');
-      assert.equal(convert('[abc[:punct:][0-9]'), '(?=.)[abc\\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~\\[0-9]');
+      assert.strictEqual(convert('[:al:]'), '(?:\\[:al:\\]|[:al:])');
+      assert.strictEqual(convert('[abc[:punct:][0-9]'), '(?=.)[abc\\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~\\[0-9]');
     });
 
     it('should return `true` when the pattern matches:', () => {
@@ -186,8 +185,8 @@ describe('posix classes', () => {
 
   describe('.makeRe()', () => {
     it('should make a regular expression for the given pattern:', () => {
-      assert.deepEqual(makeRe('[[:alpha:]123]', opts), /^(?:(?=.)[a-zA-Z123])$/);
-      assert.deepEqual(makeRe('[![:lower:]]', opts), /^(?:(?=.)[^a-z])$/);
+      assert.deepStrictEqual(makeRe('[[:alpha:]123]', opts), /^(?:(?=.)[a-zA-Z123])$/);
+      assert.deepStrictEqual(makeRe('[![:lower:]]', opts), /^(?:(?=.)[^a-z])$/);
     });
   });
 

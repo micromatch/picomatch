@@ -1,6 +1,5 @@
 'use strict';
 
-require('mocha');
 const assert = require('assert');
 const match = require('./support/match');
 const { isMatch } = require('..');
@@ -8,77 +7,77 @@ const { isMatch } = require('..');
 describe('dotfiles', () => {
   describe('normal', () => {
     it('should not match dotfiles by default:', () => {
-      assert.deepEqual(match(['.dotfile'], '*'), []);
-      assert.deepEqual(match(['.dotfile'], '**'), []);
-      assert.deepEqual(match(['a/b/c/.dotfile.md'], '*.md'), []);
-      assert.deepEqual(match(['a/b', 'a/.b', '.a/b', '.a/.b'], '**'), ['a/b']);
-      assert.deepEqual(match(['a/b/c/.dotfile'], '*.*'), []);
+      assert.deepStrictEqual(match(['.dotfile'], '*'), []);
+      assert.deepStrictEqual(match(['.dotfile'], '**'), []);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile.md'], '*.md'), []);
+      assert.deepStrictEqual(match(['a/b', 'a/.b', '.a/b', '.a/.b'], '**'), ['a/b']);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile'], '*.*'), []);
     });
   });
 
   describe('leading dot', () => {
     it('should match dotfiles when a leading dot is defined in the path:', () => {
-      assert.deepEqual(match(['a/b/c/.dotfile.md'], '**/.*'), ['a/b/c/.dotfile.md']);
-      assert.deepEqual(match(['a/b/c/.dotfile.md'], '**/.*.md'), ['a/b/c/.dotfile.md']);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile.md'], '**/.*'), ['a/b/c/.dotfile.md']);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile.md'], '**/.*.md'), ['a/b/c/.dotfile.md']);
     });
 
     it('should use negation patterns on dotfiles:', () => {
-      assert.deepEqual(match(['.a', '.b', 'c', 'c.md'], '!.*'), ['c', 'c.md']);
-      assert.deepEqual(match(['.a', '.b', 'c', 'c.md'], '!.b'), ['.a', 'c', 'c.md']);
+      assert.deepStrictEqual(match(['.a', '.b', 'c', 'c.md'], '!.*'), ['c', 'c.md']);
+      assert.deepStrictEqual(match(['.a', '.b', 'c', 'c.md'], '!.b'), ['.a', 'c', 'c.md']);
     });
 
     it('should match dotfiles when there is a leading dot:', () => {
       const opts = { dot: true };
-      assert.deepEqual(match(['.dotfile'], '*', opts), ['.dotfile']);
-      assert.deepEqual(match(['.dotfile'], '**', opts), ['.dotfile']);
-      assert.deepEqual(match(['a/b', 'a/.b', '.a/b', '.a/.b'], '**', opts), ['a/b', 'a/.b', '.a/b', '.a/.b']);
-      assert.deepEqual(match(['a/b', 'a/.b', 'a/.b', '.a/.b'], 'a/{.*,**}', opts), ['a/b', 'a/.b']);
-      assert.deepEqual(match(['a/b', 'a/.b', 'a/.b', '.a/.b'], '{.*,**}', {}), ['a/b']);
-      assert.deepEqual(match(['a/b', 'a/.b', 'a/.b', '.a/.b'], '{.*,**}', opts), ['a/b', 'a/.b', '.a/.b']);
-      assert.deepEqual(match(['.dotfile'], '.dotfile', opts), ['.dotfile']);
-      assert.deepEqual(match(['.dotfile.md'], '.*.md', opts), ['.dotfile.md']);
+      assert.deepStrictEqual(match(['.dotfile'], '*', opts), ['.dotfile']);
+      assert.deepStrictEqual(match(['.dotfile'], '**', opts), ['.dotfile']);
+      assert.deepStrictEqual(match(['a/b', 'a/.b', '.a/b', '.a/.b'], '**', opts), ['a/b', 'a/.b', '.a/b', '.a/.b']);
+      assert.deepStrictEqual(match(['a/b', 'a/.b', 'a/.b', '.a/.b'], 'a/{.*,**}', opts), ['a/b', 'a/.b']);
+      assert.deepStrictEqual(match(['a/b', 'a/.b', 'a/.b', '.a/.b'], '{.*,**}', {}), ['a/b']);
+      assert.deepStrictEqual(match(['a/b', 'a/.b', 'a/.b', '.a/.b'], '{.*,**}', opts), ['a/b', 'a/.b', '.a/.b']);
+      assert.deepStrictEqual(match(['.dotfile'], '.dotfile', opts), ['.dotfile']);
+      assert.deepStrictEqual(match(['.dotfile.md'], '.*.md', opts), ['.dotfile.md']);
     });
 
     it('should match dotfiles when there is not a leading dot:', () => {
       const opts = { dot: true };
-      assert.deepEqual(match(['.dotfile'], '*.*', opts), ['.dotfile']);
-      assert.deepEqual(match(['.a', '.b', 'c', 'c.md'], '*.*', opts), ['.a', '.b', 'c.md']);
-      assert.deepEqual(match(['.dotfile'], '*.md', opts), []);
-      assert.deepEqual(match(['.verb.txt'], '*.md', opts), []);
-      assert.deepEqual(match(['a/b/c/.dotfile'], '*.md', opts), []);
-      assert.deepEqual(match(['a/b/c/.dotfile.md'], '*.md', opts), []);
-      assert.deepEqual(match(['a/b/c/.verb.md'], '**/*.md', opts), ['a/b/c/.verb.md']);
-      assert.deepEqual(match(['foo.md'], '*.md', opts), ['foo.md']);
+      assert.deepStrictEqual(match(['.dotfile'], '*.*', opts), ['.dotfile']);
+      assert.deepStrictEqual(match(['.a', '.b', 'c', 'c.md'], '*.*', opts), ['.a', '.b', 'c.md']);
+      assert.deepStrictEqual(match(['.dotfile'], '*.md', opts), []);
+      assert.deepStrictEqual(match(['.verb.txt'], '*.md', opts), []);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile'], '*.md', opts), []);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile.md'], '*.md', opts), []);
+      assert.deepStrictEqual(match(['a/b/c/.verb.md'], '**/*.md', opts), ['a/b/c/.verb.md']);
+      assert.deepStrictEqual(match(['foo.md'], '*.md', opts), ['foo.md']);
     });
 
     it('should use negation patterns on dotfiles:', () => {
-      assert.deepEqual(match(['.a', '.b', 'c', 'c.md'], '!.*'), ['c', 'c.md']);
-      assert.deepEqual(match(['.a', '.b', 'c', 'c.md'], '!(.*)'), ['c', 'c.md']);
-      assert.deepEqual(match(['.a', '.b', 'c', 'c.md'], '!(.*)*'), ['c', 'c.md']);
-      assert.deepEqual(match(['.a', '.b', 'c', 'c.md'], '!*.*'), ['.a', '.b', 'c']);
+      assert.deepStrictEqual(match(['.a', '.b', 'c', 'c.md'], '!.*'), ['c', 'c.md']);
+      assert.deepStrictEqual(match(['.a', '.b', 'c', 'c.md'], '!(.*)'), ['c', 'c.md']);
+      assert.deepStrictEqual(match(['.a', '.b', 'c', 'c.md'], '!(.*)*'), ['c', 'c.md']);
+      assert.deepStrictEqual(match(['.a', '.b', 'c', 'c.md'], '!*.*'), ['.a', '.b', 'c']);
     });
   });
 
   describe('options.dot', () => {
     it('should match dotfiles when `options.dot` is true:', () => {
       const fixtures = ['a/./b', 'a/../b', 'a/c/b', 'a/.d/b'];
-      assert.deepEqual(match(['.dotfile'], '*.*', { dot: true }), ['.dotfile']);
-      assert.deepEqual(match(['.dotfile'], '*.md', { dot: true }), []);
-      assert.deepEqual(match(['.dotfile'], '.dotfile', { dot: true }), ['.dotfile']);
-      assert.deepEqual(match(['.dotfile.md'], '.*.md', { dot: true }), ['.dotfile.md']);
-      assert.deepEqual(match(['.verb.txt'], '*.md', { dot: true }), []);
-      assert.deepEqual(match(['.verb.txt'], '*.md', { dot: true }), []);
-      assert.deepEqual(match(['a/b/c/.dotfile'], '*.md', { dot: true }), []);
-      assert.deepEqual(match(['a/b/c/.dotfile.md'], '**/*.md', { dot: true }), ['a/b/c/.dotfile.md']);
-      assert.deepEqual(match(['a/b/c/.dotfile.md'], '**/.*', { dot: false }), ['a/b/c/.dotfile.md']);
-      assert.deepEqual(match(['a/b/c/.dotfile.md'], '**/.*.md', { dot: false }), ['a/b/c/.dotfile.md']);
-      assert.deepEqual(match(['a/b/c/.dotfile.md'], '*.md', { dot: false }), []);
-      assert.deepEqual(match(['a/b/c/.dotfile.md'], '*.md', { dot: true }), []);
-      assert.deepEqual(match(['a/b/c/.verb.md'], '**/*.md', { dot: true }), ['a/b/c/.verb.md']);
-      assert.deepEqual(match(['d.md'], '*.md', { dot: true }), ['d.md']);
-      assert.deepEqual(match(fixtures, 'a/*/b', { dot: true }), ['a/c/b', 'a/.d/b']);
-      assert.deepEqual(match(fixtures, 'a/.*/b'), ['a/.d/b']);
-      assert.deepEqual(match(fixtures, 'a/.*/b', { dot: true }), ['a/.d/b']);
+      assert.deepStrictEqual(match(['.dotfile'], '*.*', { dot: true }), ['.dotfile']);
+      assert.deepStrictEqual(match(['.dotfile'], '*.md', { dot: true }), []);
+      assert.deepStrictEqual(match(['.dotfile'], '.dotfile', { dot: true }), ['.dotfile']);
+      assert.deepStrictEqual(match(['.dotfile.md'], '.*.md', { dot: true }), ['.dotfile.md']);
+      assert.deepStrictEqual(match(['.verb.txt'], '*.md', { dot: true }), []);
+      assert.deepStrictEqual(match(['.verb.txt'], '*.md', { dot: true }), []);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile'], '*.md', { dot: true }), []);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile.md'], '**/*.md', { dot: true }), ['a/b/c/.dotfile.md']);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile.md'], '**/.*', { dot: false }), ['a/b/c/.dotfile.md']);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile.md'], '**/.*.md', { dot: false }), ['a/b/c/.dotfile.md']);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile.md'], '*.md', { dot: false }), []);
+      assert.deepStrictEqual(match(['a/b/c/.dotfile.md'], '*.md', { dot: true }), []);
+      assert.deepStrictEqual(match(['a/b/c/.verb.md'], '**/*.md', { dot: true }), ['a/b/c/.verb.md']);
+      assert.deepStrictEqual(match(['d.md'], '*.md', { dot: true }), ['d.md']);
+      assert.deepStrictEqual(match(fixtures, 'a/*/b', { dot: true }), ['a/c/b', 'a/.d/b']);
+      assert.deepStrictEqual(match(fixtures, 'a/.*/b'), ['a/.d/b']);
+      assert.deepStrictEqual(match(fixtures, 'a/.*/b', { dot: true }), ['a/.d/b']);
     });
 
     it('should match dotfiles when `options.dot` is true', () => {
