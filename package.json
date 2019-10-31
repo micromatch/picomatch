@@ -24,8 +24,8 @@
   "devDependencies": {
     "fill-range": "^7.0.1",
     "gulp-format-md": "^2.0.0",
-    "mocha": "^6.0.2",
-    "nyc": "^13.3.0",
+    "mocha": "^6.2.2",
+    "nyc": "^14.1.1",
     "time-require": "github:jonschlinkert/time-require"
   },
   "keywords": [
