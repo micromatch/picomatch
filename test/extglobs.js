@@ -1,6 +1,6 @@
 'use strict';
 
-const assert = require('assert').strict;
+const assert = require('assert');
 const match = require('./support/match');
 const { isMatch, makeRe } = require('..');
 
@@ -25,7 +25,7 @@ describe('extglobs', () => {
   });
 
   it('should not convert capture groups to extglobs', () => {
-    assert.equal(makeRe('c!(?:foo)?z').source, '^(?:c!(?:foo)?z)$');
+    assert.strictEqual(makeRe('c!(?:foo)?z').source, '^(?:c!(?:foo)?z)$');
     assert(!isMatch('c/z', 'c!(?:foo)?z'));
     assert(isMatch('c!fooz', 'c!(?:foo)?z'));
     assert(isMatch('c!z', 'c!(?:foo)?z'));
@@ -719,23 +719,23 @@ describe('extglobs', () => {
     const fixtures = ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'abq', 'axy zc', 'axy', 'axy.zc', 'axyzc'];
 
     if (process.platform !== 'win32') {
-      assert.deepEqual(match(['a\\b', 'a/b', 'ab'], 'a/b'), ['a/b']);
+      assert.deepStrictEqual(match(['a\\b', 'a/b', 'ab'], 'a/b'), ['a/b']);
     }
 
-    assert.deepEqual(match(['a/b', 'ab'], 'a/b'), ['a/b']);
-    assert.deepEqual(match(fixtures, 'ab?bc'), ['abbbc']);
-    assert.deepEqual(match(fixtures, 'ab*c'), ['abbbbc', 'abbbc', 'abbc', 'abc']);
-    assert.deepEqual(match(fixtures, 'a+(b)bc'), ['abbbbc', 'abbbc', 'abbc']);
-    assert.deepEqual(match(fixtures, '^abc$'), []);
-    assert.deepEqual(match(fixtures, 'a.c'), ['a.c']);
-    assert.deepEqual(match(fixtures, 'a.*c'), ['a.c', 'a.xy.zc', 'a.zc']);
-    assert.deepEqual(match(fixtures, 'a*c'), ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axy zc', 'axy.zc', 'axyzc']);
-    assert.deepEqual(match(fixtures, 'a[\\w]+c'), ['a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axyzc'], 'Should match word characters');
-    assert.deepEqual(match(fixtures, 'a[\\W]+c'), ['a c', 'a.c'], 'Should match non-word characters');
-    assert.deepEqual(match(fixtures, 'a[\\d]+c'), ['a123c', 'a1c'], 'Should match numbers');
-    assert.deepEqual(match(['foo@#$%123ASD #$$%^&', 'foo!@#$asdfl;', '123'], '[\\d]+'), ['123']);
-    assert.deepEqual(match(['a123c', 'abbbc'], 'a[\\D]+c'), ['abbbc'], 'Should match non-numbers');
-    assert.deepEqual(match(['foo', ' foo '], '(f|o)+\\b'), ['foo'], 'Should match word boundaries');
+    assert.deepStrictEqual(match(['a/b', 'ab'], 'a/b'), ['a/b']);
+    assert.deepStrictEqual(match(fixtures, 'ab?bc'), ['abbbc']);
+    assert.deepStrictEqual(match(fixtures, 'ab*c'), ['abbbbc', 'abbbc', 'abbc', 'abc']);
+    assert.deepStrictEqual(match(fixtures, 'a+(b)bc'), ['abbbbc', 'abbbc', 'abbc']);
+    assert.deepStrictEqual(match(fixtures, '^abc$'), []);
+    assert.deepStrictEqual(match(fixtures, 'a.c'), ['a.c']);
+    assert.deepStrictEqual(match(fixtures, 'a.*c'), ['a.c', 'a.xy.zc', 'a.zc']);
+    assert.deepStrictEqual(match(fixtures, 'a*c'), ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axy zc', 'axy.zc', 'axyzc']);
+    assert.deepStrictEqual(match(fixtures, 'a[\\w]+c'), ['a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axyzc'], 'Should match word characters');
+    assert.deepStrictEqual(match(fixtures, 'a[\\W]+c'), ['a c', 'a.c'], 'Should match non-word characters');
+    assert.deepStrictEqual(match(fixtures, 'a[\\d]+c'), ['a123c', 'a1c'], 'Should match numbers');
+    assert.deepStrictEqual(match(['foo@#$%123ASD #$$%^&', 'foo!@#$asdfl;', '123'], '[\\d]+'), ['123']);
+    assert.deepStrictEqual(match(['a123c', 'abbbc'], 'a[\\D]+c'), ['abbbc'], 'Should match non-numbers');
+    assert.deepStrictEqual(match(['foo', ' foo '], '(f|o)+\\b'), ['foo'], 'Should match word boundaries');
   });
 });
 

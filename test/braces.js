@@ -1,15 +1,15 @@
 'use strict';
 
-const assert = require('assert').strict;
+const assert = require('assert');
 const fill = require('fill-range');
 const match = require('./support/match');
 const { isMatch } = require('..');
 
 describe('braces', () => {
   it('should not match with brace patterns when disabled', () => {
-    assert.deepEqual(match(['a', 'b', 'c'], '{a,b,c,d}'), ['a', 'b', 'c']);
-    assert.deepEqual(match(['a', 'b', 'c'], '{a,b,c,d}', { nobrace: true }), []);
-    assert.deepEqual(match(['1', '2', '3'], '{1..2}', { nobrace: true }), []);
+    assert.deepStrictEqual(match(['a', 'b', 'c'], '{a,b,c,d}'), ['a', 'b', 'c']);
+    assert.deepStrictEqual(match(['a', 'b', 'c'], '{a,b,c,d}', { nobrace: true }), []);
+    assert.deepStrictEqual(match(['1', '2', '3'], '{1..2}', { nobrace: true }), []);
     assert(!isMatch('a/a', 'a/{a,b}', { nobrace: true }));
     assert(!isMatch('a/b', 'a/{a,b}', { nobrace: true }));
     assert(!isMatch('a/c', 'a/{a,b}', { nobrace: true }));

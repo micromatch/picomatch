@@ -1,11 +1,11 @@
 'use strict';
 
-const assert = require('assert').strict;
+const assert = require('assert');
 const match = require('./support/match');
 const { isMatch } = require('..');
 
 const equal = (actual, expected, msg) => {
-  assert.deepEqual([].concat(actual).sort(), [].concat(expected).sort(), msg);
+  assert.deepStrictEqual([].concat(actual).sort(), [].concat(expected).sort(), msg);
 };
 
 describe('options.format', () => {

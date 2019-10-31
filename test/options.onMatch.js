@@ -1,12 +1,12 @@
 'use strict';
 
-const assert = require('assert').strict;
+const assert = require('assert');
 const match = require('./support/match');
 const picomatch = require('..');
 const { isMatch } = picomatch;
 
 const equal = (actual, expected, msg) => {
-  assert.deepEqual([].concat(actual).sort(), [].concat(expected).sort(), msg);
+  assert.deepStrictEqual([].concat(actual).sort(), [].concat(expected).sort(), msg);
 };
 
 const format = str => str.replace(/^\.\//, '');
