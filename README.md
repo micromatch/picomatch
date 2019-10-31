@@ -65,7 +65,7 @@ console.log(isMatch('a/b.js')); //=> false
 
 ## API
 
-### [picomatch](lib/picomatch.js#L30)
+### [picomatch](lib/picomatch.js#L31)
 
 Creates a matcher function from one or more glob patterns. The returned function takes a string to match as its first argument, and returns true if the string is a match. The returned matcher function also takes a boolean as the second argument that, when true, returns an object with additional information.
 
@@ -86,7 +86,7 @@ console.log(isMatch('a.a')); //=> false
 console.log(isMatch('a.b')); //=> true
 ```
 
-### [.test](lib/picomatch.js#L109)
+### [.test](lib/picomatch.js#L110)
 
 Test `input` with the given `regex`. This is used by the main `picomatch()` function to test the input string.
 
@@ -106,7 +106,7 @@ console.log(picomatch.test('foo/bar', /^(?:([^/]*?)\/([^/]*?))$/));
 // { isMatch: true, match: [ 'foo/', 'foo', 'bar' ], output: 'foo/bar' }
 ```
 
-### [.matchBase](lib/picomatch.js#L153)
+### [.matchBase](lib/picomatch.js#L154)
 
 Match the basename of a filepath.
 
@@ -124,7 +124,7 @@ const picomatch = require('picomatch');
 console.log(picomatch.matchBase('foo/bar.js', '*.js'); // true
 ```
 
-### [.isMatch](lib/picomatch.js#L175)
+### [.isMatch](lib/picomatch.js#L176)
 
 Returns true if **any** of the given glob `patterns` match the specified `string`.
 
@@ -145,7 +145,7 @@ console.log(picomatch.isMatch('a.a', ['b.*', '*.a'])); //=> true
 console.log(picomatch.isMatch('a.a', 'b.*')); //=> false
 ```
 
-### [.parse](lib/picomatch.js#L191)
+### [.parse](lib/picomatch.js#L192)
 
 Parse a glob pattern to create the source string for a regular expression.
 
@@ -162,7 +162,7 @@ const picomatch = require('picomatch');
 const result = picomatch.parse(glob[, options]);
 ```
 
-### [.scan](lib/picomatch.js#L215)
+### [.scan](lib/picomatch.js#L216)
 
 Scan a glob pattern to separate the pattern into segments.
 
@@ -188,7 +188,7 @@ console.log(result);
 //   isGlob: true }
 ```
 
-### [.makeRe](lib/picomatch.js#L233)
+### [.makeRe](lib/picomatch.js#L234)
 
 Create a regular expression from a glob pattern.
 
@@ -208,7 +208,7 @@ console.log(picomatch.makeRe('*.js'));
 //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
 ```
 
-### [.toRegex](lib/picomatch.js#L294)
+### [.toRegex](lib/picomatch.js#L295)
 
 Create a regular expression from the given regex source string.
 
@@ -400,7 +400,7 @@ Picomatch's matching features and expected results in unit tests are based on Ba
 ### Extglobs
 
 | **Pattern** | **Description** |
-| --- | --- |
+| --- | --- | --- |
 | `@(pattern)` | Match _only one_ consecutive occurrence of `pattern` |
 | `*(pattern)` | Match _zero or more_ consecutive occurrences of `pattern` |
 | `+(pattern)` | Match _one or more_ consecutive occurrences of `pattern` |
@@ -424,9 +424,6 @@ console.log(pm.isMatch('azzz', 'a*(z)')); // true
 
 // supports multiple extglobs
 console.log(pm.isMatch('foo.bar', '!(foo).!(bar)')); // false
-console.log(pm.isMatch('foo.bar', '!(foo).!(bar)')); // false
-console.log(pm.isMatch('foo.bar', '!(foo).!(bar)')); // false
-console.log(pm.isMatch('foo.bar', '!(foo).!(bar)')); // true
 
 // supports nested extglobs 
 console.log(pm.isMatch('foo.bar', '!(!(foo)).!(!(bar))')); // true
