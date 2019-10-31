@@ -42,6 +42,16 @@ function bench(name, options) {
   return suite;
 }
 
+bench(red('*.js'))
+  .add('  picomatch', () => scan('*.js'))
+  .add('glob-parent', () => parent('*.js'))
+  .run();
+
+bench(red('foo/bar/baz'))
+  .add('  picomatch', () => scan('foo/bar/baz'))
+  .add('glob-parent', () => parent('foo/bar/baz'))
+  .run();
+
 bench(red('foo/*.js'))
   .add('  picomatch', () => scan('foo/*.js'))
   .add('glob-parent', () => parent('foo/*.js'))
@@ -49,5 +59,25 @@ bench(red('foo/*.js'))
 
 bench(red('foo/{a,b}/*.js'))
   .add('  picomatch', () => scan('foo/{a,b}/*.js'))
+  .add('glob-parent', () => parent('foo/{a,b}/*.js'))
+  .run();
+
+bench(red('*.js { segments: true }'))
+  .add('  picomatch', () => scan('*.js', { segments: true }))
+  .add('glob-parent', () => parent('*.js'))
+  .run();
+
+bench(red('foo/bar/baz { segments: true }'))
+  .add('  picomatch', () => scan('foo/bar/baz', { segments: true }))
+  .add('glob-parent', () => parent('foo/bar/baz'))
+  .run();
+
+bench(red('foo/*.js { segments: true }'))
+  .add('  picomatch', () => scan('foo/*.js', { segments: true }))
+  .add('glob-parent', () => parent('foo/*.js'))
+  .run();
+
+bench(red('foo/{a,b}/*.js { segments: true }'))
+  .add('  picomatch', () => scan('foo/{a,b}/*.js', { segments: true }))
   .add('glob-parent', () => parent('foo/{a,b}/*.js'))
   .run();
