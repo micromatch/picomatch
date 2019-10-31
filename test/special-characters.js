@@ -1,11 +1,16 @@
 'use strict';
 
 require('mocha');
-const assert = require('assert').strict;
 const path = require('path');
+const assert = require('assert').strict;
+const support = require('./support');
 const { isMatch, makeRe } = require('..');
 
 describe('special characters', () => {
+  before(() => support.resetPathSep());
+  after(() => support.resetPathSep());
+  afterEach(() => support.resetPathSep());
+
   describe('numbers', () => {
     it('should match numbers in the input string', () => {
       assert(!isMatch('1', '*/*'));

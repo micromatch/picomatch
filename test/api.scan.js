@@ -146,7 +146,7 @@ describe('picomatch', () => {
         prefix: './'
       });
     });
-    
+
     it('should respect nonegate opts', () => {
       assert.deepEqual(scan('!foo/bar/*.js', { nonegate: true }), {
         input: '!foo/bar/*.js',
@@ -188,6 +188,11 @@ describe('picomatch', () => {
       assert.equal(base('foo/(b c)/baz'), 'foo');
       assert.equal(base('a/(b c)/'), 'a');
       assert.equal(base('a/(b c)/d'), 'a');
+      assert.equal(base('a/(b c)', { noparen: true }), 'a/(b c)');
+      assert.equal(base('a/(b c)/', { noparen: true }), 'a/(b c)/');
+      assert.equal(base('a/(b c)/d', { noparen: true }), 'a/(b c)/d');
+      assert.equal(base('foo/(b c)/baz', { noparen: true }), 'foo/(b c)/baz');
+      assert.equal(base('path/(foo bar)/subdir/foo.*', { noparen: true }), 'path/(foo bar)/subdir');
       assert.equal(base('a/\\(b c)'), 'a/\\(b c)', 'parens must be escaped');
       assert.equal(base('a/\\+\\(b c)/foo'), 'a/\\+\\(b c)/foo', 'parens must be escaped');
       assert.equal(base('js/t(wo|est)/*.js'), 'js');

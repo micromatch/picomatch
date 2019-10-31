@@ -1,6 +1,5 @@
 'use strict';
 
-require('./support');
 const assert = require('assert').strict;
 const match = require('./support/match');
 const { isMatch, makeRe } = require('..');
@@ -35,7 +34,6 @@ describe('extglobs', () => {
   describe('negation', () => {
     it('should support negation extglobs as the entire pattern', () => {
       assert(!isMatch('abc', '!(abc)'));
-
       assert(!isMatch('a', '!(a)'));
       assert(isMatch('aa', '!(a)'));
       assert(isMatch('b', '!(a)'));
@@ -45,7 +43,6 @@ describe('extglobs', () => {
       assert(isMatch('aac', 'a!(b)c'));
       assert(!isMatch('abc', 'a!(b)c'));
       assert(isMatch('acc', 'a!(b)c'));
-
       assert(isMatch('abz', 'a!(z)'));
       assert(!isMatch('az', 'a!(z)'));
     });
@@ -273,6 +270,12 @@ describe('extglobs', () => {
       assert(isMatch('aa.md', '?(a|aa|b).md'));
       assert(isMatch('ab.md', '?(a|ab|b).md'));
       assert(isMatch('b.md', '?(a|ab|b).md'));
+
+      // see https://github.com/micromatch/micromatch/issues/186
+      assert(isMatch('ab', '+(a)?(b)'));
+      assert(isMatch('aab', '+(a)?(b)'));
+      assert(isMatch('aa', '+(a)?(b)'));
+      assert(isMatch('a', '+(a)?(b)'));
     });
   });
 

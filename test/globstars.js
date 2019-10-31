@@ -15,9 +15,33 @@ describe('stars', () => {
     });
 
     it('should regard non-exclusive double-stars as single stars', () => {
+      const fixtures = ['a', 'a/', 'a/a', 'a/a/', 'a/a/a', 'a/a/a/', 'a/a/a/a', 'a/a/a/a/', 'a/a/a/a/a', 'a/a/a/a/a/', 'a/a/b', 'a/a/b/', 'a/b', 'a/b/', 'a/b/c/.d/e/', 'a/c', 'a/c/', 'a/b', 'a/x/', 'b', 'b/', 'x/y', 'x/y/', 'z/z', 'z/z/'];
+
+      assert.deepEqual(match(fixtures, '**a/a/*/'), ['a/a/a/', 'a/a/b/']);
       assert(!isMatch('aaa/bba/ccc', 'aaa/**ccc'));
       assert(!isMatch('aaa/bba/ccc', 'aaa/**z'));
       assert(isMatch('aaa/bba/ccc', 'aaa/**b**/ccc'));
+      assert(!isMatch('a/b/c', '**c'));
+      assert(!isMatch('a/b/c', 'a/**c'));
+      assert(!isMatch('a/b/c', 'a/**z'));
+      assert(!isMatch('a/b/c/b/c', 'a/**b**/c'));
+      assert(!isMatch('a/b/c/d/e.js', 'a/b/c**/*.js'));
+      assert(isMatch('a/b/c/b/c', 'a/**/b/**/c'));
+      assert(isMatch('a/aba/c', 'a/**b**/c'));
+      assert(isMatch('a/b/c', 'a/**b**/c'));
+      assert(isMatch('a/b/c/d.js', 'a/b/c**/*.js'));
+    });
+
+    it('should support globstars followed by braces', () => {
+      assert(isMatch('a/b/c/d/e/z/foo.md', 'a/**/c/**{,(/z|/x)}/*.md'));
+      assert(isMatch('a/b/c/d/e/z/foo.md', 'a/**{,(/x|/z)}/*.md'));
+    });
+
+    it('should support globstars followed by braces with nested extglobs', () => {
+      assert(isMatch('/x/foo.md', '@(/x|/z)/*.md'));
+      assert(isMatch('/z/foo.md', '@(/x|/z)/*.md'));
+      assert(isMatch('a/b/c/d/e/z/foo.md', 'a/**/c/**@(/z|/x)/*.md'));
+      assert(isMatch('a/b/c/d/e/z/foo.md', 'a/**@(/x|/z)/*.md'));
     });
 
     it('should support multiple globstars in one pattern', () => {
