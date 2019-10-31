@@ -2,7 +2,7 @@
 
 require('mocha');
 const path = require('path');
-const assert = require('assert').strict;
+const assert = require('assert');
 const support = require('./support');
 const { isMatch, makeRe } = require('..');
 

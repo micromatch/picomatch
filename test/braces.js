@@ -1,7 +1,7 @@
 'use strict';
 
 require('mocha');
-const assert = require('assert').strict;
+const assert = require('assert');
 const fill = require('fill-range');
 const match = require('./support/match');
 const { isMatch } = require('..');

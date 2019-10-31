@@ -2,7 +2,7 @@
 
 require('mocha');
 const version = process.version;
-const assert = require('assert').strict;
+const assert = require('assert');
 const utils = require('../lib/utils');
 const { isMatch } = require('..');
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const assert = require('assert').strict;
+const assert = require('assert');
 const match = require('./support/match');
 const { isMatch, makeRe } = require('..');
 
@@ -9,7 +9,7 @@ const { isMatch, makeRe } = require('..');
  */
 
 describe('extglobs', () => {
-  it('should throw on imbalanced sets when `options.strictBrackets` is true', () => {
+  it('should throw on imbalanced sets when `optionsBrackets` is true', () => {
     const opts = { strictBrackets: true };
     assert.throws(() => makeRe('a(b', opts), /Missing closing: "\)"/i);
     assert.throws(() => makeRe('a)b', opts), /Missing opening: "\("/i);
