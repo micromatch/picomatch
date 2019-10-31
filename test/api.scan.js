@@ -146,6 +146,17 @@ describe('picomatch', () => {
         prefix: './'
       });
     });
+    
+    it('should respect nonegate opts', () => {
+      assert.deepEqual(scan('!foo/bar/*.js', { nonegate: true }), {
+        input: '!foo/bar/*.js',
+        prefix: '',
+        base: '!foo/bar',
+        glob: '*.js',
+        isGlob: true,
+        negated: false
+      });
+    });
   });
 
   describe('.base (glob2base test patterns)', () => {

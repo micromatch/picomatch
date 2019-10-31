@@ -109,6 +109,7 @@
     "no-unused-vars": [2, { "vars": "all", "args": "none" }],
     "no-useless-call": 0,
     "no-with": 2,
+    "object-curly-spacing": ["error", "always", { "objectsInObjects": true }],
     "one-var": [0, { "initialized": "never" }],
     "operator-linebreak": [0, "after", { "overrides": { "?": "before", ":": "before" } }],
     "padded-blocks": [0, "never"],
