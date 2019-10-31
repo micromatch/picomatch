@@ -20,7 +20,8 @@ describe('options.ignore', () => {
     const opts = { ignore: ['a/**'], strictSlashes: true };
     const dotOpts = { ...opts, dot: true };
 
-    assert.deepEqual(match(globs, '*', opts), ['b']);
+    assert.deepEqual(match(globs, '*', opts), ['a', 'b']);
+    assert.deepEqual(match(globs, '*', { ...opts, strictSlashes: false }), ['b']);
     assert.deepEqual(match(globs, '*', { ignore: '**/a' }), ['b']);
     assert.deepEqual(match(globs, '*/*', opts), ['x/y', 'z/z']);
     assert.deepEqual(match(globs, '*/*/*', opts), ['b/b/b', 'b/b/c', 'c/c/c', 'e/f/g', 'h/i/a', 'x/x/x', 'z/z/z']);
@@ -31,7 +32,7 @@ describe('options.ignore', () => {
     assert.deepEqual(match(globs, '**/*/[b-z]', opts), ['b/b/b', 'b/b/c', 'c/c/c', 'e/f/g', 'x/x/x', 'x/y', 'z/z', 'z/z/z']);
 
     assert.deepEqual(match(globs, '*', { ignore: '**/a', dot: true }), ['.a', 'b']);
-    assert.deepEqual(match(globs, '*', dotOpts), ['.a', 'b']);
+    assert.deepEqual(match(globs, '*', dotOpts), ['.a', 'a', 'b']);
     assert.deepEqual(match(globs, '*/*', dotOpts), ['.a/a', 'x/y', 'z/z'].sort());
     assert.deepEqual(match(globs, '*/*/*', dotOpts), ['.a/a/a', 'b/b/b', 'b/b/c', 'c/c/c', 'e/f/g', 'h/i/a', 'x/x/x', 'z/z/z'].sort());
     assert.deepEqual(match(globs, '*/*/*/*', dotOpts), ['.a/a/a/a']);
