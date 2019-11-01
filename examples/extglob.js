@@ -1,3 +1,5 @@
+'use strict';
+
 const pm = require('..');
 
 console.log(pm.makeRe('(a|b|c)'));

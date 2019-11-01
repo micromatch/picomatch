@@ -1,3 +1,5 @@
+'use strict';
+
 console.log('# Load time');
 console.time('picomatch');
 exports.pm = require('..');
