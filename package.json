@@ -18,8 +18,9 @@
     "node": ">=8.6"
   },
   "scripts": {
-    "test": "mocha --reporter dot",
-    "cover": "nyc --reporter=text --reporter=html mocha"
+    "mocha": "mocha --reporter dot",
+    "test": "npm run mocha",
+    "cover": "nyc npm run mocha"
   },
   "devDependencies": {
     "fill-range": "^7.0.1",
@@ -33,6 +34,13 @@
     "match",
     "picomatch"
   ],
+  "nyc": {
+    "reporter": [
+      "html",
+      "lcov",
+      "text"
+    ]
+  },
   "verb": {
     "toc": false,
     "layout": false,
