@@ -18,11 +18,13 @@
     "node": ">=8.6"
   },
   "scripts": {
+    "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives --ignore-path .gitignore .",
     "mocha": "mocha --reporter dot",
-    "test": "npm run mocha",
+    "test": "npm run lint && npm run mocha",
     "cover": "nyc npm run mocha"
   },
   "devDependencies": {
+    "eslint": "^5.16.0",
     "fill-range": "^7.0.1",
     "gulp-format-md": "^2.0.0",
     "mocha": "^6.2.2",
