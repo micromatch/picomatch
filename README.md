@@ -2,13 +2,13 @@
 
 <p align="center">
 <a href="https://npmjs.org/package/picomatch">
-<img src="https://img.shields.io/npm/v/picomatch.svg" alt="version" />
+<img src="https://img.shields.io/npm/v/picomatch.svg" alt="version">
 </a>
 <a href="https://travis-ci.org/micromatch/picomatch">
-<img src="https://img.shields.io/travis/micromatch/picomatch.svg" alt="travis" />
+<img src="https://img.shields.io/travis/micromatch/picomatch.svg" alt="travis">
 </a>
 <a href="https://npmjs.org/package/picomatch">
-<img src="https://img.shields.io/npm/dm/picomatch.svg" alt="downloads" />
+<img src="https://img.shields.io/npm/dm/picomatch.svg" alt="downloads">
 </a>
 </p>
 
@@ -42,7 +42,7 @@ See the [library comparison](#library-comparisons) to other libraries.
 Install with [npm](https://www.npmjs.com/):
 
 ```sh
-$ npm install --save picomatch
+npm install --save picomatch
 ```
 
 <br>
@@ -265,14 +265,14 @@ console.log(picomatch.toRegex(output));
 | [onIgnore](#optionsonIgnore) | `function` | `undefined` | Function to be called on ignored items. |
 | [onMatch](#optionsonMatch) | `function` | `undefined` | Function to be called on matched items. |
 | [onResult](#optionsonResult) | `function` | `undefined` | Function to be called on all items, regardless of whether or not they are matched or ignored. |
-| `posix`               | `boolean`      | `false`     | Support POSX character classes ("posix brackets"). |
+| `posix`               | `boolean`      | `false`     | Support POSIX character classes ("posix brackets"). |
 | `posixSlashes`        | `boolean`      | `undefined` | Convert all slashes in file paths to forward slashes. This does not convert slashes in the glob pattern itself |
 | `prepend`             | `boolean`      | `undefined` | String to prepend to the generated regex used for matching. |
 | `regex`               | `boolean`      | `false`     | Use regular expression rules for `+` (instead of matching literal `+`), and for stars that follow closing parentheses or brackets (as in `)*` and `]*`). |
 | `strictBrackets`      | `boolean`      | `undefined` | Throw an error if brackets, braces, or parens are imbalanced. |
 | `strictSlashes`       | `boolean`      | `undefined` | When true, picomatch won't match trailing slashes with single stars. |
 | `unescape`            | `boolean`      | `undefined` | Remove backslashes preceding escaped characters in the glob pattern. By default, backslashes are retained. |
-| `unixify`             | `boolean`      | `undefined` | Alias for `posixSlashes`, for backwards compatitibility. |
+| `unixify`             | `boolean`      | `undefined` | Alias for `posixSlashes`, for backwards compatibility. |
 
 <br>
 
@@ -375,12 +375,12 @@ isMatch('baz');
 
 ## Basic globbing
 
-| **Character** | **Description** | 
-| --- | --- | 
-| `*` | Matches any character zero or more times, excluding path separators. Does _not match_ path separators or hidden files or directories ("dotfiles"), unless explicitly enabled by setting the `dot` option to `true`. | 
-| `**` | Matches any character zero or more times, including path separators. Note that `**` will only match path separators (`/`, and `\\` on Windows) when they are the only characters in a path segment. Thus, `foo**/bar` is equivalent to `foo*/bar`, and `foo/a**b/bar` is equivalent to `foo/a*b/bar`, and _more than two_ consecutive stars in a glob path segment are regarded as _a single star_. Thus, `foo/***/bar` is equivalent to `foo/*/bar`. | 
-| `?` | Matches any character excluding path separators one time. Does _not match_ path separators or leading dots.  | 
-| `[abc]` | Matches any characters inside the brackets. For example, `[abc]` would match the characters `a`, `b` or `c`, and nothing else. | 
+| **Character** | **Description** |
+| --- | --- |
+| `*` | Matches any character zero or more times, excluding path separators. Does _not match_ path separators or hidden files or directories ("dotfiles"), unless explicitly enabled by setting the `dot` option to `true`. |
+| `**` | Matches any character zero or more times, including path separators. Note that `**` will only match path separators (`/`, and `\\` on Windows) when they are the only characters in a path segment. Thus, `foo**/bar` is equivalent to `foo*/bar`, and `foo/a**b/bar` is equivalent to `foo/a*b/bar`, and _more than two_ consecutive stars in a glob path segment are regarded as _a single star_. Thus, `foo/***/bar` is equivalent to `foo/*/bar`. |
+| `?` | Matches any character excluding path separators one time. Does _not match_ path separators or leading dots.  |
+| `[abc]` | Matches any characters inside the brackets. For example, `[abc]` would match the characters `a`, `b` or `c`, and nothing else. |
 
 ### Matching behavior vs. Bash
 
@@ -425,7 +425,7 @@ console.log(pm.isMatch('azzz', 'a*(z)')); // true
 // supports multiple extglobs
 console.log(pm.isMatch('foo.bar', '!(foo).!(bar)')); // false
 
-// supports nested extglobs 
+// supports nested extglobs
 console.log(pm.isMatch('foo.bar', '!(!(foo)).!(!(bar))')); // true
 ```
 
@@ -542,7 +542,7 @@ The goal of this library is to be blazing fast, without compromising on accuracy
 
 **Accuracy**
 
-The number one of goal of this libary is accuracy. However, it's not unusual for different glob implementations to have different rules for matching behavior, even with simple wildcard matching. It gets increasingly more complicated when combinations of different features are combined, like when extglobs are combined with globstars, braces, slashes, and so on: `!(**/{a,b,*/c})`.
+The number one of goal of this library is accuracy. However, it's not unusual for different glob implementations to have different rules for matching behavior, even with simple wildcard matching. It gets increasingly more complicated when combinations of different features are combined, like when extglobs are combined with globstars, braces, slashes, and so on: `!(**/{a,b,*/c})`.
 
 Thus, given that there is no canonical glob specification to use as a single source of truth when differences of opinion arise regarding behavior, sometimes we have to implement our best judgement and rely on feedback from users to make improvements.
 
@@ -570,7 +570,7 @@ Please read the [contributing guide](.github/contributing.md) for advice on open
 Running and reviewing unit tests is a great way to get familiarized with a library and its API. You can install dependencies and run tests with the following command:
 
 ```sh
-$ npm install && npm test
+npm install && npm test
 ```
 
 </details>
@@ -583,7 +583,7 @@ _(This project's readme.md is generated by [verb](https://github.com/verbose/ver
 To generate the readme, run the following command:
 
 ```sh
-$ npm install -g verbose/verb#dev verb-generate-readme && verb
+npm install -g verbose/verb#dev verb-generate-readme && verb
 ```
 
 </details>
