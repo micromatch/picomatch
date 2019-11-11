@@ -2,9 +2,11 @@
 
 const { Suite } = require('benchmark');
 const { red } = require('ansi-colors');
-const argv = require('minimist')(process.argv.slice(2));
-const mm = require('../node_modules/minimatch');
+const minimist = require('minimist');
+const mm = require('minimatch');
 const pm = require('..');
+
+const argv = minimist(process.argv.slice(2));
 
 /**
  * Setup
