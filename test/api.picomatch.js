@@ -4,6 +4,12 @@ const assert = require('assert');
 const picomatch = require('..');
 const { isMatch } = picomatch;
 
+const assertTokens = (actual, expected) => {
+  const keyValuePairs = actual.map((token) => [token.type, token.value]);
+
+  assert.deepStrictEqual(keyValuePairs, expected);
+};
+
 describe('picomatch', () => {
   describe('validation', () => {
     it('should throw an error when invalid arguments are given', () => {
@@ -305,6 +311,40 @@ describe('picomatch', () => {
       assert(isMatch('.c.md', '.*', { dot: true }));
       assert(isMatch('a/b/c/.xyz.md', 'a/b/c/*.md', { dot: true }));
       assert(isMatch('a/b/c/.xyz.md', 'a/b/c/.*.md', { dot: true }));
+    });
+  });
+
+  describe('.parse', () => {
+    describe('tokens', () => {
+      it('should return result for pattern that matched by fastpath', () => {
+        const { tokens } = picomatch.parse('a*.txt');
+
+        const expected = [
+          ['bos', ''],
+          ['text', 'a'],
+          ['star', '*'],
+          ['text', '.txt']
+        ];
+
+        assertTokens(tokens, expected);
+      });
+
+      it('should return result for pattern', () => {
+        const { tokens } = picomatch.parse('{a,b}*');
+
+        const expected = [
+          ['bos', ''],
+          ['brace', '{'],
+          ['text', 'a'],
+          ['comma', ','],
+          ['text', 'b'],
+          ['brace', '}'],
+          ['star', '*'],
+          ['maybe_slash', '']
+        ];
+
+        assertTokens(tokens, expected);
+      });
     });
   });
 });
