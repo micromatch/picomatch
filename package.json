@@ -11,26 +11,31 @@
   "license": "MIT",
   "files": [
     "index.js",
+    "types/index.d.ts",
     "lib/**.js"
   ],
   "main": "index.js",
+  "typings": "types/index.d.ts",
   "engines": {
     "node": ">=8.6"
   },
   "scripts": {
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives --ignore-path .gitignore .",
     "mocha": "mocha --reporter dot",
-    "test": "npm run lint && npm run mocha",
+    "test": "npm run lint && npm run mocha && npm run types",
     "test:ci": "npm run lint && npm run test:cover",
+    "types": "tsc",
     "test:cover": "nyc npm run mocha"
   },
   "devDependencies": {
+    "@types/node": "^13.1.0",
     "eslint": "^5.16.0",
     "fill-range": "^7.0.1",
     "gulp-format-md": "^2.0.0",
     "mocha": "^6.2.2",
     "nyc": "^14.1.1",
-    "time-require": "github:jonschlinkert/time-require"
+    "time-require": "github:jonschlinkert/time-require",
+    "typescript": "^3.7.4"
   },
   "keywords": [
     "glob",
