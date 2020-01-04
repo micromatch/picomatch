@@ -28,11 +28,82 @@ describe('picomatch', () => {
     it('should handle leading "./"', () => {
       assert.deepStrictEqual(scan('./foo/bar/*.js'), {
         input: './foo/bar/*.js',
-        glob: '*.js',
-        isGlob: true,
+        prefix: './',
+        start: 2,
         base: 'foo/bar',
+        glob: '*.js',
+        isBrace: false,
+        isBracket: false,
+        isGlob: true,
+        isGlobstar: false,
+        isExtglob: false,
+        negated: false
+      });
+    });
+
+    it('should detect braces', () => {
+      assert.deepStrictEqual(scan('foo/{a,b,c}/*.js', { scanToEnd: true }), {
+        input: 'foo/{a,b,c}/*.js',
+        prefix: '',
+        start: 0,
+        base: 'foo',
+        glob: '{a,b,c}/*.js',
+        isBrace: true,
+        isBracket: false,
+        isGlob: true,
+        isGlobstar: false,
+        isExtglob: false,
+        negated: false
+      });
+    });
+
+    it('should detect globstars', () => {
+      assert.deepStrictEqual(scan('./foo/**/*.js', { scanToEnd: true }), {
+        input: './foo/**/*.js',
+        prefix: './',
+        start: 2,
+        base: 'foo',
+        glob: '**/*.js',
+        isBrace: false,
+        isBracket: false,
+        isGlob: true,
+        isGlobstar: true,
+        isExtglob: false,
+        negated: false
+      });
+    });
+
+    it('should detect extglobs', () => {
+      assert.deepStrictEqual(scan('./foo/@(foo)/*.js'), {
+        input: './foo/@(foo)/*.js',
+        prefix: './',
+        start: 2,
+        base: 'foo',
+        glob: '@(foo)/*.js',
+        isBrace: false,
+        isBracket: false,
+        isGlob: true,
+        isGlobstar: false,
+        isExtglob: true,
+        negated: false
+      });
+    });
+
+    it('should detect extglobs and globstars', () => {
+      assert.deepStrictEqual(scan('./foo/@(bar)/**/*.js', { parts: true }), {
+        input: './foo/@(bar)/**/*.js',
+        prefix: './',
+        start: 2,
+        base: 'foo',
+        glob: '@(bar)/**/*.js',
+        isBrace: false,
+        isBracket: false,
+        isGlob: true,
+        isGlobstar: true,
+        isExtglob: true,
         negated: false,
-        prefix: './'
+        slashes: [1, 5, 12, 15],
+        parts: ['foo', '@(bar)', '**', '*.js']
       });
     });
 
@@ -40,9 +111,14 @@ describe('picomatch', () => {
       assert.deepStrictEqual(scan('!foo/bar/*.js'), {
         input: '!foo/bar/*.js',
         prefix: '!',
+        start: 1,
         base: 'foo/bar',
         glob: '*.js',
+        isBrace: false,
+        isBracket: false,
         isGlob: true,
+        isGlobstar: false,
+        isExtglob: false,
         negated: true
       });
     });
@@ -51,18 +127,28 @@ describe('picomatch', () => {
       assert.deepStrictEqual(scan('./!foo/bar/*.js'), {
         input: './!foo/bar/*.js',
         prefix: './!',
+        start: 3,
         base: 'foo/bar',
         glob: '*.js',
+        isBrace: false,
+        isBracket: false,
         isGlob: true,
+        isGlobstar: false,
+        isExtglob: false,
         negated: true
       });
 
       assert.deepStrictEqual(scan('!./foo/bar/*.js'), {
         input: '!./foo/bar/*.js',
         prefix: '!./',
+        start: 3,
         base: 'foo/bar',
         glob: '*.js',
+        isBrace: false,
+        isBracket: false,
         isGlob: true,
+        isGlobstar: false,
+        isExtglob: false,
         negated: true
       });
     });
@@ -138,11 +224,16 @@ describe('picomatch', () => {
     it('should not return glob when noext is true', () => {
       assert.deepStrictEqual(scan('./foo/bar/*.js', { noext: true }), {
         input: './foo/bar/*.js',
-        glob: '',
-        isGlob: false,
+        prefix: './',
+        start: 2,
         base: 'foo/bar/*.js',
-        negated: false,
-        prefix: './'
+        glob: '',
+        isBrace: false,
+        isBracket: false,
+        isGlob: false,
+        isGlobstar: false,
+        isExtglob: false,
+        negated: false
       });
     });
 
@@ -150,9 +241,14 @@ describe('picomatch', () => {
       assert.deepStrictEqual(scan('!foo/bar/*.js', { nonegate: true }), {
         input: '!foo/bar/*.js',
         prefix: '',
+        start: 0,
         base: '!foo/bar',
         glob: '*.js',
+        isBrace: false,
+        isBracket: false,
         isGlob: true,
+        isGlobstar: false,
+        isExtglob: false,
         negated: false
       });
     });
