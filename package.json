@@ -22,7 +22,7 @@
     "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives --ignore-path .gitignore .",
     "mocha": "mocha --reporter dot",
     "test": "npm run lint && npm run mocha",
-    "test:ci": "npm run lint && npm run test:cover",
+    "test:ci": "npm run test:cover",
     "test:cover": "nyc npm run mocha"
   },
   "devDependencies": {
