@@ -2,11 +2,9 @@
 
 const { Suite } = require('benchmark');
 const { red } = require('ansi-colors');
-const minimist = require('minimist');
+const argv = require('minimist')(process.argv.slice(2));
 const parent = require('glob-parent');
 const scan = require('../lib/scan');
-
-const argv = minimist(process.argv.slice(2));
 
 /**
  * Setup
@@ -28,7 +26,7 @@ function bench(name, options) {
     return suite;
   }
 
-  console.log(`\n# ${config.name}`);
+  console.log(`\n${red(config.name)}`);
   suite.add = (key, fn, opts) => {
     if (typeof fn !== 'function') opts = fn;
 
@@ -44,42 +42,42 @@ function bench(name, options) {
   return suite;
 }
 
-bench(red('*.js'))
-  .add('  picomatch', () => scan('*.js'))
-  .add('glob-parent', () => parent('*.js'))
+bench('*.js')
+  .add('picomatch.scan', () => scan('*.js'))
+  .add('   glob-parent', () => parent('*.js'))
   .run();
 
-bench(red('foo/bar/baz'))
-  .add('  picomatch', () => scan('foo/bar/baz'))
-  .add('glob-parent', () => parent('foo/bar/baz'))
+bench('foo/bar/baz')
+  .add('picomatch.scan', () => scan('foo/bar/baz'))
+  .add('   glob-parent', () => parent('foo/bar/baz'))
   .run();
 
-bench(red('foo/*.js'))
-  .add('  picomatch', () => scan('foo/*.js'))
-  .add('glob-parent', () => parent('foo/*.js'))
+bench('foo/*.js')
+  .add('picomatch.scan', () => scan('foo/*.js'))
+  .add('   glob-parent', () => parent('foo/*.js'))
   .run();
 
-bench(red('foo/{a,b}/*.js'))
-  .add('  picomatch', () => scan('foo/{a,b}/*.js'))
-  .add('glob-parent', () => parent('foo/{a,b}/*.js'))
+bench('foo/{a,b}/*.js')
+  .add('picomatch.scan', () => scan('foo/{a,b}/*.js'))
+  .add('   glob-parent', () => parent('foo/{a,b}/*.js'))
   .run();
 
-bench(red('*.js { segments: true }'))
-  .add('  picomatch', () => scan('*.js', { segments: true }))
-  .add('glob-parent', () => parent('*.js'))
+bench('*.js { parts: true, tokens: true }')
+  .add('picomatch.scan', () => scan('*.js', { parts: true, tokens: true }))
+  .add('   glob-parent', () => parent('*.js'))
   .run();
 
-bench(red('foo/bar/baz { segments: true }'))
-  .add('  picomatch', () => scan('foo/bar/baz', { segments: true }))
-  .add('glob-parent', () => parent('foo/bar/baz'))
+bench('foo/bar/baz { parts: true, tokens: true }')
+  .add('picomatch.scan', () => scan('foo/bar/baz', { parts: true, tokens: true }))
+  .add('   glob-parent', () => parent('foo/bar/baz'))
   .run();
 
-bench(red('foo/*.js { segments: true }'))
-  .add('  picomatch', () => scan('foo/*.js', { segments: true }))
-  .add('glob-parent', () => parent('foo/*.js'))
+bench('foo/*.js { parts: true, tokens: true }')
+  .add('picomatch.scan', () => scan('foo/*.js', { parts: true, tokens: true }))
+  .add('   glob-parent', () => parent('foo/*.js'))
   .run();
 
-bench(red('foo/{a,b}/*.js { segments: true }'))
-  .add('  picomatch', () => scan('foo/{a,b}/*.js', { segments: true }))
-  .add('glob-parent', () => parent('foo/{a,b}/*.js'))
+bench('foo/{a,b}/*.js { parts: true, tokens: true }')
+  .add('picomatch.scan', () => scan('foo/{a,b}/*.js', { parts: true, tokens: true }))
+  .add('   glob-parent', () => parent('foo/{a,b}/*.js'))
   .run();

@@ -21,6 +21,12 @@ describe('braces', () => {
     assert(!isMatch('a/c', 'a/{a..c}', { nobrace: true }));
   });
 
+  it('should treat single-set braces as literals', () => {
+    assert(isMatch('a {abc} b', 'a {abc} b'));
+    assert(isMatch('a {a-b-c} b', 'a {a-b-c} b'));
+    assert(isMatch('a {a.c} b', 'a {a.c} b'));
+  });
+
   it('should match literal braces when escaped', () => {
     assert(isMatch('a {1,2}', 'a \\{1,2\\}'));
     assert(isMatch('a {a..b}', 'a \\{a..b\\}'));

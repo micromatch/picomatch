@@ -32,6 +32,15 @@ Changelog entries are classified using the following labels _(from [keep-a-chang
 
 </details>
 
+## 2.2.1 (2020-01-04)
+
+* Fixes [#49](https://github.com/micromatch/picomatch/issues/49), so that braces with no sets or ranges are now propertly treated as literals.
+
+## 2.2.0 (2020-01-04)
+
+* Disable fastpaths mode for the parse method ([5b8d33f](https://github.com/micromatch/picomatch/commit/5b8d33f))
+* Add `tokens`, `slashes`, and `parts` to the object returned by `picomatch.scan()`.
+
 ## 2.1.0 (2019-10-31)
 
 * add benchmarks for scan ([4793b92](https://github.com/micromatch/picomatch/commit/4793b92))
