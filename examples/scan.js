@@ -16,19 +16,18 @@ console.log(pm.scan('foo/bar/*.js'));
 console.log(pm.scan('foo/*.js'));
 console.log(pm.scan('/foo'));
 
-
 const braces = require('braces');
 
 const scan = (pattern, options) => {
-  const cache = new Map();
-  const matchers = {};
+  // const matchers = {};
   const patterns = braces.expand(pattern, options);
   const result = patterns.map(p => pm.scan(p, options));
 
   for (let i = 0; i < result.length; i++) {
     const state = result[i];
     if (state.maxDepth === Infinity) continue;
-    const matcher = matchers[state.base] || (matchers[state.base] = {});
+
+    // const matcher = matchers[state.base] || (matchers[state.base] = {});
     let foundGlob = false;
 
     for (const token of state.tokens) {
@@ -43,14 +42,11 @@ const scan = (pattern, options) => {
       if (token.isGlob === false) {
         token.matcher = name => token.value === name;
       } else {
-        token.matcher = function glob() {}
+        token.matcher = function glob() {};
       }
-
-
 
     }
     console.log(state);
-
   }
 
   return result;

@@ -59,7 +59,7 @@ bench(`${red('.makeRe')} path with star`)
   .run();
 
 bench(`${red('.makeRe')} star w/ { dot: true }`)
-  .add('picomatch', () => pm.makeRe('*', { dot: true , fastpaths: false }))
+  .add('picomatch', () => pm.makeRe('*', { dot: true, fastpaths: false }))
   .add('minimatch', () => mm.makeRe('*', { dot: true }))
   .run();
 

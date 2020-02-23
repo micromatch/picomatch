@@ -15,6 +15,21 @@ describe('extglobs', () => {
     assert.throws(() => makeRe('a)b', opts), /Missing opening: "\("/i);
   });
 
+  it('should support options.capture with extglobs', () => {
+    assert(isMatch('cbz', 'c*(b)z', { capture: true }));
+    assert(!isMatch('cbz', 'c*(a)z', { capture: true }));
+    assert(!isMatch('cbz', 'c*(*x)', { capture: true }));
+  });
+
+  it('should support globstars in extglobs', () => {
+    assert(!isMatch('cbz', 'c!(**)z'));
+    assert(!isMatch('c/bz', 'c!(/**)z'));
+    assert(isMatch('cbz', 'c!(/**)z'));
+    assert(!isMatch('cbz', 'c!(a|**)z'));
+    assert(!isMatch('cbz', 'c!(**|a)z'));
+    assert(!isMatch('cbz', 'c!(**|b)z'));
+  });
+
   it('should escape special characters immediately following opening parens', () => {
     assert(isMatch('cbz', 'c!(.)z'));
     assert(!isMatch('cbz', 'c!(*)z'));
@@ -22,6 +37,7 @@ describe('extglobs', () => {
     assert(isMatch('cbz', 'c!(+)z'));
     assert(isMatch('cbz', 'c!(?)z'));
     assert(isMatch('cbz', 'c!(@)z'));
+    assert(!isMatch('cbz', 'c!(b)z'));
   });
 
   it('should not convert capture groups to extglobs', () => {

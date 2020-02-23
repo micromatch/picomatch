@@ -26,6 +26,7 @@
     "test:cover": "nyc npm run mocha"
   },
   "devDependencies": {
+    "braces": "^3.0.2",
     "eslint": "^6.8.0",
     "fill-range": "^7.0.1",
     "gulp-format-md": "^2.0.0",

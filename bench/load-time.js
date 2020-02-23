@@ -1,19 +1,19 @@
 'use strict';
 
 const libs = {
-  get pm() {
+  pm() {
     return require('..');
   },
-  get mm() {
+  mm() {
     return require('minimatch');
   }
 };
 
 console.log('# Load time');
 console.time('picomatch');
-libs.pm;
+libs.pm();
 console.timeEnd('picomatch');
 console.time('minimatch');
-libs.mm;
+libs.mm();
 console.timeEnd('minimatch');
 console.log();
