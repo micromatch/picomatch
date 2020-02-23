@@ -232,7 +232,7 @@ describe('special characters', () => {
       assert(isMatch('foo(bar)baz', 'foo*baz'));
     });
 
-    it('should match literal parens with brackets', async() => {
+    it('should match literal parens with brackets', async () => {
       assert(isMatch('foo(bar)baz', 'foo[bar()]+baz'));
     });
 

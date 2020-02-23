@@ -13,7 +13,9 @@ describe('handling of potential regex exploits', () => {
     if (process.platform !== 'win32') {
       assert(isMatch('\\A', `${repeat(65500)}A`), 'within the limits, and valid match');
     }
-    assert(isMatch('A', `!${repeat(65500)}A`), 'within the limits, and valid match');
+    assert(isMatch('A', `${repeat(65499)}A`), 'within the limits, and invalid match');
+    assert(!isMatch('A', `!${repeat(65499)}A`), 'within the limits, and invalid match');
+    assert(!isMatch('A', `${repeat(65500)}A`), 'within the limits, and valid match');
     assert(isMatch('A', `!(${repeat(65500)}A)`), 'within the limits, and valid match');
     assert(!isMatch('A', `[!(${repeat(65500)}A`), 'within the limits, but invalid regex');
   });

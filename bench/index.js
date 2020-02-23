@@ -44,31 +44,36 @@ const bench = (name, options) => {
 };
 
 bench(`${red('.makeRe')} star`)
-  .add('picomatch', () => pm.makeRe('*'))
+  .add('picomatch', () => pm.makeRe('*', { fastpaths: false }))
   .add('minimatch', () => mm.makeRe('*'))
   .run();
 
-bench(`${red('.makeRe')} star; dot=true`)
-  .add('picomatch', () => pm.makeRe('*', { dot: true }))
+bench(`${red('.makeRe')} leading star`)
+  .add('picomatch', () => pm.makeRe('*.txt', { fastpaths: false }))
+  .add('minimatch', () => mm.makeRe('*.txt'))
+  .run();
+
+bench(`${red('.makeRe')} path with star`)
+  .add('picomatch', () => pm.makeRe('foo/*.js', { fastpaths: false }))
+  .add('minimatch', () => mm.makeRe('foo/*.js'))
+  .run();
+
+bench(`${red('.makeRe')} star w/ { dot: true }`)
+  .add('picomatch', () => pm.makeRe('*', { dot: true , fastpaths: false }))
   .add('minimatch', () => mm.makeRe('*', { dot: true }))
   .run();
 
 bench(`${red('.makeRe')} globstar`)
-  .add('picomatch', () => pm.makeRe('**'))
+  .add('picomatch', () => pm.makeRe('**', { fastpaths: false }))
   .add('minimatch', () => mm.makeRe('**'))
   .run();
 
-bench(`${red('.makeRe')} globstars`)
-  .add('picomatch', () => pm.makeRe('**/**/**'))
+bench(`${red('.makeRe')} multiple globstars`)
+  .add('picomatch', () => pm.makeRe('**/**/**', { fastpaths: false }))
   .add('minimatch', () => mm.makeRe('**/**/**'))
   .run();
 
-bench(`${red('.makeRe')} with leading star`)
-  .add('picomatch', () => pm.makeRe('*.txt'))
-  .add('minimatch', () => mm.makeRe('*.txt'))
-  .run();
-
-bench(`${red('.makeRe')} - basic braces`)
-  .add('picomatch', () => pm.makeRe('{a,b,c}*.txt'))
-  .add('minimatch', () => mm.makeRe('{a,b,c}*.txt'))
+bench(`${red('.makeRe')} basic braces`)
+  .add('picomatch', () => pm.makeRe('foo/{a,b,c}*.txt', { fastpaths: false }))
+  .add('minimatch', () => mm.makeRe('foo/{a,b,c}*.txt'))
   .run();
