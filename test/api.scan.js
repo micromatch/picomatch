@@ -15,8 +15,18 @@ const both = (...args) => {
  * and both libraries use path.dirname. Picomatch does not.
  */
 
-describe('picomatch', () => {
-  describe('.scan', () => {
+describe('.scan', () => {
+  describe('when', () => {
+    it('should ', () => {
+      assert.deepStrictEqual(scan('/a', { parts: true }).parts, ['', 'a']);
+      assert.deepStrictEqual(scan('/a/b', { parts: true }).parts, ['',  'a', 'b']);
+      assert.deepStrictEqual(scan('/a/b/', { parts: true }).parts, ['',  'a', 'b', '']);
+      assert.deepStrictEqual(scan('(!(b/a))', { parts: true }).parts, ['']);
+      assert.deepStrictEqual(scan('(a|b)/c', { parts: true }).parts, ['(a|b)', 'c']);
+    });
+  });
+
+  describe('base', () => {
     it('should get the "base" and "glob" from a pattern', () => {
       assert.deepStrictEqual(both('foo/bar'), ['foo/bar', '']);
       assert.deepStrictEqual(both('foo/@bar'), ['foo/@bar', '']);

@@ -25,7 +25,7 @@ describe('extglobs', () => {
   });
 
   it('should not convert capture groups to extglobs', () => {
-    assert.strictEqual(makeRe('c!(?:foo)?z').source, '^(?:c!(?:foo)?z)$');
+    assert.strictEqual(makeRe('c!(?:foo)?z').source, '^(?:c!\\(?(?:foo)?\\)?z)$');
     assert(!isMatch('c/z', 'c!(?:foo)?z'));
     assert(isMatch('c!fooz', 'c!(?:foo)?z'));
     assert(isMatch('c!z', 'c!(?:foo)?z'));
