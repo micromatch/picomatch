@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const assert = require('assert').strict;
+const assert = require('assert');
 const utils = require('../lib/utils');
 
 /**
