@@ -12,8 +12,10 @@ describe('slash handling - posix', () => {
   it('should handle backslashes', () => {
     assert(isMatch('\\\\\\a', '\\\\\\a'));
     assert(!isMatch('\\\\\\a', '\\\\a'));
-    assert(isMatch('\\\\\\a', '\\\\a', { contains: true }));
     assert(isMatch('\\', '\\', { fastpaths: false }));
+    if (process.platform !== 'win32') {
+      assert(isMatch('\\\\\\a', '\\\\a', { contains: true }));
+    }
   });
 
   it('should match a literal string', () => {

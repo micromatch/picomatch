@@ -23,7 +23,7 @@
     "mocha": "mocha --reporter dot",
     "test": "npm run lint && npm run mocha",
     "test:ci": "npm run test:cover",
-    "test:cover": "nyc npm run mocha"
+    "test:cover": "npm run mocha"
   },
   "devDependencies": {
     "braces": "^3.0.2",

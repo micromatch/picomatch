@@ -14,11 +14,19 @@ describe('parse', () => {
 
   it('should parse a glob', () => {
     assert.equal(parse('*').consumed, '*');
-    assert.equal(parse('*').output, '(?!\\.)(?=.)[^/]*?\\/?');
+    if (process.platform === 'win32') {
+      assert.equal(parse('*').output, '(?!\\.)(?=.)[^\\\\/]*?[\\\\/]?');
+    } else {
+      assert.equal(parse('*').output, '(?!\\.)(?=.)[^/]*?\\/?');
+    }
   });
 
   it('should support capture', () => {
-    assert.equal(parse('*', { capture: true }).output, '(?!\\.)(?=.)([^/]*?)\\/?');
+    if (process.platform === 'win32') {
+      assert.equal(parse('*', { capture: true }).output, '(?!\\.)(?=.)([^\\\\/]*?)[\\\\/]?');
+    } else {
+      assert.equal(parse('*', { capture: true }).output, '(?!\\.)(?=.)([^/]*?)\\/?');
+    }
   });
 
   it('should throw an error when value is not a string', () => {
