@@ -8,7 +8,7 @@ const { isMatch } = require('..');
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.
  */
 
-describe('extglobs', () => {
+describe('extglobs2', () => {
   beforeEach(() => support.windowsPathSep());
   afterEach(() => support.resetPathSep());
 

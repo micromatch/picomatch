@@ -360,6 +360,8 @@ describe('stars', () => {
 
     it('should optionally match trailing slashes with braces', () => {
       assert(isMatch('foo', '**/*'));
+      assert(isMatch('foo', '*{,/}'));
+      assert(isMatch('foo/', '*{,/}'));
       assert(isMatch('foo', '**/*{,/}'));
       assert(isMatch('foo/', '**/*{,/}'));
       assert(isMatch('foo/bar', '**/*{,/}'));

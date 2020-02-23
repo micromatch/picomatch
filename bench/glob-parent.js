@@ -47,11 +47,6 @@ bench('*.js')
   .add('   glob-parent', () => parent('*.js'))
   .run();
 
-bench('foo/bar/baz')
-  .add('picomatch.scan', () => scan('foo/bar/baz'))
-  .add('   glob-parent', () => parent('foo/bar/baz'))
-  .run();
-
 bench('foo/*.js')
   .add('picomatch.scan', () => scan('foo/*.js'))
   .add('   glob-parent', () => parent('foo/*.js'))
@@ -60,6 +55,11 @@ bench('foo/*.js')
 bench('foo/{a,b}/*.js')
   .add('picomatch.scan', () => scan('foo/{a,b}/*.js'))
   .add('   glob-parent', () => parent('foo/{a,b}/*.js'))
+  .run();
+
+bench('foo/bar/baz')
+  .add('picomatch.scan', () => scan('foo/bar/baz'))
+  .add('   glob-parent', () => parent('foo/bar/baz'))
   .run();
 
 bench('*.js { parts: true, tokens: true }')

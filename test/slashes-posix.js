@@ -9,6 +9,15 @@ describe('slash handling - posix', () => {
   after(() => support.resetPathSep());
   afterEach(() => support.resetPathSep());
 
+  it('should handle backslashes', () => {
+    assert(isMatch('\\\\\\a', '\\\\\\a'));
+    assert(!isMatch('\\\\\\a', '\\\\a'));
+    assert(isMatch('\\', '\\', { fastpaths: false }));
+    if (process.platform !== 'win32') {
+      assert(isMatch('\\\\\\a', '\\\\a', { contains: true }));
+    }
+  });
+
   it('should match a literal string', () => {
     assert(!isMatch('a/a', '(a/b)'));
     assert(isMatch('a/b', '(a/b)'));
