@@ -288,9 +288,6 @@ describe('picomatch', () => {
       // Right now it returns ['*']
       // assertParts('*/', ['*', '']);
 
-      // Right now it returns ['foo', '(bar|baz)']
-      // assertParts('foo/(bar|baz)/*.js', ['foo', '(bar|baz)', '*.js']);
-
       // Right now it returns ['!(!(bar)', 'baz)']
       // assertParts('!(!(bar)/baz)', ['!(!(bar)/baz)']);
 
@@ -310,6 +307,7 @@ describe('picomatch', () => {
       assertParts('foo/(bar|baz)*', ['foo', '(bar|baz)*']);
       assertParts('**/*(W*, *)*', ['**', '*(W*, *)*']);
       assertParts('a/**@(/x|/z)/*.md', ['a', '**@(/x|/z)', '*.md']);
+      assertParts('foo/(bar|baz)/*.js', ['foo', '(bar|baz)', '*.js']);
 
       assertParts('XXX/*/*/12/*/*/m/*/*', ['XXX', '*', '*', '12', '*', '*', 'm', '*', '*']);
       assertParts('foo/\\"**\\"/bar', ['foo', '\\"**\\"', 'bar']);
