@@ -9,6 +9,16 @@ const both = (...args) => {
 };
 
 /**
+ * @param {String} pattern
+ * @param {String[]} parts
+ */
+function assertParts(pattern, parts) {
+  const info = scan(pattern, { parts: true });
+
+  assert.deepStrictEqual(info.parts, parts);
+}
+
+/**
  * Most of the unit tests in this file were from https://github.com/es128/glob-parent
  * and https://github.com/jonschlinkert/glob-base. Both libraries use a completely
  * different approach to separating the glob pattern from the "path" from picomatch,
@@ -251,6 +261,56 @@ describe('picomatch', () => {
         isExtglob: false,
         negated: false
       });
+    });
+
+    it('should return parts of the pattern', () => {
+      // Right now it returns []
+      // assertParts('', ['']);
+      // assertParts('*', ['*']);
+      // assertParts('.*', ['.*']);
+      // assertParts('**', ['**']);
+      // assertParts('foo', ['foo']);
+      // assertParts('foo*', ['foo*']);
+      // assertParts('/', ['', '']);
+      // assertParts('/*', ['', '*']);
+      // assertParts('./', ['']);
+      // assertParts('{1..9}', ['{1..9}']);
+      // assertParts('c!(.)z', ['c!(.)z']);
+      // assertParts('(b|a).(a)', ['(b|a).(a)']);
+      // assertParts('+(a|b\\[)*', ['+(a|b\\[)*']);
+      // assertParts('@(a|b).md', ['@(a|b).md']);
+      // assertParts('(a/b)', ['(a/b)']);
+      // assertParts('(a\\b)', ['(a\\b)']);
+      // assertParts('foo\\[a\\/]', ['foo\\[a\\/]']);
+      // assertParts('foo[/]bar', ['foo[/]bar']);
+      // assertParts('/dev\\/@(tcp|udp)\\/*\\/*', ['', '/dev\\/@(tcp|udp)\\/*\\/*']);
+
+      // Right now it returns ['*']
+      // assertParts('*/', ['*', '']);
+
+      // Right now it returns ['!(!(bar)', 'baz)']
+      // assertParts('!(!(bar)/baz)', ['!(!(bar)/baz)']);
+
+      assertParts('./foo', ['foo']);
+      assertParts('../foo', ['..', 'foo']);
+
+      assertParts('foo/bar', ['foo', 'bar']);
+      assertParts('foo/*', ['foo', '*']);
+      assertParts('foo/**', ['foo', '**']);
+      assertParts('foo/**/*', ['foo', '**', '*']);
+      assertParts('フォルダ/**/*', ['フォルダ', '**', '*']);
+
+      assertParts('foo/!(abc)', ['foo', '!(abc)']);
+      assertParts('c/!(z)/v', ['c', '!(z)', 'v']);
+      assertParts('c/@(z)/v', ['c', '@(z)', 'v']);
+      assertParts('foo/(bar|baz)', ['foo', '(bar|baz)']);
+      assertParts('foo/(bar|baz)*', ['foo', '(bar|baz)*']);
+      assertParts('**/*(W*, *)*', ['**', '*(W*, *)*']);
+      assertParts('a/**@(/x|/z)/*.md', ['a', '**@(/x|/z)', '*.md']);
+      assertParts('foo/(bar|baz)/*.js', ['foo', '(bar|baz)', '*.js']);
+
+      assertParts('XXX/*/*/12/*/*/m/*/*', ['XXX', '*', '*', '12', '*', '*', 'm', '*', '*']);
+      assertParts('foo/\\"**\\"/bar', ['foo', '\\"**\\"', 'bar']);
     });
   });
 
