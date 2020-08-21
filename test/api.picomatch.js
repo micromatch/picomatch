@@ -149,7 +149,7 @@ describe('picomatch', () => {
       assert(!isMatch('a-b.c-d', '*-bc-*'));
     });
 
-    it('should match with copmon glob patterns', () => {
+    it('should match with common glob patterns', () => {
       assert(!isMatch('/ab', './*/'));
       assert(!isMatch('/ef', '*'));
       assert(!isMatch('ab', './*/'));
