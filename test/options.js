@@ -1,14 +1,10 @@
 'use strict';
 
 const assert = require('assert');
-const support = require('./support');
 const match = require('./support/match');
 const { isMatch } = require('..');
 
 describe('options', () => {
-  beforeEach(() => support.windowsPathSep());
-  afterEach(() => support.resetPathSep());
-
   describe('options.matchBase', () => {
     it('should match the basename of file paths when `options.matchBase` is true', () => {
       assert.deepStrictEqual(match(['a/b/c/d.md'], '*.md'), [], 'should not match multiple levels');
@@ -89,9 +85,9 @@ describe('options', () => {
   describe('options.unescape', () => {
     it('should remove backslashes in glob patterns:', () => {
       const fixtures = ['abc', '/a/b/c', '\\a\\b\\c'];
-      assert.deepStrictEqual(match(fixtures, '\\a\\b\\c'), ['/a/b/c']);
-      assert.deepStrictEqual(match(fixtures, '\\a\\b\\c', { unescape: true }), ['abc', '/a/b/c']);
-      assert.deepStrictEqual(match(fixtures, '\\a\\b\\c', { unescape: false }), ['/a/b/c']);
+      assert.deepStrictEqual(match(fixtures, '\\a\\b\\c', { windows: true }), ['/a/b/c']);
+      assert.deepStrictEqual(match(fixtures, '\\a\\b\\c', { unescape: true, windows: true }), ['abc', '/a/b/c']);
+      assert.deepStrictEqual(match(fixtures, '\\a\\b\\c', { unescape: false, windows: true }), ['/a/b/c']);
     });
   });
 
@@ -106,12 +102,12 @@ describe('options', () => {
 
   describe('options.windows', () => {
     it('should windows file paths by default', () => {
-      assert.deepStrictEqual(match(['a\\b\\c.md'], '**/*.md'), ['a/b/c.md']);
+      assert.deepStrictEqual(match(['a\\b\\c.md'], '**/*.md', { windows: true }), ['a/b/c.md']);
       assert.deepStrictEqual(match(['a\\b\\c.md'], '**/*.md', { windows: false }), ['a\\b\\c.md']);
     });
 
     it('should windows absolute paths', () => {
-      assert.deepStrictEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md'), ['E:/a/b/c.md']);
+      assert.deepStrictEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md', { windows: true }), ['E:/a/b/c.md']);
       assert.deepStrictEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md', { windows: false }), []);
     });
 
@@ -153,12 +149,12 @@ describe('options', () => {
 
   describe('windows', () => {
     it('should convert file paths to posix slashes', () => {
-      assert.deepStrictEqual(match(['a\\b\\c.md'], '**/*.md'), ['a/b/c.md']);
+      assert.deepStrictEqual(match(['a\\b\\c.md'], '**/*.md', { windows: true }), ['a/b/c.md']);
       assert.deepStrictEqual(match(['a\\b\\c.md'], '**/*.md', { windows: false }), ['a\\b\\c.md']);
     });
 
     it('should convert absolute paths to posix slashes', () => {
-      assert.deepStrictEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md'), ['E:/a/b/c.md']);
+      assert.deepStrictEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md', { windows: true }), ['E:/a/b/c.md']);
       assert.deepStrictEqual(match(['E:\\a\\b\\c.md'], 'E:/**/*.md', { windows: false }), []);
     });
   });

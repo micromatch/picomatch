@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert');
-const support = require('./support');
 const { isMatch } = require('..');
 
 /**
@@ -9,9 +8,6 @@ const { isMatch } = require('..');
  */
 
 describe('extglobs (minimatch)', () => {
-  beforeEach(() => support.windowsPathSep());
-  afterEach(() => support.resetPathSep());
-
   it('should not match empty string with "*(0|1|3|5|7|9)"', () => {
     assert(!isMatch('', '*(0|1|3|5|7|9)'));
   });

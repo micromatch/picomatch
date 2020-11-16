@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert');
-const support = require('./support');
 const { isMatch } = require('..');
 
 /**
@@ -9,9 +8,6 @@ const { isMatch } = require('..');
  */
 
 describe('extglobs', () => {
-  beforeEach(() => support.windowsPathSep());
-  afterEach(() => support.resetPathSep());
-
   describe('bash', () => {
     it('should match extended globs from the bash spec:', () => {
       assert(isMatch('bar', '!(foo)'));

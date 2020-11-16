@@ -1,15 +1,9 @@
 'use strict';
 
-const path = require('path');
 const assert = require('assert');
-const support = require('./support');
 const { isMatch, makeRe } = require('..');
 
 describe('special characters', () => {
-  before(() => support.resetPathSep());
-  after(() => support.resetPathSep());
-  afterEach(() => support.resetPathSep());
-
   describe('numbers', () => {
     it('should match numbers in the input string', () => {
       assert(!isMatch('1', '*/*'));
@@ -259,30 +253,6 @@ describe('special characters', () => {
       assert(isMatch('C:\\Users\\', '**'));
       assert(isMatch('C:cwd/another', '**'));
       assert(isMatch('C:cwd\\another', '**'));
-    });
-
-    it('should not match multiple windows directories with a single star', () => {
-      path.sep = '\\';
-      assert(isMatch('c:\\', '*{,/}'));
-      assert(!isMatch('C:\\Users\\', '*'));
-      assert(!isMatch('C:cwd\\another', '*'));
-      path.sep = '/';
-    });
-
-    it('should match mixed slashes on windows', () => {
-      path.sep = '\\';
-      assert(isMatch('//C://user\\docs\\Letter.txt', '**'));
-      assert(isMatch('//C:\\\\user/docs/Letter.txt', '**'));
-      assert(isMatch(':\\', '*{,/}'));
-      assert(isMatch(':\\', ':*{,/}'));
-      assert(isMatch('\\\\foo/bar', '**'));
-      assert(isMatch('\\\\foo/bar', '//*/*'));
-      assert(isMatch('\\\\unc\\admin$', '**'));
-      assert(isMatch('\\\\unc\\admin$', '//*/*$'));
-      assert(isMatch('\\\\unc\\admin$\\system32', '//*/*$/*32'));
-      assert(isMatch('\\\\unc\\share\\foo', '//u*/s*/f*'));
-      assert(isMatch('foo\\bar\\baz', 'f*/*/*'));
-      path.sep = '/';
     });
 
     it('should match mixed slashes when options.windows is true', () => {
