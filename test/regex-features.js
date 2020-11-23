@@ -311,5 +311,14 @@ describe('regex features', () => {
       assert(isMatch('b  ', '@(!(a \\{1,2\\}))*'));
       assert(isMatch('b ', '@(!(a \\{1,2\\}))*'));
     });
+
+    it('should basename paths', () => {
+      assert.equal(utils.basename('/a/b/c'), 'c');
+      assert.equal(utils.basename('/a/b/c/'), 'c');
+      assert.equal(utils.basename('/a\\b/c', { windows: true }), 'c');
+      assert.equal(utils.basename('/a\\b/c\\', { windows: true }), 'c');
+      assert.equal(utils.basename('\\a/b\\c', { windows: true }), 'c');
+      assert.equal(utils.basename('\\a/b\\c/', { windows: true }), 'c');
+    });
   });
 });
