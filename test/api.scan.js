@@ -311,6 +311,10 @@ describe('picomatch', () => {
 
       assertParts('XXX/*/*/12/*/*/m/*/*', ['XXX', '*', '*', '12', '*', '*', 'm', '*', '*']);
       assertParts('foo/\\"**\\"/bar', ['foo', '\\"**\\"', 'bar']);
+
+      assertParts('[0-9]/[0-9]', ['[0-9]', '[0-9]']);
+      assertParts('foo/[0-9]/[0-9]', ['foo', '[0-9]', '[0-9]']);
+      assertParts('foo[0-9]/bar[0-9]', ['foo[0-9]', 'bar[0-9]']);
     });
   });
 
