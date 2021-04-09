@@ -347,4 +347,19 @@ describe('picomatch', () => {
       });
     });
   });
+
+  describe('state', () => {
+    describe('negatedExtglob', () => {
+      it('should return true', () => {
+        assert(picomatch('!(abc)', {}, true).state.negatedExtglob);
+        assert(picomatch('!(abc)**', {}, true).state.negatedExtglob);
+        assert(picomatch('!(abc)/**', {}, true).state.negatedExtglob);
+      });
+
+      it('should return false', () => {
+        assert(!picomatch('(!(abc))', {}, true).state.negatedExtglob);
+        assert(!picomatch('**!(abc)', {}, true).state.negatedExtglob);
+      });
+    });
+  });
 });
