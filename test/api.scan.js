@@ -47,7 +47,8 @@ describe('picomatch', () => {
         isGlob: true,
         isGlobstar: false,
         isExtglob: false,
-        negated: false
+        negated: false,
+        negatedExtglob: false
       });
     });
 
@@ -63,7 +64,8 @@ describe('picomatch', () => {
         isGlob: true,
         isGlobstar: false,
         isExtglob: false,
-        negated: false
+        negated: false,
+        negatedExtglob: false
       });
     });
 
@@ -79,7 +81,8 @@ describe('picomatch', () => {
         isGlob: true,
         isGlobstar: true,
         isExtglob: false,
-        negated: false
+        negated: false,
+        negatedExtglob: false
       });
     });
 
@@ -95,7 +98,8 @@ describe('picomatch', () => {
         isGlob: true,
         isGlobstar: false,
         isExtglob: true,
-        negated: false
+        negated: false,
+        negatedExtglob: false
       });
     });
 
@@ -112,6 +116,7 @@ describe('picomatch', () => {
         isGlobstar: true,
         isExtglob: true,
         negated: false,
+        negatedExtglob: false,
         slashes: [1, 5, 12, 15],
         parts: ['foo', '@(bar)', '**', '*.js']
       });
@@ -129,7 +134,57 @@ describe('picomatch', () => {
         isGlob: true,
         isGlobstar: false,
         isExtglob: false,
-        negated: true
+        negated: true,
+        negatedExtglob: false
+      });
+    });
+
+    it('should detect negated extglobs at the begining', () => {
+      assert.deepStrictEqual(scan('!(foo)*'), {
+        input: '!(foo)*',
+        prefix: '',
+        start: 0,
+        base: '',
+        glob: '!(foo)*',
+        isBrace: false,
+        isBracket: false,
+        isGlob: true,
+        isGlobstar: false,
+        isExtglob: true,
+        negated: false,
+        negatedExtglob: true
+      });
+
+      assert.deepStrictEqual(scan('!(foo)'), {
+        input: '!(foo)',
+        prefix: '',
+        start: 0,
+        base: '',
+        glob: '!(foo)',
+        isBrace: false,
+        isBracket: false,
+        isGlob: true,
+        isGlobstar: false,
+        isExtglob: true,
+        negated: false,
+        negatedExtglob: true
+      });
+    });
+
+    it('should not detect negated extglobs in the middle', () => {
+      assert.deepStrictEqual(scan('test/!(foo)/*'), {
+        input: 'test/!(foo)/*',
+        prefix: '',
+        start: 0,
+        base: 'test',
+        glob: '!(foo)/*',
+        isBrace: false,
+        isBracket: false,
+        isGlob: true,
+        isGlobstar: false,
+        isExtglob: true,
+        negated: false,
+        negatedExtglob: false
       });
     });
 
@@ -145,7 +200,8 @@ describe('picomatch', () => {
         isGlob: true,
         isGlobstar: false,
         isExtglob: false,
-        negated: true
+        negated: true,
+        negatedExtglob: false
       });
 
       assert.deepStrictEqual(scan('!./foo/bar/*.js'), {
@@ -159,7 +215,8 @@ describe('picomatch', () => {
         isGlob: true,
         isGlobstar: false,
         isExtglob: false,
-        negated: true
+        negated: true,
+        negatedExtglob: false
       });
     });
 
@@ -243,7 +300,8 @@ describe('picomatch', () => {
         isGlob: false,
         isGlobstar: false,
         isExtglob: false,
-        negated: false
+        negated: false,
+        negatedExtglob: false
       });
     });
 
@@ -259,7 +317,8 @@ describe('picomatch', () => {
         isGlob: true,
         isGlobstar: false,
         isExtglob: false,
-        negated: false
+        negated: false,
+        negatedExtglob: false
       });
     });
 
