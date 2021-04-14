@@ -11,7 +11,7 @@ const scan = require('../lib/scan');
  */
 
 const cycle = (e, newline) => {
-  process.stdout.write(`\u001b[G  ${e.target}${newline ? '\n' : ''}`);
+  process.stdout.write(`\u001B[G  ${e.target}${newline ? '\n' : ''}`);
 };
 
 function bench(name, options) {

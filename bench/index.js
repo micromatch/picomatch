@@ -13,7 +13,7 @@ const argv = minimist(process.argv.slice(2));
  */
 
 const cycle = (e, newline) => {
-  process.stdout.write(`\u001b[G  ${e.target}${newline ? '\n' : ''}`);
+  process.stdout.write(`\u001B[G  ${e.target}${newline ? '\n' : ''}`);
 };
 
 const bench = (name, options) => {
