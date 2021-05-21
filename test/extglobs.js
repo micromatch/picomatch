@@ -54,6 +54,19 @@ describe('extglobs', () => {
       assert(isMatch('abc', 'a!(.)c'));
     });
 
+    // See https://github.com/micromatch/picomatch/issues/83
+    it('should support stars in negation extglobs', () => {
+      assert(!isMatch('/file.d.ts', '/!(*.d).ts'));
+      assert(isMatch('/file.ts', '/!(*.d).ts'));
+      assert(isMatch('/file.d.something.ts', '/!(*.d).ts'));
+      assert(isMatch('/file.dhello.ts', '/!(*.d).ts'));
+
+      assert(!isMatch('/file.d.ts', '**/!(*.d).ts'));
+      assert(isMatch('/file.ts', '**/!(*.d).ts'));
+      assert(isMatch('/file.d.something.ts', '**/!(*.d).ts'));
+      assert(isMatch('/file.dhello.ts', '**/!(*.d).ts'));
+    });
+
     it('should support negation extglobs in patterns with slashes', () => {
       assert(!isMatch('foo/abc', 'foo/!(abc)'));
       assert(isMatch('foo/bar', 'foo/!(abc)'));
@@ -271,7 +284,7 @@ describe('extglobs', () => {
       assert(isMatch('ab.md', '?(a|ab|b).md'));
       assert(isMatch('b.md', '?(a|ab|b).md'));
 
-      // see https://github.com/micromatch/micromatch/issues/186
+      // See https://github.com/micromatch/micromatch/issues/186
       assert(isMatch('ab', '+(a)?(b)'));
       assert(isMatch('aab', '+(a)?(b)'));
       assert(isMatch('aa', '+(a)?(b)'));
