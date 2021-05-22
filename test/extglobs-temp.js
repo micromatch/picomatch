@@ -6,6 +6,7 @@ const { isMatch } = require('..');
 
 /**
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.
+ * This is called "temp" as a reminder to reorganize these test and remove duplicates.
  */
 
 describe('extglobs', () => {

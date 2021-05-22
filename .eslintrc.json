@@ -4,16 +4,17 @@
   ],
 
   "env": {
-    "es6": true,
+    "es2021": true,
     "node": true
   },
 
-  "parserOptions":{
-    "ecmaVersion": 9
+  "parserOptions": {
+    "ecmaVersion": 12
   },
 
   "rules": {
     "accessor-pairs": 2,
+    "arrow-parens": [2, "as-needed"],
     "arrow-spacing": [2, { "before": true, "after": true }],
     "block-spacing": [2, "always"],
     "brace-style": [2, "1tbs", { "allowSingleLine": true }],
@@ -26,7 +27,7 @@
     "eol-last": 2,
     "eqeqeq": [2, "allow-null"],
     "generator-star-spacing": [2, { "before": true, "after": true }],
-    "handle-callback-err": [2, "^(err|error)$" ],
+    "handle-callback-err": [2, "^(err|error)$"],
     "indent": [2, 2, { "SwitchCase": 1 }],
     "key-spacing": [2, { "beforeColon": false, "afterColon": true }],
     "keyword-spacing": [2, { "before": true, "after": true }],
@@ -36,7 +37,6 @@
     "no-caller": 2,
     "no-class-assign": 2,
     "no-cond-assign": 2,
-    "no-console": 0,
     "no-const-assign": 2,
     "no-control-regex": 2,
     "no-debugger": 2,
@@ -104,13 +104,13 @@
     "one-var": [2, { "initialized": "never" }],
     "operator-linebreak": [0, "after", { "overrides": { "?": "before", ":": "before" } }],
     "padded-blocks": [0, "never"],
-    "prefer-const": 2,
+    "prefer-const": [2, { "destructuring": "all", "ignoreReadBeforeAssign": false }],
     "quotes": [2, "single", "avoid-escape"],
     "radix": 2,
     "semi": [2, "always"],
     "semi-spacing": [2, { "before": false, "after": true }],
     "space-before-blocks": [2, "always"],
-    "space-before-function-paren": [2, "never"],
+    "space-before-function-paren": [2, { "anonymous": "never", "named": "never", "asyncArrow": "always" }],
     "space-in-parens": [2, "never"],
     "space-infix-ops": 2,
     "space-unary-ops": [2, { "words": true, "nonwords": false }],
