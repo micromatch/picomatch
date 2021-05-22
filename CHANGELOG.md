@@ -32,6 +32,12 @@ Changelog entries are classified using the following labels _(from [keep-a-chang
 
 </details>
 
+## 2.3.0 (2021-05-21)
+
+### Fixed
+
+* Fixes bug where file names with two dots were not being matched consistently with negation extglobs containing a star ([56083ef](https://github.com/micromatch/picomatch/commit/56083ef))
+
 ## 2.2.3 (2021-04-10)
 
 ### Fixed
