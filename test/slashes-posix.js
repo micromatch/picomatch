@@ -1,14 +1,9 @@
 'use strict';
 
 const assert = require('assert');
-const support = require('./support');
 const { isMatch } = require('..');
 
 describe('slash handling - posix', () => {
-  before(() => support.resetPathSep());
-  after(() => support.resetPathSep());
-  afterEach(() => support.resetPathSep());
-
   it('should match a literal string', () => {
     assert(!isMatch('a/a', '(a/b)'));
     assert(isMatch('a/b', '(a/b)'));
