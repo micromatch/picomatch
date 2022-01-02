@@ -58,13 +58,32 @@ describe('extglobs', () => {
     it('should support stars in negation extglobs', () => {
       assert(!isMatch('/file.d.ts', '/!(*.d).ts'));
       assert(isMatch('/file.ts', '/!(*.d).ts'));
+      assert(isMatch('/file.something.ts', '/!(*.d).ts'));
       assert(isMatch('/file.d.something.ts', '/!(*.d).ts'));
       assert(isMatch('/file.dhello.ts', '/!(*.d).ts'));
 
       assert(!isMatch('/file.d.ts', '**/!(*.d).ts'));
       assert(isMatch('/file.ts', '**/!(*.d).ts'));
+      assert(isMatch('/file.something.ts', '**/!(*.d).ts'));
       assert(isMatch('/file.d.something.ts', '**/!(*.d).ts'));
       assert(isMatch('/file.dhello.ts', '**/!(*.d).ts'));
+    });
+
+    // See https://github.com/micromatch/picomatch/issues/93
+    it('should support stars in negation extglobs with expression after closing parenthesis', () => {
+      // Nested expression after closing parenthesis
+      assert(!isMatch('/file.d.ts', '/!(*.d).{ts,tsx}'));
+      assert(isMatch('/file.ts', '/!(*.d).{ts,tsx}'));
+      assert(isMatch('/file.something.ts', '/!(*.d).{ts,tsx}'));
+      assert(isMatch('/file.d.something.ts', '/!(*.d).{ts,tsx}'));
+      assert(isMatch('/file.dhello.ts', '/!(*.d).{ts,tsx}'));
+
+      // Extglob after closing parenthesis
+      assert(!isMatch('/file.d.ts', '/!(*.d).@(ts)'));
+      assert(isMatch('/file.ts', '/!(*.d).@(ts)'));
+      assert(isMatch('/file.something.ts', '/!(*.d).@(ts)'));
+      assert(isMatch('/file.d.something.ts', '/!(*.d).@(ts)'));
+      assert(isMatch('/file.dhello.ts', '/!(*.d).@(ts)'));
     });
 
     it('should support negation extglobs in patterns with slashes', () => {
