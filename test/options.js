@@ -22,8 +22,15 @@ describe('options', () => {
     it('should work with negation patterns', () => {
       assert(isMatch('./x/y.js', '*.js', { matchBase: true }));
       assert(!isMatch('./x/y.js', '!*.js', { matchBase: true }));
-      assert(isMatch('./x/y.js', '**/*.js', { matchBase: true }));
-      assert(!isMatch('./x/y.js', '!**/*.js', { matchBase: true }));
+    });
+
+    it('should not affect patterns with slashes', () => {
+      assert(isMatch('x/y.js', 'x/**'));
+      assert(isMatch('x/y.js', 'x/**', { matchBase: true }));
+      assert(isMatch('x/y.js', '**/*.js'));
+      assert(isMatch('x/y.js', '**/*.js', { matchBase: true }));
+      assert(!isMatch('x/y.js', '!**/*.js'));
+      assert(!isMatch('x/y.js', '!**/*.js', { matchBase: true }));
     });
   });
 
