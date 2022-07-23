@@ -1,8 +1,8 @@
 
 import assert from 'assert';
-import * as support from './support/index.js';
+import support from './support/index.js';
 import picomatch from '../lib/index.js';
-const { isMatch } = picomatch;
+const { isMatch, makeRe } = picomatch;
 
 describe('slash handling - windows', () => {
   beforeEach(() => support.windowsPathSep());

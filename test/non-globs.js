@@ -1,6 +1,6 @@
 
 import assert from 'assert';
-import * as support from './support/index.js';
+import support from './support/index.js';
 import picomatch from '../lib/index.js';
 const { isMatch } = picomatch;
 
