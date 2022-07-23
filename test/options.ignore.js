@@ -1,8 +1,7 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const match = require('./support/match');
-const { isMatch } = require('..');
+const { isMatch } = require('../lib');
 
 describe('options.ignore', () => {
   it('should not match ignored patterns', () => {

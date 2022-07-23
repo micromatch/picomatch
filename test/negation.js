@@ -1,7 +1,6 @@
-'use strict';
 
-const assert = require('assert');
-const { isMatch } = require('..');
+import assert from 'assert';
+const { isMatch } = require('../lib');
 
 describe('negation patterns - "!"', () => {
   it('should patterns with a leading "!" as negated/inverted globs', () => {

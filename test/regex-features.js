@@ -1,9 +1,8 @@
-'use strict';
 
 const { version } = process;
-const assert = require('assert');
+import assert from 'assert';
 const utils = require('../lib/utils');
-const { isMatch } = require('..');
+const { isMatch } = require('../lib');
 
 describe('regex features', () => {
   describe('word boundaries', () => {

@@ -1,8 +1,7 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const support = require('./support');
-const { isMatch, makeRe } = require('..');
+const { isMatch, makeRe } = require('../lib');
 
 describe('slash handling - windows', () => {
   beforeEach(() => support.windowsPathSep());

@@ -1,7 +1,6 @@
-'use strict';
 
-const assert = require('assert');
-const picomatch = require('..');
+import assert from 'assert';
+const picomatch = require('../lib');
 const { isMatch } = picomatch;
 
 const assertTokens = (actual, expected) => {

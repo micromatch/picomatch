@@ -1,9 +1,8 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const fill = require('fill-range');
 const match = require('./support/match');
-const { isMatch } = require('..');
+const { isMatch } = require('../lib');
 
 describe('braces', () => {
   it('should not match with brace patterns when disabled', () => {

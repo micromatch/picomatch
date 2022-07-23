@@ -1,10 +1,9 @@
-'use strict';
 
 const { Suite } = require('benchmark');
 const { red } = require('ansi-colors');
 const minimist = require('minimist');
 const mm = require('minimatch');
-const pm = require('..');
+const pm = require('../lib');
 
 const argv = minimist(process.argv.slice(2));
 

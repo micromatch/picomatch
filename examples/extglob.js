@@ -1,6 +1,5 @@
-'use strict';
 
-const pm = require('..');
+const pm = require('../lib');
 
 console.log(pm.makeRe('(a|b|c)'));
 console.log(pm.makeRe('!(a|b|c)'));

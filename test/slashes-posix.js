@@ -1,8 +1,7 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const support = require('./support');
-const { isMatch } = require('..');
+const { isMatch } = require('../lib');
 
 describe('slash handling - posix', () => {
   before(() => support.resetPathSep());

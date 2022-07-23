@@ -1,8 +1,7 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const fill = require('fill-range');
-const { isMatch } = require('..');
+const { isMatch } = require('../lib');
 
 describe('options.expandRange', () => {
   it('should support a custom function for expanding ranges in brace patterns', () => {

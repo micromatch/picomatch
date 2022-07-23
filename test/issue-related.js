@@ -1,7 +1,6 @@
-'use strict';
 
-const assert = require('assert');
-const { isMatch } = require('..');
+import assert from 'assert';
+const { isMatch } = require('../lib');
 
 describe('issue-related tests', () => {
   it('should match with braces (see picomatch/issues#8)', () => {

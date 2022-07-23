@@ -1,7 +1,6 @@
-'use strict';
 
-const assert = require('assert');
-const { isMatch } = require('..');
+import assert from 'assert';
+const { isMatch } = require('../lib');
 
 // $echo a/{1..3}/b
 describe('from the Bash 4.3 spec/unit tests', () => {

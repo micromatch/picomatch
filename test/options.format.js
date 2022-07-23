@@ -1,8 +1,7 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const match = require('./support/match');
-const { isMatch } = require('..');
+const { isMatch } = require('../lib');
 
 const equal = (actual, expected, msg) => {
   assert.deepStrictEqual([].concat(actual).sort(), [].concat(expected).sort(), msg);

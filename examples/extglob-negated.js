@@ -1,6 +1,5 @@
-'use strict';
 
-const picomatch = require('..');
+const picomatch = require('../lib');
 
 const fixtures = [
   ['/file.d.ts', false],

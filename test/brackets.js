@@ -1,7 +1,6 @@
-'use strict';
 
-const assert = require('assert');
-const { isMatch } = require('..');
+import assert from 'assert';
+const { isMatch } = require('../lib');
 
 describe('brackets', () => {
   describe('trailing stars', () => {

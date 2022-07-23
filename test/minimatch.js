@@ -1,8 +1,7 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const format = str => str.replace(/^\.\//, '');
-const { isMatch, makeRe } = require('..');
+const { isMatch, makeRe } = require('../lib');
 
 describe('minimatch parity:', () => {
   describe('minimatch issues (as of 12/7/2016)', () => {

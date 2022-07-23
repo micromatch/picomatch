@@ -1,7 +1,6 @@
-'use strict';
 
-const assert = require('assert');
-const pm = require('..');
+import assert from 'assert';
+const pm = require('../lib');
 const { makeRe, parse } = pm;
 
 const opts = { strictSlashes: true, posix: true, regex: true };

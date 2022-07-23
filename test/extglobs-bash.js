@@ -1,8 +1,7 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const support = require('./support');
-const { isMatch } = require('..');
+const { isMatch } = require('../lib');
 
 /**
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.

@@ -1,6 +1,5 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const scan = require('../lib/scan');
 const base = (...args) => scan(...args).base;
 const both = (...args) => {

@@ -1,8 +1,7 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const match = require('./support/match');
-const { isMatch } = require('..');
+const { isMatch } = require('../lib');
 
 describe('dotfiles', () => {
   describe('normal', () => {
@@ -224,7 +223,7 @@ describe('dotfiles', () => {
       assert(isMatch('abc/../abc', '*/../*'));
     });
 
-    it('should not match double dots when not defined in pattern', async() => {
+    it('should not match double dots when not defined in pattern', async () => {
       assert(!isMatch('../abc', '**/*'));
       assert(!isMatch('../abc', '**/**/**'));
       assert(!isMatch('../abc', '**/**/abc'));
@@ -291,7 +290,7 @@ describe('dotfiles', () => {
       assert(!isMatch('abc/abc/..', 'abc/*/**/*', { strictSlashes: true }));
     });
 
-    it('should not match single exclusive dots when not defined in pattern', async() => {
+    it('should not match single exclusive dots when not defined in pattern', async () => {
       assert(!isMatch('.', '**'));
       assert(!isMatch('abc/./abc', '**'));
       assert(!isMatch('abc/abc/.', '**'));

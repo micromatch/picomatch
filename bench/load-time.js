@@ -1,8 +1,7 @@
-'use strict';
 
 console.log('# Load time');
 console.time('picomatch');
-exports.pm = require('..');
+exports.pm = require('../lib');
 console.timeEnd('picomatch');
 console.time('minimatch');
 exports.mm = require('minimatch');
