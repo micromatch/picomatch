@@ -1,6 +1,7 @@
 
 import assert from 'assert';
-import { isMatch } from '../lib/index.js';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('stars', () => {
   describe('issue related', () => {

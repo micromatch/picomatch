@@ -1,7 +1,8 @@
 
 import assert from 'assert';
-import { match } from './support/index.js';
-import { isMatch, makeRe } from '../lib/index.js';
+import match from './support/match.js';
+import picomatch from '../lib/index.js';
+const { isMatch, makeRe } = picomatch;
 
 /**
  * Ported from Bash 4.3 and 4.4 unit tests

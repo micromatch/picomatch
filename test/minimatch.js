@@ -1,7 +1,8 @@
 
 import assert from 'assert';
 const format = str => str.replace(/^\.\//, '');
-import { isMatch, makeRe } from '../lib/index.js';
+import picomatch from '../lib/index.js';
+const { isMatch, makeRe } = picomatch;
 
 describe('minimatch parity:', () => {
   describe('minimatch issues (as of 12/7/2016)', () => {

@@ -1,7 +1,8 @@
 
 import assert from 'assert';
 import * as support from './support/index.js';
-import { isMatch } from '../lib/index.js';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('non-globs', () => {
   before(() => support.resetPathSep());

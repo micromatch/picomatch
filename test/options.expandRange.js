@@ -1,7 +1,8 @@
 
 import assert from 'assert';
 import fill from 'fill-range';
-import { isMatch } from '../lib/index.js';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('options.expandRange', () => {
   it('should support a custom function for expanding ranges in brace patterns', () => {

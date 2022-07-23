@@ -1,7 +1,8 @@
 
 import assert from 'assert';
 import match from './support/match.js';
-import { isMatch } from '../lib/index.js';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('dotfiles', () => {
   describe('normal', () => {

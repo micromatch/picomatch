@@ -3,7 +3,6 @@ import assert from 'assert';
 import pm from '../lib/index.js';
 import { parse } from '../lib/parse.js';
 const { makeRe } = parse;
-
 const opts = { strictSlashes: true, posix: true, regex: true };
 const isMatch = (...args) => pm.isMatch(...args, opts);
 const convert = (...args) => {

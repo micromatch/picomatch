@@ -2,7 +2,8 @@
 const { version } = process;
 import assert from 'assert';
 import * as utils from '../lib/utils.js';
-import { isMatch } from '../lib/index.js';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('regex features', () => {
   describe('word boundaries', () => {

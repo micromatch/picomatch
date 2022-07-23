@@ -1,6 +1,7 @@
 
 import assert from 'assert';
-import { isMatch } from '../lib/index.js';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('issue-related tests', () => {
   it('should match with braces (see picomatch/issues#8)', () => {

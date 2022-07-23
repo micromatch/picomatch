@@ -2,7 +2,6 @@ import assert from 'assert';
 import picomatch from '../lib/picomatch.js';
 
 const { isMatch } = picomatch;
-
 const assertTokens = (actual, expected) => {
   const keyValuePairs = actual.map(token => [token.type, token.value]);
   assert.deepStrictEqual(keyValuePairs, expected);

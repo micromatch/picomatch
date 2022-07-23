@@ -1,7 +1,8 @@
 
 import assert from 'assert';
-import { match } from './support/index.js';
-import { isMatch } from '../lib/index.js';
+import match from './support/match.js';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('qmarks and stars', () => {
   it('should match question marks with question marks', () => {
