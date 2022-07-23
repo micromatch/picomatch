@@ -1,8 +1,8 @@
 
-const path = require('path');
+import path from 'path';
 import assert from 'assert';
-const support = require('./support');
-const { isMatch, makeRe } = require('../lib');
+import * as support from './support/index.js';
+import { isMatch } from '../lib/index.js';
 
 describe('special characters', () => {
   before(() => support.resetPathSep());

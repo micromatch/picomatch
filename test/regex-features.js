@@ -1,8 +1,8 @@
 
 const { version } = process;
 import assert from 'assert';
-const utils = require('../lib/utils');
-const { isMatch } = require('../lib');
+import * as utils from '../lib/utils.js';
+import { isMatch } from '../lib/index.js';
 
 describe('regex features', () => {
   describe('word boundaries', () => {

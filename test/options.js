@@ -1,8 +1,8 @@
 
 import assert from 'assert';
-const support = require('./support');
-const match = require('./support/match');
-const { isMatch } = require('../lib');
+import * as support from './support/index.js';
+import { match } from './support/index.js';
+import { isMatch } from '../lib/index.js';
 
 describe('options', () => {
   beforeEach(() => support.windowsPathSep());

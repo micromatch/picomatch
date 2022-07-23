@@ -1,7 +1,7 @@
 
 import assert from 'assert';
-const match = require('./support/match');
-const { isMatch } = require('../lib');
+import { match } from './support/index.js';
+import { isMatch } from '../lib/index.js';
 
 describe('qmarks and stars', () => {
   it('should match question marks with question marks', () => {

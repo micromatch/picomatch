@@ -1,7 +1,7 @@
 
 import assert from 'assert';
-const support = require('./support');
-const { isMatch } = require('../lib');
+import * as support from './support/index.js';
+import { isMatch } from '../lib/index.js';
 
 /**
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.

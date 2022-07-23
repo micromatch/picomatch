@@ -1,7 +1,7 @@
 
 import assert from 'assert';
-const match = require('./support/match');
-const { isMatch } = require('../lib');
+import match from './support/match.js';
+import { isMatch } from '../lib/index.js';
 
 describe('dotfiles', () => {
   describe('normal', () => {

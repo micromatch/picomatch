@@ -1,63 +1,14 @@
 var __defProp = Object.defineProperty;
 var __export = (target, all) => {
-  for (var name in all) { __defProp(target, name, { get: all[name], enumerable: true }); }
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
 
 // lib/picomatch.js
-import path3 from 'path';
+import path3 from "path";
 
 // lib/utils.js
-import path from 'path';
-import {
-  REGEX_BACKSLASH,
-  REGEX_REMOVE_BACKSLASH,
-  REGEX_SPECIAL_CHARS,
-  REGEX_SPECIAL_CHARS_GLOBAL
-} from 'constants';
-var win32 = process.platform === 'win32';
-var hasRegexChars = str => REGEX_SPECIAL_CHARS.test(str);
-var escapeRegex = str => str.replace(REGEX_SPECIAL_CHARS_GLOBAL, '\\$1');
-var toPosixSlashes = str => str.replace(REGEX_BACKSLASH, '/');
-var removeBackslashes = str => {
-  return str.replace(REGEX_REMOVE_BACKSLASH, match => {
-    return match === '\\' ? '' : match;
-  });
-};
-var supportsLookbehinds = () => {
-  const segs = process.version.slice(1).split('.').map(Number);
-  if (segs.length === 3 && segs[0] >= 9 || segs[0] === 8 && segs[1] >= 10) {
-    return true;
-  }
-  return false;
-};
-var isWindows = options => {
-  if (options && typeof options.windows === 'boolean') {
-    return options.windows;
-  }
-  return win32 === true || path.sep === '\\';
-};
-var escapeLast = (input, char, lastIdx) => {
-  const idx = input.lastIndexOf(char, lastIdx);
-  if (idx === -1) { return input; }
-  return input[idx - 1] === '\\' ? escapeLast(input, char, idx - 1) : input.slice(0, idx) + '\\' + input.slice(idx);
-};
-var removePrefix = (input, state = {}) => {
-  let output = input;
-  if (output.startsWith('./')) {
-    output = output.slice(2);
-    state.prefix = './';
-  }
-  return output;
-};
-var wrapOutput = (input, state = {}, options = {}) => {
-  const prepend = options.contains ? '' : '^';
-  const append = options.contains ? '' : '$';
-  let output = `${prepend}(?:${input})${append}`;
-  if (state.negated === true) {
-    output = `(?:^(?!${output}).*$)`;
-  }
-  return output;
-};
+import path2 from "path";
 
 // lib/constants.js
 var constants_exports = {};
@@ -120,12 +71,12 @@ __export(constants_exports, {
   QMARK: () => QMARK,
   QMARK_LITERAL: () => QMARK_LITERAL,
   QMARK_NO_DOT: () => QMARK_NO_DOT,
-  REGEX_BACKSLASH: () => REGEX_BACKSLASH2,
+  REGEX_BACKSLASH: () => REGEX_BACKSLASH,
   REGEX_NON_SPECIAL_CHARS: () => REGEX_NON_SPECIAL_CHARS,
-  REGEX_REMOVE_BACKSLASH: () => REGEX_REMOVE_BACKSLASH2,
-  REGEX_SPECIAL_CHARS: () => REGEX_SPECIAL_CHARS2,
+  REGEX_REMOVE_BACKSLASH: () => REGEX_REMOVE_BACKSLASH,
+  REGEX_SPECIAL_CHARS: () => REGEX_SPECIAL_CHARS,
   REGEX_SPECIAL_CHARS_BACKREF: () => REGEX_SPECIAL_CHARS_BACKREF,
-  REGEX_SPECIAL_CHARS_GLOBAL: () => REGEX_SPECIAL_CHARS_GLOBAL2,
+  REGEX_SPECIAL_CHARS_GLOBAL: () => REGEX_SPECIAL_CHARS_GLOBAL,
   REPLACEMENTS: () => REPLACEMENTS,
   SEP: () => SEP,
   SLASH_LITERAL: () => SLASH_LITERAL,
@@ -137,15 +88,15 @@ __export(constants_exports, {
   extglobChars: () => extglobChars,
   globChars: () => globChars
 });
-import path2 from 'path';
-var WIN_SLASH = '\\\\/';
+import path from "path";
+var WIN_SLASH = "\\\\/";
 var WIN_NO_SLASH = `[^${WIN_SLASH}]`;
-var DOT_LITERAL = '\\.';
-var PLUS_LITERAL = '\\+';
-var QMARK_LITERAL = '\\?';
-var SLASH_LITERAL = '\\/';
-var ONE_CHAR = '(?=.)';
-var QMARK = '[^/]';
+var DOT_LITERAL = "\\.";
+var PLUS_LITERAL = "\\+";
+var QMARK_LITERAL = "\\?";
+var SLASH_LITERAL = "\\/";
+var ONE_CHAR = "(?=.)";
+var QMARK = "[^/]";
 var END_ANCHOR = `(?:${SLASH_LITERAL}|$)`;
 var START_ANCHOR = `(?:^|${SLASH_LITERAL})`;
 var DOTS_SLASH = `${DOT_LITERAL}{1,2}${END_ANCHOR}`;
@@ -187,32 +138,32 @@ var WINDOWS_CHARS = {
   END_ANCHOR: `(?:[${WIN_SLASH}]|$)`
 };
 var POSIX_REGEX_SOURCE = {
-  alnum: 'a-zA-Z0-9',
-  alpha: 'a-zA-Z',
-  ascii: '\\x00-\\x7F',
-  blank: ' \\t',
-  cntrl: '\\x00-\\x1F\\x7F',
-  digit: '0-9',
-  graph: '\\x21-\\x7E',
-  lower: 'a-z',
-  print: '\\x20-\\x7E ',
+  alnum: "a-zA-Z0-9",
+  alpha: "a-zA-Z",
+  ascii: "\\x00-\\x7F",
+  blank: " \\t",
+  cntrl: "\\x00-\\x1F\\x7F",
+  digit: "0-9",
+  graph: "\\x21-\\x7E",
+  lower: "a-z",
+  print: "\\x20-\\x7E ",
   punct: "\\-!\"#$%&'()\\*+,./:;<=>?@[\\]^_`{|}~",
-  space: ' \\t\\r\\n\\v\\f',
-  upper: 'A-Z',
-  word: 'A-Za-z0-9_',
-  xdigit: 'A-Fa-f0-9'
+  space: " \\t\\r\\n\\v\\f",
+  upper: "A-Z",
+  word: "A-Za-z0-9_",
+  xdigit: "A-Fa-f0-9"
 };
 var MAX_LENGTH = 1024 * 64;
-var REGEX_BACKSLASH2 = /\\(?![*+?^${}(|)[\]])/g;
+var REGEX_BACKSLASH = /\\(?![*+?^${}(|)[\]])/g;
 var REGEX_NON_SPECIAL_CHARS = /^[^@![\].,$*+?^{}()|\\/]+/;
-var REGEX_SPECIAL_CHARS2 = /[-*+?.^${}(|)[\]]/;
+var REGEX_SPECIAL_CHARS = /[-*+?.^${}(|)[\]]/;
 var REGEX_SPECIAL_CHARS_BACKREF = /(\\?)((\W)(\3*))/g;
-var REGEX_SPECIAL_CHARS_GLOBAL2 = /([-*+?.^${}(|)[\]])/g;
-var REGEX_REMOVE_BACKSLASH2 = /(?:\[.*?[^\\]\]|\\(?=.))/g;
+var REGEX_SPECIAL_CHARS_GLOBAL = /([-*+?.^${}(|)[\]])/g;
+var REGEX_REMOVE_BACKSLASH = /(?:\[.*?[^\\]\]|\\(?=.))/g;
 var REPLACEMENTS = {
-  '***': '*',
-  '**/**': '**',
-  '**/**/**': '**'
+  "***": "*",
+  "**/**": "**",
+  "**/**/**": "**"
 };
 var CHAR_0 = 48;
 var CHAR_9 = 57;
@@ -257,25 +208,72 @@ var CHAR_TAB = 9;
 var CHAR_UNDERSCORE = 95;
 var CHAR_VERTICAL_LINE = 124;
 var CHAR_ZERO_WIDTH_NOBREAK_SPACE = 65279;
-var SEP = path2.sep;
-var extglobChars = chars => {
+var SEP = path.sep;
+var extglobChars = (chars) => {
   return {
-    '!': { type: 'negate', open: '(?:(?!(?:', close: `))${chars.STAR})` },
-    '?': { type: 'qmark', open: '(?:', close: ')?' },
-    '+': { type: 'plus', open: '(?:', close: ')+' },
-    '*': { type: 'star', open: '(?:', close: ')*' },
-    '@': { type: 'at', open: '(?:', close: ')' }
+    "!": { type: "negate", open: "(?:(?!(?:", close: `))${chars.STAR})` },
+    "?": { type: "qmark", open: "(?:", close: ")?" },
+    "+": { type: "plus", open: "(?:", close: ")+" },
+    "*": { type: "star", open: "(?:", close: ")*" },
+    "@": { type: "at", open: "(?:", close: ")" }
   };
 };
-var globChars = win322 => {
+var globChars = (win322) => {
   return win322 === true ? WINDOWS_CHARS : POSIX_CHARS;
 };
 
+// lib/utils.js
+var win32 = process.platform === "win32";
+var hasRegexChars = (str) => REGEX_SPECIAL_CHARS.test(str);
+var escapeRegex = (str) => str.replace(REGEX_SPECIAL_CHARS_GLOBAL, "\\$1");
+var toPosixSlashes = (str) => str.replace(REGEX_BACKSLASH, "/");
+var removeBackslashes = (str) => {
+  return str.replace(REGEX_REMOVE_BACKSLASH, (match) => {
+    return match === "\\" ? "" : match;
+  });
+};
+var supportsLookbehinds = () => {
+  const segs = process.version.slice(1).split(".").map(Number);
+  if (segs.length === 3 && segs[0] >= 9 || segs[0] === 8 && segs[1] >= 10) {
+    return true;
+  }
+  return false;
+};
+var isWindows = (options) => {
+  if (options && typeof options.windows === "boolean") {
+    return options.windows;
+  }
+  return win32 === true || path2.sep === "\\";
+};
+var escapeLast = (input, char, lastIdx) => {
+  const idx = input.lastIndexOf(char, lastIdx);
+  if (idx === -1)
+    return input;
+  return input[idx - 1] === "\\" ? escapeLast(input, char, idx - 1) : input.slice(0, idx) + "\\" + input.slice(idx);
+};
+var removePrefix = (input, state = {}) => {
+  let output = input;
+  if (output.startsWith("./")) {
+    output = output.slice(2);
+    state.prefix = "./";
+  }
+  return output;
+};
+var wrapOutput = (input, state = {}, options = {}) => {
+  const prepend = options.contains ? "" : "^";
+  const append = options.contains ? "" : "$";
+  let output = `${prepend}(?:${input})${append}`;
+  if (state.negated === true) {
+    output = `(?:^(?!${output}).*$)`;
+  }
+  return output;
+};
+
 // lib/scan.js
-var isPathSeparator = code => {
+var isPathSeparator = (code) => {
   return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
 };
-var depth = token => {
+var depth = (token) => {
   if (token.isPrefix !== true) {
     token.depth = token.isGlobstar ? Infinity : 1;
   }
@@ -304,7 +302,7 @@ var scan = (input, options) => {
   let braces = 0;
   let prev;
   let code;
-  let token = { value: '', depth: 0, isGlob: false };
+  let token = { value: "", depth: 0, isGlob: false };
   const eos = () => index >= length;
   const peek = () => str.charCodeAt(index + 1);
   const advance = () => {
@@ -370,8 +368,9 @@ var scan = (input, options) => {
     if (code === CHAR_FORWARD_SLASH) {
       slashes.push(index);
       tokens.push(token);
-      token = { value: '', depth: 0, isGlob: false };
-      if (finished === true) { continue; }
+      token = { value: "", depth: 0, isGlob: false };
+      if (finished === true)
+        continue;
       if (prev === CHAR_DOT && index === start + 1) {
         start += 2;
         continue;
@@ -407,7 +406,8 @@ var scan = (input, options) => {
       }
     }
     if (code === CHAR_ASTERISK) {
-      if (prev === CHAR_ASTERISK) { isGlobstar = token.isGlobstar = true; }
+      if (prev === CHAR_ASTERISK)
+        isGlobstar = token.isGlobstar = true;
       isGlob = token.isGlob = true;
       finished = true;
       if (scanToEnd === true) {
@@ -478,8 +478,8 @@ var scan = (input, options) => {
     isGlob = false;
   }
   let base = str;
-  let prefix = '';
-  let glob = '';
+  let prefix = "";
+  let glob = "";
   if (start > 0) {
     prefix = str.slice(0, start);
     str = str.slice(start);
@@ -489,18 +489,19 @@ var scan = (input, options) => {
     base = str.slice(0, lastIndex);
     glob = str.slice(lastIndex);
   } else if (isGlob === true) {
-    base = '';
+    base = "";
     glob = str;
   } else {
     base = str;
   }
-  if (base && base !== '' && base !== '/' && base !== str) {
+  if (base && base !== "" && base !== "/" && base !== str) {
     if (isPathSeparator(base.charCodeAt(base.length - 1))) {
       base = base.slice(0, -1);
     }
   }
   if (opts.unescape === true) {
-    if (glob) { glob = removeBackslashes(glob); }
+    if (glob)
+      glob = removeBackslashes(glob);
     if (base && backslashes === true) {
       base = removeBackslashes(base);
     }
@@ -542,7 +543,7 @@ var scan = (input, options) => {
         depth(tokens[idx]);
         state.maxDepth += tokens[idx].depth;
       }
-      if (idx !== 0 || value !== '') {
+      if (idx !== 0 || value !== "") {
         parts.push(value);
       }
       prevIndex = i;
@@ -563,25 +564,16 @@ var scan = (input, options) => {
 };
 
 // lib/parse.js
-import {
-  MAX_LENGTH as MAX_LENGTH2,
-  POSIX_REGEX_SOURCE as POSIX_REGEX_SOURCE2,
-  REGEX_NON_SPECIAL_CHARS as REGEX_NON_SPECIAL_CHARS2,
-  REGEX_SPECIAL_CHARS_BACKREF as REGEX_SPECIAL_CHARS_BACKREF2,
-  REPLACEMENTS as REPLACEMENTS2,
-  globChars as globChars2,
-  extglobChars as extglobChars2
-} from 'constants';
 var expandRange = (args, options) => {
-  if (typeof options.expandRange === 'function') {
+  if (typeof options.expandRange === "function") {
     return options.expandRange(...args, options);
   }
   args.sort();
-  const value = `[${args.join('-')}]`;
+  const value = `[${args.join("-")}]`;
   try {
     new RegExp(value);
   } catch (ex) {
-    return args.map(v => escapeRegex(v)).join('..');
+    return args.map((v) => escapeRegex(v)).join("..");
   }
   return value;
 };
@@ -589,22 +581,22 @@ var syntaxError = (type, char) => {
   return `Missing ${type}: "${char}" - use "\\\\${char}" to match literal characters`;
 };
 var parse = (input, options) => {
-  if (typeof input !== 'string') {
-    throw new TypeError('Expected a string');
+  if (typeof input !== "string") {
+    throw new TypeError("Expected a string");
   }
-  input = REPLACEMENTS2[input] || input;
+  input = REPLACEMENTS[input] || input;
   const opts = { ...options };
-  const max = typeof opts.maxLength === 'number' ? Math.min(MAX_LENGTH2, opts.maxLength) : MAX_LENGTH2;
+  const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
   let len = input.length;
   if (len > max) {
     throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
   }
-  const bos = { type: 'bos', value: '', output: opts.prepend || '' };
+  const bos = { type: "bos", value: "", output: opts.prepend || "" };
   const tokens = [bos];
-  const capture = opts.capture ? '' : '?:';
+  const capture = opts.capture ? "" : "?:";
   const win322 = isWindows(options);
-  const PLATFORM_CHARS = globChars2(win322);
-  const EXTGLOB_CHARS = extglobChars2(PLATFORM_CHARS);
+  const PLATFORM_CHARS = globChars(win322);
+  const EXTGLOB_CHARS = extglobChars(PLATFORM_CHARS);
   const {
     DOT_LITERAL: DOT_LITERAL2,
     PLUS_LITERAL: PLUS_LITERAL2,
@@ -619,16 +611,16 @@ var parse = (input, options) => {
     STAR: STAR2,
     START_ANCHOR: START_ANCHOR2
   } = PLATFORM_CHARS;
-  const globstar = opts2 => {
+  const globstar = (opts2) => {
     return `(${capture}(?:(?!${START_ANCHOR2}${opts2.dot ? DOTS_SLASH2 : DOT_LITERAL2}).)*?)`;
   };
-  const nodot = opts.dot ? '' : NO_DOT2;
+  const nodot = opts.dot ? "" : NO_DOT2;
   const qmarkNoDot = opts.dot ? QMARK2 : QMARK_NO_DOT2;
   let star = opts.bash === true ? globstar(opts) : STAR2;
   if (opts.capture) {
     star = `(${star})`;
   }
-  if (typeof opts.noext === 'boolean') {
+  if (typeof opts.noext === "boolean") {
     opts.noextglob = opts.noext;
   }
   const state = {
@@ -636,9 +628,9 @@ var parse = (input, options) => {
     index: -1,
     start: 0,
     dot: opts.dot === true,
-    consumed: '',
-    output: '',
-    prefix: '',
+    consumed: "",
+    output: "",
+    prefix: "",
     backtrack: false,
     negated: false,
     brackets: 0,
@@ -657,19 +649,19 @@ var parse = (input, options) => {
   let value;
   const eos = () => state.index === len - 1;
   const peek = state.peek = (n = 1) => input[state.index + n];
-  const advance = state.advance = () => input[++state.index] || '';
+  const advance = state.advance = () => input[++state.index] || "";
   const remaining = () => input.slice(state.index + 1);
-  const consume = (value2 = '', num = 0) => {
+  const consume = (value2 = "", num = 0) => {
     state.consumed += value2;
     state.index += num;
   };
-  const append = token => {
+  const append = (token) => {
     state.output += token.output != null ? token.output : token.value;
     consume(token.value);
   };
   const negate = () => {
     let count = 1;
-    while (peek() === '!' && (peek(2) !== '(' || peek(3) === '?')) {
+    while (peek() === "!" && (peek(2) !== "(" || peek(3) === "?")) {
       advance();
       state.start++;
       count++;
@@ -681,33 +673,34 @@ var parse = (input, options) => {
     state.start++;
     return true;
   };
-  const increment = type => {
+  const increment = (type) => {
     state[type]++;
     stack.push(type);
   };
-  const decrement = type => {
+  const decrement = (type) => {
     state[type]--;
     stack.pop();
   };
-  const push = tok => {
-    if (prev.type === 'globstar') {
-      const isBrace = state.braces > 0 && (tok.type === 'comma' || tok.type === 'brace');
-      const isExtglob = tok.extglob === true || extglobs.length && (tok.type === 'pipe' || tok.type === 'paren');
-      if (tok.type !== 'slash' && tok.type !== 'paren' && !isBrace && !isExtglob) {
+  const push = (tok) => {
+    if (prev.type === "globstar") {
+      const isBrace = state.braces > 0 && (tok.type === "comma" || tok.type === "brace");
+      const isExtglob = tok.extglob === true || extglobs.length && (tok.type === "pipe" || tok.type === "paren");
+      if (tok.type !== "slash" && tok.type !== "paren" && !isBrace && !isExtglob) {
         state.output = state.output.slice(0, -prev.output.length);
-        prev.type = 'star';
-        prev.value = '*';
+        prev.type = "star";
+        prev.value = "*";
         prev.output = star;
         state.output += prev.output;
       }
     }
-    if (extglobs.length && tok.type !== 'paren') {
+    if (extglobs.length && tok.type !== "paren") {
       extglobs[extglobs.length - 1].inner += tok.value;
     }
-    if (tok.value || tok.output) { append(tok); }
-    if (prev && prev.type === 'text' && tok.type === 'text') {
+    if (tok.value || tok.output)
+      append(tok);
+    if (prev && prev.type === "text" && tok.type === "text") {
       prev.value += tok.value;
-      prev.output = (prev.output || '') + tok.value;
+      prev.output = (prev.output || "") + tok.value;
       return;
     }
     tok.prev = prev;
@@ -715,60 +708,60 @@ var parse = (input, options) => {
     prev = tok;
   };
   const extglobOpen = (type, value2) => {
-    const token = { ...EXTGLOB_CHARS[value2], conditions: 1, inner: '' };
+    const token = { ...EXTGLOB_CHARS[value2], conditions: 1, inner: "" };
     token.prev = prev;
     token.parens = state.parens;
     token.output = state.output;
-    const output = (opts.capture ? '(' : '') + token.open;
-    increment('parens');
-    push({ type, value: value2, output: state.output ? '' : ONE_CHAR2 });
-    push({ type: 'paren', extglob: true, value: advance(), output });
+    const output = (opts.capture ? "(" : "") + token.open;
+    increment("parens");
+    push({ type, value: value2, output: state.output ? "" : ONE_CHAR2 });
+    push({ type: "paren", extglob: true, value: advance(), output });
     extglobs.push(token);
   };
-  const extglobClose = token => {
-    let output = token.close + (opts.capture ? ')' : '');
+  const extglobClose = (token) => {
+    let output = token.close + (opts.capture ? ")" : "");
     let rest;
-    if (token.type === 'negate') {
+    if (token.type === "negate") {
       let extglobStar = star;
-      if (token.inner && token.inner.length > 1 && token.inner.includes('/')) {
+      if (token.inner && token.inner.length > 1 && token.inner.includes("/")) {
         extglobStar = globstar(opts);
       }
       if (extglobStar !== star || eos() || /^\)+$/.test(remaining())) {
         output = token.close = `)$))${extglobStar}`;
       }
-      if (token.inner.includes('*') && (rest = remaining()) && /^\.[^\\/.]+$/.test(rest)) {
+      if (token.inner.includes("*") && (rest = remaining()) && /^\.[^\\/.]+$/.test(rest)) {
         const expression = parse(rest, { ...options, fastpaths: false }).output;
         output = token.close = `)${expression})${extglobStar})`;
       }
-      if (token.prev.type === 'bos') {
+      if (token.prev.type === "bos") {
         state.negatedExtglob = true;
       }
     }
-    push({ type: 'paren', extglob: true, value, output });
-    decrement('parens');
+    push({ type: "paren", extglob: true, value, output });
+    decrement("parens");
   };
   if (opts.fastpaths !== false && !/(^[*!]|[/()[\]{}"])/.test(input)) {
     let backslashes = false;
-    let output = input.replace(REGEX_SPECIAL_CHARS_BACKREF2, (m, esc, chars, first, rest, index) => {
-      if (first === '\\') {
+    let output = input.replace(REGEX_SPECIAL_CHARS_BACKREF, (m, esc, chars, first, rest, index) => {
+      if (first === "\\") {
         backslashes = true;
         return m;
       }
-      if (first === '?') {
+      if (first === "?") {
         if (esc) {
-          return esc + first + (rest ? QMARK2.repeat(rest.length) : '');
+          return esc + first + (rest ? QMARK2.repeat(rest.length) : "");
         }
         if (index === 0) {
-          return qmarkNoDot + (rest ? QMARK2.repeat(rest.length) : '');
+          return qmarkNoDot + (rest ? QMARK2.repeat(rest.length) : "");
         }
         return QMARK2.repeat(chars.length);
       }
-      if (first === '.') {
+      if (first === ".") {
         return DOT_LITERAL2.repeat(chars.length);
       }
-      if (first === '*') {
+      if (first === "*") {
         if (esc) {
-          return esc + first + (rest ? star : '');
+          return esc + first + (rest ? star : "");
         }
         return star;
       }
@@ -776,10 +769,10 @@ var parse = (input, options) => {
     });
     if (backslashes === true) {
       if (opts.unescape === true) {
-        output = output.replace(/\\/g, '');
+        output = output.replace(/\\/g, "");
       } else {
-        output = output.replace(/\\+/g, m => {
-          return m.length % 2 === 0 ? '\\\\' : m ? '\\' : '';
+        output = output.replace(/\\+/g, (m) => {
+          return m.length % 2 === 0 ? "\\\\" : m ? "\\" : "";
         });
       }
     }
@@ -792,20 +785,20 @@ var parse = (input, options) => {
   }
   while (!eos()) {
     value = advance();
-    if (value === '\0') {
+    if (value === "\0") {
       continue;
     }
-    if (value === '\\') {
+    if (value === "\\") {
       const next = peek();
-      if (next === '/' && opts.bash !== true) {
+      if (next === "/" && opts.bash !== true) {
         continue;
       }
-      if (next === '.' || next === ';') {
+      if (next === "." || next === ";") {
         continue;
       }
       if (!next) {
-        value += '\\';
-        push({ type: 'text', value });
+        value += "\\";
+        push({ type: "text", value });
         continue;
       }
       const match = /^\\+/.exec(remaining());
@@ -814,7 +807,7 @@ var parse = (input, options) => {
         slashes = match[0].length;
         state.index += slashes;
         if (slashes % 2 !== 0) {
-          value += '\\';
+          value += "\\";
         }
       }
       if (opts.unescape === true) {
@@ -823,20 +816,20 @@ var parse = (input, options) => {
         value += advance();
       }
       if (state.brackets === 0) {
-        push({ type: 'text', value });
+        push({ type: "text", value });
         continue;
       }
     }
-    if (state.brackets > 0 && (value !== ']' || prev.value === '[' || prev.value === '[^')) {
-      if (opts.posix !== false && value === ':') {
+    if (state.brackets > 0 && (value !== "]" || prev.value === "[" || prev.value === "[^")) {
+      if (opts.posix !== false && value === ":") {
         const inner = prev.value.slice(1);
-        if (inner.includes('[')) {
+        if (inner.includes("[")) {
           prev.posix = true;
-          if (inner.includes(':')) {
-            const idx = prev.value.lastIndexOf('[');
+          if (inner.includes(":")) {
+            const idx = prev.value.lastIndexOf("[");
             const pre = prev.value.slice(0, idx);
             const rest2 = prev.value.slice(idx + 2);
-            const posix = POSIX_REGEX_SOURCE2[rest2];
+            const posix = POSIX_REGEX_SOURCE[rest2];
             if (posix) {
               prev.value = pre + posix;
               state.backtrack = true;
@@ -849,14 +842,14 @@ var parse = (input, options) => {
           }
         }
       }
-      if (value === '[' && peek() !== ':' || value === '-' && peek() === ']') {
+      if (value === "[" && peek() !== ":" || value === "-" && peek() === "]") {
         value = `\\${value}`;
       }
-      if (value === ']' && (prev.value === '[' || prev.value === '[^')) {
+      if (value === "]" && (prev.value === "[" || prev.value === "[^")) {
         value = `\\${value}`;
       }
-      if (opts.posix === true && value === '!' && prev.value === '[') {
-        value = '^';
+      if (opts.posix === true && value === "!" && prev.value === "[") {
+        value = "^";
       }
       prev.value += value;
       append({ value });
@@ -871,55 +864,55 @@ var parse = (input, options) => {
     if (value === '"') {
       state.quotes = state.quotes === 1 ? 0 : 1;
       if (opts.keepQuotes === true) {
-        push({ type: 'text', value });
+        push({ type: "text", value });
       }
       continue;
     }
-    if (value === '(') {
-      increment('parens');
-      push({ type: 'paren', value });
+    if (value === "(") {
+      increment("parens");
+      push({ type: "paren", value });
       continue;
     }
-    if (value === ')') {
+    if (value === ")") {
       if (state.parens === 0 && opts.strictBrackets === true) {
-        throw new SyntaxError(syntaxError('opening', '('));
+        throw new SyntaxError(syntaxError("opening", "("));
       }
       const extglob = extglobs[extglobs.length - 1];
       if (extglob && state.parens === extglob.parens + 1) {
         extglobClose(extglobs.pop());
         continue;
       }
-      push({ type: 'paren', value, output: state.parens ? ')' : '\\)' });
-      decrement('parens');
+      push({ type: "paren", value, output: state.parens ? ")" : "\\)" });
+      decrement("parens");
       continue;
     }
-    if (value === '[') {
-      if (opts.nobracket === true || !remaining().includes(']')) {
+    if (value === "[") {
+      if (opts.nobracket === true || !remaining().includes("]")) {
         if (opts.nobracket !== true && opts.strictBrackets === true) {
-          throw new SyntaxError(syntaxError('closing', ']'));
+          throw new SyntaxError(syntaxError("closing", "]"));
         }
         value = `\\${value}`;
       } else {
-        increment('brackets');
+        increment("brackets");
       }
-      push({ type: 'bracket', value });
+      push({ type: "bracket", value });
       continue;
     }
-    if (value === ']') {
-      if (opts.nobracket === true || prev && prev.type === 'bracket' && prev.value.length === 1) {
-        push({ type: 'text', value, output: `\\${value}` });
+    if (value === "]") {
+      if (opts.nobracket === true || prev && prev.type === "bracket" && prev.value.length === 1) {
+        push({ type: "text", value, output: `\\${value}` });
         continue;
       }
       if (state.brackets === 0) {
         if (opts.strictBrackets === true) {
-          throw new SyntaxError(syntaxError('opening', '['));
+          throw new SyntaxError(syntaxError("opening", "["));
         }
-        push({ type: 'text', value, output: `\\${value}` });
+        push({ type: "text", value, output: `\\${value}` });
         continue;
       }
-      decrement('brackets');
+      decrement("brackets");
       const prevValue = prev.value.slice(1);
-      if (prev.posix !== true && prevValue[0] === '^' && !prevValue.includes('/')) {
+      if (prev.posix !== true && prevValue[0] === "^" && !prevValue.includes("/")) {
         value = `/${value}`;
       }
       prev.value += value;
@@ -938,12 +931,12 @@ var parse = (input, options) => {
       state.output += prev.value;
       continue;
     }
-    if (value === '{' && opts.nobrace !== true) {
-      increment('braces');
+    if (value === "{" && opts.nobrace !== true) {
+      increment("braces");
       const open = {
-        type: 'brace',
+        type: "brace",
         value,
-        output: '(',
+        output: "(",
         outputIndex: state.output.length,
         tokensIndex: state.tokens.length
       };
@@ -951,22 +944,22 @@ var parse = (input, options) => {
       push(open);
       continue;
     }
-    if (value === '}') {
+    if (value === "}") {
       const brace = braces[braces.length - 1];
       if (opts.nobrace === true || !brace) {
-        push({ type: 'text', value, output: value });
+        push({ type: "text", value, output: value });
         continue;
       }
-      let output = ')';
+      let output = ")";
       if (brace.dots === true) {
         const arr = tokens.slice();
         const range = [];
         for (let i = arr.length - 1; i >= 0; i--) {
           tokens.pop();
-          if (arr[i].type === 'brace') {
+          if (arr[i].type === "brace") {
             break;
           }
-          if (arr[i].type !== 'dots') {
+          if (arr[i].type !== "dots") {
             range.unshift(arr[i].value);
           }
         }
@@ -976,93 +969,94 @@ var parse = (input, options) => {
       if (brace.comma !== true && brace.dots !== true) {
         const out = state.output.slice(0, brace.outputIndex);
         const toks = state.tokens.slice(brace.tokensIndex);
-        brace.value = brace.output = '\\{';
-        value = output = '\\}';
+        brace.value = brace.output = "\\{";
+        value = output = "\\}";
         state.output = out;
         for (const t of toks) {
           state.output += t.output || t.value;
         }
       }
-      push({ type: 'brace', value, output });
-      decrement('braces');
+      push({ type: "brace", value, output });
+      decrement("braces");
       braces.pop();
       continue;
     }
-    if (value === '|') {
+    if (value === "|") {
       if (extglobs.length > 0) {
         extglobs[extglobs.length - 1].conditions++;
       }
-      push({ type: 'text', value });
+      push({ type: "text", value });
       continue;
     }
-    if (value === ',') {
+    if (value === ",") {
       let output = value;
       const brace = braces[braces.length - 1];
-      if (brace && stack[stack.length - 1] === 'braces') {
+      if (brace && stack[stack.length - 1] === "braces") {
         brace.comma = true;
-        output = '|';
+        output = "|";
       }
-      push({ type: 'comma', value, output });
+      push({ type: "comma", value, output });
       continue;
     }
-    if (value === '/') {
-      if (prev.type === 'dot' && state.index === state.start + 1) {
+    if (value === "/") {
+      if (prev.type === "dot" && state.index === state.start + 1) {
         state.start = state.index + 1;
-        state.consumed = '';
-        state.output = '';
+        state.consumed = "";
+        state.output = "";
         tokens.pop();
         prev = bos;
         continue;
       }
-      push({ type: 'slash', value, output: SLASH_LITERAL2 });
+      push({ type: "slash", value, output: SLASH_LITERAL2 });
       continue;
     }
-    if (value === '.') {
-      if (state.braces > 0 && prev.type === 'dot') {
-        if (prev.value === '.') { prev.output = DOT_LITERAL2; }
+    if (value === ".") {
+      if (state.braces > 0 && prev.type === "dot") {
+        if (prev.value === ".")
+          prev.output = DOT_LITERAL2;
         const brace = braces[braces.length - 1];
-        prev.type = 'dots';
+        prev.type = "dots";
         prev.output += value;
         prev.value += value;
         brace.dots = true;
         continue;
       }
-      if (state.braces + state.parens === 0 && prev.type !== 'bos' && prev.type !== 'slash') {
-        push({ type: 'text', value, output: DOT_LITERAL2 });
+      if (state.braces + state.parens === 0 && prev.type !== "bos" && prev.type !== "slash") {
+        push({ type: "text", value, output: DOT_LITERAL2 });
         continue;
       }
-      push({ type: 'dot', value, output: DOT_LITERAL2 });
+      push({ type: "dot", value, output: DOT_LITERAL2 });
       continue;
     }
-    if (value === '?') {
-      const isGroup = prev && prev.value === '(';
-      if (!isGroup && opts.noextglob !== true && peek() === '(' && peek(2) !== '?') {
-        extglobOpen('qmark', value);
+    if (value === "?") {
+      const isGroup = prev && prev.value === "(";
+      if (!isGroup && opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
+        extglobOpen("qmark", value);
         continue;
       }
-      if (prev && prev.type === 'paren') {
+      if (prev && prev.type === "paren") {
         const next = peek();
         let output = value;
-        if (next === '<' && !supportsLookbehinds()) {
-          throw new Error('Node.js v10 or higher is required for regex lookbehinds');
+        if (next === "<" && !supportsLookbehinds()) {
+          throw new Error("Node.js v10 or higher is required for regex lookbehinds");
         }
-        if (prev.value === '(' && !/[!=<:]/.test(next) || next === '<' && !/<([!=]|\w+>)/.test(remaining())) {
+        if (prev.value === "(" && !/[!=<:]/.test(next) || next === "<" && !/<([!=]|\w+>)/.test(remaining())) {
           output = `\\${value}`;
         }
-        push({ type: 'text', value, output });
+        push({ type: "text", value, output });
         continue;
       }
-      if (opts.dot !== true && (prev.type === 'slash' || prev.type === 'bos')) {
-        push({ type: 'qmark', value, output: QMARK_NO_DOT2 });
+      if (opts.dot !== true && (prev.type === "slash" || prev.type === "bos")) {
+        push({ type: "qmark", value, output: QMARK_NO_DOT2 });
         continue;
       }
-      push({ type: 'qmark', value, output: QMARK2 });
+      push({ type: "qmark", value, output: QMARK2 });
       continue;
     }
-    if (value === '!') {
-      if (opts.noextglob !== true && peek() === '(') {
-        if (peek(2) !== '?' || !/[!=<:]/.test(peek(3))) {
-          extglobOpen('negate', value);
+    if (value === "!") {
+      if (opts.noextglob !== true && peek() === "(") {
+        if (peek(2) !== "?" || !/[!=<:]/.test(peek(3))) {
+          extglobOpen("negate", value);
           continue;
         }
       }
@@ -1071,44 +1065,44 @@ var parse = (input, options) => {
         continue;
       }
     }
-    if (value === '+') {
-      if (opts.noextglob !== true && peek() === '(' && peek(2) !== '?') {
-        extglobOpen('plus', value);
+    if (value === "+") {
+      if (opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
+        extglobOpen("plus", value);
         continue;
       }
-      if (prev && prev.value === '(' || opts.regex === false) {
-        push({ type: 'plus', value, output: PLUS_LITERAL2 });
+      if (prev && prev.value === "(" || opts.regex === false) {
+        push({ type: "plus", value, output: PLUS_LITERAL2 });
         continue;
       }
-      if (prev && (prev.type === 'bracket' || prev.type === 'paren' || prev.type === 'brace') || state.parens > 0) {
-        push({ type: 'plus', value });
+      if (prev && (prev.type === "bracket" || prev.type === "paren" || prev.type === "brace") || state.parens > 0) {
+        push({ type: "plus", value });
         continue;
       }
-      push({ type: 'plus', value: PLUS_LITERAL2 });
+      push({ type: "plus", value: PLUS_LITERAL2 });
       continue;
     }
-    if (value === '@') {
-      if (opts.noextglob !== true && peek() === '(' && peek(2) !== '?') {
-        push({ type: 'at', extglob: true, value, output: '' });
+    if (value === "@") {
+      if (opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
+        push({ type: "at", extglob: true, value, output: "" });
         continue;
       }
-      push({ type: 'text', value });
+      push({ type: "text", value });
       continue;
     }
-    if (value !== '*') {
-      if (value === '$' || value === '^') {
+    if (value !== "*") {
+      if (value === "$" || value === "^") {
         value = `\\${value}`;
       }
-      const match = REGEX_NON_SPECIAL_CHARS2.exec(remaining());
+      const match = REGEX_NON_SPECIAL_CHARS.exec(remaining());
       if (match) {
         value += match[0];
         state.index += match[0].length;
       }
-      push({ type: 'text', value });
+      push({ type: "text", value });
       continue;
     }
-    if (prev && (prev.type === 'globstar' || prev.star === true)) {
-      prev.type = 'star';
+    if (prev && (prev.type === "globstar" || prev.star === true)) {
+      prev.type = "star";
       prev.star = true;
       prev.value += value;
       prev.output = star;
@@ -1119,38 +1113,38 @@ var parse = (input, options) => {
     }
     let rest = remaining();
     if (opts.noextglob !== true && /^\([^?]/.test(rest)) {
-      extglobOpen('star', value);
+      extglobOpen("star", value);
       continue;
     }
-    if (prev.type === 'star') {
+    if (prev.type === "star") {
       if (opts.noglobstar === true) {
         consume(value);
         continue;
       }
       const prior = prev.prev;
       const before = prior.prev;
-      const isStart = prior.type === 'slash' || prior.type === 'bos';
-      const afterStar = before && (before.type === 'star' || before.type === 'globstar');
-      if (opts.bash === true && (!isStart || rest[0] && rest[0] !== '/')) {
-        push({ type: 'star', value, output: '' });
+      const isStart = prior.type === "slash" || prior.type === "bos";
+      const afterStar = before && (before.type === "star" || before.type === "globstar");
+      if (opts.bash === true && (!isStart || rest[0] && rest[0] !== "/")) {
+        push({ type: "star", value, output: "" });
         continue;
       }
-      const isBrace = state.braces > 0 && (prior.type === 'comma' || prior.type === 'brace');
-      const isExtglob = extglobs.length && (prior.type === 'pipe' || prior.type === 'paren');
-      if (!isStart && prior.type !== 'paren' && !isBrace && !isExtglob) {
-        push({ type: 'star', value, output: '' });
+      const isBrace = state.braces > 0 && (prior.type === "comma" || prior.type === "brace");
+      const isExtglob = extglobs.length && (prior.type === "pipe" || prior.type === "paren");
+      if (!isStart && prior.type !== "paren" && !isBrace && !isExtglob) {
+        push({ type: "star", value, output: "" });
         continue;
       }
-      while (rest.slice(0, 3) === '/**') {
+      while (rest.slice(0, 3) === "/**") {
         const after = input[state.index + 4];
-        if (after && after !== '/') {
+        if (after && after !== "/") {
           break;
         }
         rest = rest.slice(3);
-        consume('/**', 3);
+        consume("/**", 3);
       }
-      if (prior.type === 'bos' && eos()) {
-        prev.type = 'globstar';
+      if (prior.type === "bos" && eos()) {
+        prev.type = "globstar";
         prev.value += value;
         prev.output = globstar(opts);
         state.output = prev.output;
@@ -1158,42 +1152,42 @@ var parse = (input, options) => {
         consume(value);
         continue;
       }
-      if (prior.type === 'slash' && prior.prev.type !== 'bos' && !afterStar && eos()) {
+      if (prior.type === "slash" && prior.prev.type !== "bos" && !afterStar && eos()) {
         state.output = state.output.slice(0, -(prior.output + prev.output).length);
         prior.output = `(?:${prior.output}`;
-        prev.type = 'globstar';
-        prev.output = globstar(opts) + (opts.strictSlashes ? ')' : '|$)');
+        prev.type = "globstar";
+        prev.output = globstar(opts) + (opts.strictSlashes ? ")" : "|$)");
         prev.value += value;
         state.globstar = true;
         state.output += prior.output + prev.output;
         consume(value);
         continue;
       }
-      if (prior.type === 'slash' && prior.prev.type !== 'bos' && rest[0] === '/') {
-        const end = rest[1] !== void 0 ? '|$' : '';
+      if (prior.type === "slash" && prior.prev.type !== "bos" && rest[0] === "/") {
+        const end = rest[1] !== void 0 ? "|$" : "";
         state.output = state.output.slice(0, -(prior.output + prev.output).length);
         prior.output = `(?:${prior.output}`;
-        prev.type = 'globstar';
+        prev.type = "globstar";
         prev.output = `${globstar(opts)}${SLASH_LITERAL2}|${SLASH_LITERAL2}${end})`;
         prev.value += value;
         state.output += prior.output + prev.output;
         state.globstar = true;
         consume(value + advance());
-        push({ type: 'slash', value: '/', output: '' });
+        push({ type: "slash", value: "/", output: "" });
         continue;
       }
-      if (prior.type === 'bos' && rest[0] === '/') {
-        prev.type = 'globstar';
+      if (prior.type === "bos" && rest[0] === "/") {
+        prev.type = "globstar";
         prev.value += value;
         prev.output = `(?:^|${SLASH_LITERAL2}|${globstar(opts)}${SLASH_LITERAL2})`;
         state.output = prev.output;
         state.globstar = true;
         consume(value + advance());
-        push({ type: 'slash', value: '/', output: '' });
+        push({ type: "slash", value: "/", output: "" });
         continue;
       }
       state.output = state.output.slice(0, -prev.output.length);
-      prev.type = 'globstar';
+      prev.type = "globstar";
       prev.output = globstar(opts);
       prev.value += value;
       state.output += prev.output;
@@ -1201,22 +1195,22 @@ var parse = (input, options) => {
       consume(value);
       continue;
     }
-    const token = { type: 'star', value, output: star };
+    const token = { type: "star", value, output: star };
     if (opts.bash === true) {
-      token.output = '.*?';
-      if (prev.type === 'bos' || prev.type === 'slash') {
+      token.output = ".*?";
+      if (prev.type === "bos" || prev.type === "slash") {
         token.output = nodot + token.output;
       }
       push(token);
       continue;
     }
-    if (prev && (prev.type === 'bracket' || prev.type === 'paren') && opts.regex === true) {
+    if (prev && (prev.type === "bracket" || prev.type === "paren") && opts.regex === true) {
       token.output = value;
       push(token);
       continue;
     }
-    if (state.index === state.start || prev.type === 'slash' || prev.type === 'dot') {
-      if (prev.type === 'dot') {
+    if (state.index === state.start || prev.type === "slash" || prev.type === "dot") {
+      if (prev.type === "dot") {
         state.output += NO_DOT_SLASH2;
         prev.output += NO_DOT_SLASH2;
       } else if (opts.dot === true) {
@@ -1226,7 +1220,7 @@ var parse = (input, options) => {
         state.output += nodot;
         prev.output += nodot;
       }
-      if (peek() !== '*') {
+      if (peek() !== "*") {
         state.output += ONE_CHAR2;
         prev.output += ONE_CHAR2;
       }
@@ -1234,25 +1228,28 @@ var parse = (input, options) => {
     push(token);
   }
   while (state.brackets > 0) {
-    if (opts.strictBrackets === true) { throw new SyntaxError(syntaxError('closing', ']')); }
-    state.output = escapeLast(state.output, '[');
-    decrement('brackets');
+    if (opts.strictBrackets === true)
+      throw new SyntaxError(syntaxError("closing", "]"));
+    state.output = escapeLast(state.output, "[");
+    decrement("brackets");
   }
   while (state.parens > 0) {
-    if (opts.strictBrackets === true) { throw new SyntaxError(syntaxError('closing', ')')); }
-    state.output = escapeLast(state.output, '(');
-    decrement('parens');
+    if (opts.strictBrackets === true)
+      throw new SyntaxError(syntaxError("closing", ")"));
+    state.output = escapeLast(state.output, "(");
+    decrement("parens");
   }
   while (state.braces > 0) {
-    if (opts.strictBrackets === true) { throw new SyntaxError(syntaxError('closing', '}')); }
-    state.output = escapeLast(state.output, '{');
-    decrement('braces');
+    if (opts.strictBrackets === true)
+      throw new SyntaxError(syntaxError("closing", "}"));
+    state.output = escapeLast(state.output, "{");
+    decrement("braces");
   }
-  if (opts.strictSlashes !== true && (prev.type === 'star' || prev.type === 'bracket')) {
-    push({ type: 'maybe_slash', value: '', output: `${SLASH_LITERAL2}?` });
+  if (opts.strictSlashes !== true && (prev.type === "star" || prev.type === "bracket")) {
+    push({ type: "maybe_slash", value: "", output: `${SLASH_LITERAL2}?` });
   }
   if (state.backtrack === true) {
-    state.output = '';
+    state.output = "";
     for (const token of state.tokens) {
       state.output += token.output != null ? token.output : token.value;
       if (token.suffix) {
@@ -1264,12 +1261,12 @@ var parse = (input, options) => {
 };
 parse.fastpaths = (input, options) => {
   const opts = { ...options };
-  const max = typeof opts.maxLength === 'number' ? Math.min(MAX_LENGTH2, opts.maxLength) : MAX_LENGTH2;
+  const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
   const len = input.length;
   if (len > max) {
     throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
   }
-  input = REPLACEMENTS2[input] || input;
+  input = REPLACEMENTS[input] || input;
   const win322 = isWindows(options);
   const {
     DOT_LITERAL: DOT_LITERAL2,
@@ -1281,42 +1278,45 @@ parse.fastpaths = (input, options) => {
     NO_DOTS_SLASH: NO_DOTS_SLASH2,
     STAR: STAR2,
     START_ANCHOR: START_ANCHOR2
-  } = globChars2(win322);
+  } = globChars(win322);
   const nodot = opts.dot ? NO_DOTS2 : NO_DOT2;
   const slashDot = opts.dot ? NO_DOTS_SLASH2 : NO_DOT2;
-  const capture = opts.capture ? '' : '?:';
-  const state = { negated: false, prefix: '' };
-  let star = opts.bash === true ? '.*?' : STAR2;
+  const capture = opts.capture ? "" : "?:";
+  const state = { negated: false, prefix: "" };
+  let star = opts.bash === true ? ".*?" : STAR2;
   if (opts.capture) {
     star = `(${star})`;
   }
-  const globstar = opts2 => {
-    if (opts2.noglobstar === true) { return star; }
+  const globstar = (opts2) => {
+    if (opts2.noglobstar === true)
+      return star;
     return `(${capture}(?:(?!${START_ANCHOR2}${opts2.dot ? DOTS_SLASH2 : DOT_LITERAL2}).)*?)`;
   };
-  const create = str => {
+  const create = (str) => {
     switch (str) {
-      case '*':
+      case "*":
         return `${nodot}${ONE_CHAR2}${star}`;
-      case '.*':
+      case ".*":
         return `${DOT_LITERAL2}${ONE_CHAR2}${star}`;
-      case '*.*':
+      case "*.*":
         return `${nodot}${star}${DOT_LITERAL2}${ONE_CHAR2}${star}`;
-      case '*/*':
+      case "*/*":
         return `${nodot}${star}${SLASH_LITERAL2}${ONE_CHAR2}${slashDot}${star}`;
-      case '**':
+      case "**":
         return nodot + globstar(opts);
-      case '**/*':
+      case "**/*":
         return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL2})?${slashDot}${ONE_CHAR2}${star}`;
-      case '**/*.*':
+      case "**/*.*":
         return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL2})?${slashDot}${star}${DOT_LITERAL2}${ONE_CHAR2}${star}`;
-      case '**/.*':
+      case "**/.*":
         return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL2})?${DOT_LITERAL2}${ONE_CHAR2}${star}`;
       default: {
         const match = /^(.*?)\.(\w+)$/.exec(str);
-        if (!match) { return; }
+        if (!match)
+          return;
         const source2 = create(match[1]);
-        if (!source2) { return; }
+        if (!source2)
+          return;
         return source2 + DOT_LITERAL2 + match[2];
       }
     }
@@ -1330,22 +1330,23 @@ parse.fastpaths = (input, options) => {
 };
 
 // lib/picomatch.js
-var isObject = val => val && typeof val === 'object' && !Array.isArray(val);
+var isObject = (val) => val && typeof val === "object" && !Array.isArray(val);
 var picomatch = (glob, options, returnState = false) => {
   if (Array.isArray(glob)) {
-    const fns = glob.map(input => picomatch(input, options, returnState));
-    const arrayMatcher = str => {
+    const fns = glob.map((input) => picomatch(input, options, returnState));
+    const arrayMatcher = (str) => {
       for (const isMatch of fns) {
         const state2 = isMatch(str);
-        if (state2) { return state2; }
+        if (state2)
+          return state2;
       }
       return false;
     };
     return arrayMatcher;
   }
   const isState = isObject(glob) && glob.tokens && glob.input;
-  if (glob === '' || typeof glob !== 'string' && !isState) {
-    throw new TypeError('Expected pattern to be a non-empty string');
+  if (glob === "" || typeof glob !== "string" && !isState) {
+    throw new TypeError("Expected pattern to be a non-empty string");
   }
   const opts = options || {};
   const posix = isWindows(options);
@@ -1360,7 +1361,7 @@ var picomatch = (glob, options, returnState = false) => {
   const matcher = (input, returnObject = false) => {
     const { isMatch, match, output } = picomatch.test(input, regex, options, { glob, posix });
     const result = { glob, state, regex, posix, input, output, match, isMatch };
-    if (typeof opts.onResult === 'function') {
+    if (typeof opts.onResult === "function") {
       opts.onResult(result);
     }
     if (isMatch === false) {
@@ -1368,13 +1369,13 @@ var picomatch = (glob, options, returnState = false) => {
       return returnObject ? result : false;
     }
     if (isIgnored(input)) {
-      if (typeof opts.onIgnore === 'function') {
+      if (typeof opts.onIgnore === "function") {
         opts.onIgnore(result);
       }
       result.isMatch = false;
       return returnObject ? result : false;
     }
-    if (typeof opts.onMatch === 'function') {
+    if (typeof opts.onMatch === "function") {
       opts.onMatch(result);
     }
     return returnObject ? result : true;
@@ -1385,11 +1386,11 @@ var picomatch = (glob, options, returnState = false) => {
   return matcher;
 };
 picomatch.test = (input, regex, options, { glob, posix } = {}) => {
-  if (typeof input !== 'string') {
-    throw new TypeError('Expected input to be a string');
+  if (typeof input !== "string") {
+    throw new TypeError("Expected input to be a string");
   }
-  if (input === '') {
-    return { isMatch: false, output: '' };
+  if (input === "") {
+    return { isMatch: false, output: "" };
   }
   const opts = options || {};
   const format = opts.format || (posix ? toPosixSlashes : null);
@@ -1414,7 +1415,8 @@ picomatch.matchBase = (input, glob, options, posix = isWindows(options)) => {
 };
 picomatch.isMatch = (str, patterns, options) => picomatch(patterns, options)(str);
 picomatch.parse = (pattern, options) => {
-  if (Array.isArray(pattern)) { return pattern.map(p => picomatch.parse(p, options)); }
+  if (Array.isArray(pattern))
+    return pattern.map((p) => picomatch.parse(p, options));
   return parse(pattern, { ...options, fastpaths: false });
 };
 picomatch.scan = (input, options) => scan(input, options);
@@ -1423,8 +1425,8 @@ picomatch.compileRe = (state, options, returnOutput = false, returnState = false
     return state.output;
   }
   const opts = options || {};
-  const prepend = opts.contains ? '' : '^';
-  const append = opts.contains ? '' : '$';
+  const prepend = opts.contains ? "" : "^";
+  const append = opts.contains ? "" : "$";
   let source = `${prepend}(?:${state.output})${append}`;
   if (state && state.negated === true) {
     source = `^(?!${source}).*$`;
@@ -1436,11 +1438,11 @@ picomatch.compileRe = (state, options, returnOutput = false, returnState = false
   return regex;
 };
 picomatch.makeRe = (input, options = {}, returnOutput = false, returnState = false) => {
-  if (!input || typeof input !== 'string') {
-    throw new TypeError('Expected a non-empty string');
+  if (!input || typeof input !== "string") {
+    throw new TypeError("Expected a non-empty string");
   }
   let parsed = { negated: false, fastpaths: true };
-  if (options.fastpaths !== false && (input[0] === '.' || input[0] === '*')) {
+  if (options.fastpaths !== false && (input[0] === "." || input[0] === "*")) {
     parsed.output = parse.fastpaths(input, options);
   }
   if (!parsed.output) {
@@ -1451,9 +1453,10 @@ picomatch.makeRe = (input, options = {}, returnOutput = false, returnState = fal
 picomatch.toRegex = (source, options) => {
   try {
     const opts = options || {};
-    return new RegExp(source, opts.flags || (opts.nocase ? 'i' : ''));
+    return new RegExp(source, opts.flags || (opts.nocase ? "i" : ""));
   } catch (err) {
-    if (options && options.debug === true) { throw err; }
+    if (options && options.debug === true)
+      throw err;
     return /$^/;
   }
 };

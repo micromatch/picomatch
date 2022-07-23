@@ -1,8 +1,8 @@
 
 import assert from 'assert';
-const fill = require('fill-range');
-const match = require('./support/match');
-const { isMatch } = require('../lib');
+import fill from 'fill-range';
+import match from './support/match.js';
+import { isMatch } from '../lib/index.js';
 
 describe('braces', () => {
   it('should not match with brace patterns when disabled', () => {

@@ -1,5 +1,5 @@
 
-const path = require('path');
+import path from "path";
 const pm = require('../lib');
 const { sep } = path;
 

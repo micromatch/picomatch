@@ -30,53 +30,7 @@ module.exports = __toCommonJS(lib_exports);
 var import_path3 = __toESM(require("path"), 1);
 
 // lib/utils.js
-var import_path = __toESM(require("path"), 1);
-var import_constants = require("constants");
-var win32 = process.platform === "win32";
-var hasRegexChars = (str) => import_constants.REGEX_SPECIAL_CHARS.test(str);
-var escapeRegex = (str) => str.replace(import_constants.REGEX_SPECIAL_CHARS_GLOBAL, "\\$1");
-var toPosixSlashes = (str) => str.replace(import_constants.REGEX_BACKSLASH, "/");
-var removeBackslashes = (str) => {
-  return str.replace(import_constants.REGEX_REMOVE_BACKSLASH, (match) => {
-    return match === "\\" ? "" : match;
-  });
-};
-var supportsLookbehinds = () => {
-  const segs = process.version.slice(1).split(".").map(Number);
-  if (segs.length === 3 && segs[0] >= 9 || segs[0] === 8 && segs[1] >= 10) {
-    return true;
-  }
-  return false;
-};
-var isWindows = (options) => {
-  if (options && typeof options.windows === "boolean") {
-    return options.windows;
-  }
-  return win32 === true || import_path.default.sep === "\\";
-};
-var escapeLast = (input, char, lastIdx) => {
-  const idx = input.lastIndexOf(char, lastIdx);
-  if (idx === -1)
-    return input;
-  return input[idx - 1] === "\\" ? escapeLast(input, char, idx - 1) : input.slice(0, idx) + "\\" + input.slice(idx);
-};
-var removePrefix = (input, state = {}) => {
-  let output = input;
-  if (output.startsWith("./")) {
-    output = output.slice(2);
-    state.prefix = "./";
-  }
-  return output;
-};
-var wrapOutput = (input, state = {}, options = {}) => {
-  const prepend = options.contains ? "" : "^";
-  const append = options.contains ? "" : "$";
-  let output = `${prepend}(?:${input})${append}`;
-  if (state.negated === true) {
-    output = `(?:^(?!${output}).*$)`;
-  }
-  return output;
-};
+var import_path2 = __toESM(require("path"), 1);
 
 // lib/constants.js
 var constants_exports = {};
@@ -139,12 +93,12 @@ __export(constants_exports, {
   QMARK: () => QMARK,
   QMARK_LITERAL: () => QMARK_LITERAL,
   QMARK_NO_DOT: () => QMARK_NO_DOT,
-  REGEX_BACKSLASH: () => REGEX_BACKSLASH2,
+  REGEX_BACKSLASH: () => REGEX_BACKSLASH,
   REGEX_NON_SPECIAL_CHARS: () => REGEX_NON_SPECIAL_CHARS,
-  REGEX_REMOVE_BACKSLASH: () => REGEX_REMOVE_BACKSLASH2,
-  REGEX_SPECIAL_CHARS: () => REGEX_SPECIAL_CHARS2,
+  REGEX_REMOVE_BACKSLASH: () => REGEX_REMOVE_BACKSLASH,
+  REGEX_SPECIAL_CHARS: () => REGEX_SPECIAL_CHARS,
   REGEX_SPECIAL_CHARS_BACKREF: () => REGEX_SPECIAL_CHARS_BACKREF,
-  REGEX_SPECIAL_CHARS_GLOBAL: () => REGEX_SPECIAL_CHARS_GLOBAL2,
+  REGEX_SPECIAL_CHARS_GLOBAL: () => REGEX_SPECIAL_CHARS_GLOBAL,
   REPLACEMENTS: () => REPLACEMENTS,
   SEP: () => SEP,
   SLASH_LITERAL: () => SLASH_LITERAL,
@@ -156,7 +110,7 @@ __export(constants_exports, {
   extglobChars: () => extglobChars,
   globChars: () => globChars
 });
-var import_path2 = __toESM(require("path"), 1);
+var import_path = __toESM(require("path"), 1);
 var WIN_SLASH = "\\\\/";
 var WIN_NO_SLASH = `[^${WIN_SLASH}]`;
 var DOT_LITERAL = "\\.";
@@ -222,12 +176,12 @@ var POSIX_REGEX_SOURCE = {
   xdigit: "A-Fa-f0-9"
 };
 var MAX_LENGTH = 1024 * 64;
-var REGEX_BACKSLASH2 = /\\(?![*+?^${}(|)[\]])/g;
+var REGEX_BACKSLASH = /\\(?![*+?^${}(|)[\]])/g;
 var REGEX_NON_SPECIAL_CHARS = /^[^@![\].,$*+?^{}()|\\/]+/;
-var REGEX_SPECIAL_CHARS2 = /[-*+?.^${}(|)[\]]/;
+var REGEX_SPECIAL_CHARS = /[-*+?.^${}(|)[\]]/;
 var REGEX_SPECIAL_CHARS_BACKREF = /(\\?)((\W)(\3*))/g;
-var REGEX_SPECIAL_CHARS_GLOBAL2 = /([-*+?.^${}(|)[\]])/g;
-var REGEX_REMOVE_BACKSLASH2 = /(?:\[.*?[^\\]\]|\\(?=.))/g;
+var REGEX_SPECIAL_CHARS_GLOBAL = /([-*+?.^${}(|)[\]])/g;
+var REGEX_REMOVE_BACKSLASH = /(?:\[.*?[^\\]\]|\\(?=.))/g;
 var REPLACEMENTS = {
   "***": "*",
   "**/**": "**",
@@ -276,7 +230,7 @@ var CHAR_TAB = 9;
 var CHAR_UNDERSCORE = 95;
 var CHAR_VERTICAL_LINE = 124;
 var CHAR_ZERO_WIDTH_NOBREAK_SPACE = 65279;
-var SEP = import_path2.default.sep;
+var SEP = import_path.default.sep;
 var extglobChars = (chars) => {
   return {
     "!": { type: "negate", open: "(?:(?!(?:", close: `))${chars.STAR})` },
@@ -288,6 +242,53 @@ var extglobChars = (chars) => {
 };
 var globChars = (win322) => {
   return win322 === true ? WINDOWS_CHARS : POSIX_CHARS;
+};
+
+// lib/utils.js
+var win32 = process.platform === "win32";
+var hasRegexChars = (str) => REGEX_SPECIAL_CHARS.test(str);
+var escapeRegex = (str) => str.replace(REGEX_SPECIAL_CHARS_GLOBAL, "\\$1");
+var toPosixSlashes = (str) => str.replace(REGEX_BACKSLASH, "/");
+var removeBackslashes = (str) => {
+  return str.replace(REGEX_REMOVE_BACKSLASH, (match) => {
+    return match === "\\" ? "" : match;
+  });
+};
+var supportsLookbehinds = () => {
+  const segs = process.version.slice(1).split(".").map(Number);
+  if (segs.length === 3 && segs[0] >= 9 || segs[0] === 8 && segs[1] >= 10) {
+    return true;
+  }
+  return false;
+};
+var isWindows = (options) => {
+  if (options && typeof options.windows === "boolean") {
+    return options.windows;
+  }
+  return win32 === true || import_path2.default.sep === "\\";
+};
+var escapeLast = (input, char, lastIdx) => {
+  const idx = input.lastIndexOf(char, lastIdx);
+  if (idx === -1)
+    return input;
+  return input[idx - 1] === "\\" ? escapeLast(input, char, idx - 1) : input.slice(0, idx) + "\\" + input.slice(idx);
+};
+var removePrefix = (input, state = {}) => {
+  let output = input;
+  if (output.startsWith("./")) {
+    output = output.slice(2);
+    state.prefix = "./";
+  }
+  return output;
+};
+var wrapOutput = (input, state = {}, options = {}) => {
+  const prepend = options.contains ? "" : "^";
+  const append = options.contains ? "" : "$";
+  let output = `${prepend}(?:${input})${append}`;
+  if (state.negated === true) {
+    output = `(?:^(?!${output}).*$)`;
+  }
+  return output;
 };
 
 // lib/scan.js
@@ -585,7 +586,6 @@ var scan = (input, options) => {
 };
 
 // lib/parse.js
-var import_constants3 = require("constants");
 var expandRange = (args, options) => {
   if (typeof options.expandRange === "function") {
     return options.expandRange(...args, options);
@@ -606,9 +606,9 @@ var parse = (input, options) => {
   if (typeof input !== "string") {
     throw new TypeError("Expected a string");
   }
-  input = import_constants3.REPLACEMENTS[input] || input;
+  input = REPLACEMENTS[input] || input;
   const opts = { ...options };
-  const max = typeof opts.maxLength === "number" ? Math.min(import_constants3.MAX_LENGTH, opts.maxLength) : import_constants3.MAX_LENGTH;
+  const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
   let len = input.length;
   if (len > max) {
     throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
@@ -617,8 +617,8 @@ var parse = (input, options) => {
   const tokens = [bos];
   const capture = opts.capture ? "" : "?:";
   const win322 = isWindows(options);
-  const PLATFORM_CHARS = (0, import_constants3.globChars)(win322);
-  const EXTGLOB_CHARS = (0, import_constants3.extglobChars)(PLATFORM_CHARS);
+  const PLATFORM_CHARS = globChars(win322);
+  const EXTGLOB_CHARS = extglobChars(PLATFORM_CHARS);
   const {
     DOT_LITERAL: DOT_LITERAL2,
     PLUS_LITERAL: PLUS_LITERAL2,
@@ -764,7 +764,7 @@ var parse = (input, options) => {
   };
   if (opts.fastpaths !== false && !/(^[*!]|[/()[\]{}"])/.test(input)) {
     let backslashes = false;
-    let output = input.replace(import_constants3.REGEX_SPECIAL_CHARS_BACKREF, (m, esc, chars, first, rest, index) => {
+    let output = input.replace(REGEX_SPECIAL_CHARS_BACKREF, (m, esc, chars, first, rest, index) => {
       if (first === "\\") {
         backslashes = true;
         return m;
@@ -851,7 +851,7 @@ var parse = (input, options) => {
             const idx = prev.value.lastIndexOf("[");
             const pre = prev.value.slice(0, idx);
             const rest2 = prev.value.slice(idx + 2);
-            const posix = import_constants3.POSIX_REGEX_SOURCE[rest2];
+            const posix = POSIX_REGEX_SOURCE[rest2];
             if (posix) {
               prev.value = pre + posix;
               state.backtrack = true;
@@ -1115,7 +1115,7 @@ var parse = (input, options) => {
       if (value === "$" || value === "^") {
         value = `\\${value}`;
       }
-      const match = import_constants3.REGEX_NON_SPECIAL_CHARS.exec(remaining());
+      const match = REGEX_NON_SPECIAL_CHARS.exec(remaining());
       if (match) {
         value += match[0];
         state.index += match[0].length;
@@ -1283,12 +1283,12 @@ var parse = (input, options) => {
 };
 parse.fastpaths = (input, options) => {
   const opts = { ...options };
-  const max = typeof opts.maxLength === "number" ? Math.min(import_constants3.MAX_LENGTH, opts.maxLength) : import_constants3.MAX_LENGTH;
+  const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
   const len = input.length;
   if (len > max) {
     throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
   }
-  input = import_constants3.REPLACEMENTS[input] || input;
+  input = REPLACEMENTS[input] || input;
   const win322 = isWindows(options);
   const {
     DOT_LITERAL: DOT_LITERAL2,
@@ -1300,7 +1300,7 @@ parse.fastpaths = (input, options) => {
     NO_DOTS_SLASH: NO_DOTS_SLASH2,
     STAR: STAR2,
     START_ANCHOR: START_ANCHOR2
-  } = (0, import_constants3.globChars)(win322);
+  } = globChars(win322);
   const nodot = opts.dot ? NO_DOTS2 : NO_DOT2;
   const slashDot = opts.dot ? NO_DOTS_SLASH2 : NO_DOT2;
   const capture = opts.capture ? "" : "?:";

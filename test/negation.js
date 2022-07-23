@@ -1,6 +1,6 @@
 
 import assert from 'assert';
-const { isMatch } = require('../lib');
+import { isMatch } from '../lib/index.js';
 
 describe('negation patterns - "!"', () => {
   it('should patterns with a leading "!" as negated/inverted globs', () => {

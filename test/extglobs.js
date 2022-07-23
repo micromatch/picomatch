@@ -1,7 +1,7 @@
 
 import assert from 'assert';
-const match = require('./support/match');
-const { isMatch, makeRe } = require('../lib');
+import { match } from './support/index.js';
+import { isMatch, makeRe } from '../lib/index.js';
 
 /**
  * Ported from Bash 4.3 and 4.4 unit tests

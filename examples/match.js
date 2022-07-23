@@ -1,5 +1,5 @@
 
-const path = require('path');
+import path from "path";
 // import assert from "assert";
 const pm = require('../lib');
 

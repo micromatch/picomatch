@@ -1,6 +1,6 @@
-
 import assert from 'assert';
-const picomatch = require('../lib');
+import picomatch from '../lib/picomatch.js';
+
 const { isMatch } = picomatch;
 
 const assertTokens = (actual, expected) => {

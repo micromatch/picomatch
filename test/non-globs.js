@@ -1,7 +1,7 @@
 
 import assert from 'assert';
-const support = require('./support');
-const { isMatch } = require('../lib');
+import * as support from './support/index.js';
+import { isMatch } from '../lib/index.js';
 
 describe('non-globs', () => {
   before(() => support.resetPathSep());

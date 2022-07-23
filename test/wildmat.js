@@ -1,6 +1,6 @@
 
 import assert from 'assert';
-const { isMatch } = require('../lib');
+import { isMatch } from '../lib/index.js';
 
 describe('Wildmat (git) tests', () => {
   it('Basic wildmat features', () => {

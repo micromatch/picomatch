@@ -1,6 +1,6 @@
 
 import assert from 'assert';
-const scan = require('../lib/scan');
+import { scan } from '../lib/scan.js';
 const base = (...args) => scan(...args).base;
 const both = (...args) => {
   const { base, glob } = scan(...args);

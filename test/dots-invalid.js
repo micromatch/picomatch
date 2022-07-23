@@ -1,6 +1,6 @@
 
 import assert from 'assert';
-const { isMatch } = require('../lib');
+import { isMatch } from '../lib/index.js';
 
 describe('invalid (exclusive) dots', () => {
   describe('double dots', () => {

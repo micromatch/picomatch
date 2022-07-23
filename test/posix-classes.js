@@ -1,7 +1,8 @@
 
 import assert from 'assert';
-const pm = require('../lib');
-const { makeRe, parse } = pm;
+import pm from '../lib/index.js';
+import { parse } from '../lib/parse.js';
+const { makeRe } = parse;
 
 const opts = { strictSlashes: true, posix: true, regex: true };
 const isMatch = (...args) => pm.isMatch(...args, opts);

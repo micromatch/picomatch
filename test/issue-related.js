@@ -1,6 +1,6 @@
 
 import assert from 'assert';
-const { isMatch } = require('../lib');
+import { isMatch } from '../lib/index.js';
 
 describe('issue-related tests', () => {
   it('should match with braces (see picomatch/issues#8)', () => {

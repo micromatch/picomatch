@@ -1,6 +1,6 @@
 
 import assert from 'assert';
-const { isMatch } = require('../lib');
+import { isMatch } from '../lib/index.js';
 
 // $echo a/{1..3}/b
 describe('from the Bash 4.3 spec/unit tests', () => {

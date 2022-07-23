@@ -1,6 +1,6 @@
 
 import assert from 'assert';
-const { isMatch } = require('../lib');
+import { isMatch } from '../lib/index.js';
 
 describe('options.noextglob', () => {
   it('should disable extglob support when options.noextglob is true', () => {

@@ -1,5 +1,5 @@
 
-const picomatch = require('../lib');
+import picomatch from '../lib';
 
 const fixtures = [
   ['/file.d.ts', false],
