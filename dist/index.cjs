@@ -22,7 +22,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // lib/index.js
 var lib_exports = {};
 __export(lib_exports, {
-  default: () => lib_default
+  default: () => lib_default,
+  utils: () => utils_exports
 });
 module.exports = __toCommonJS(lib_exports);
 
@@ -30,6 +31,20 @@ module.exports = __toCommonJS(lib_exports);
 var import_path3 = __toESM(require("path"), 1);
 
 // lib/utils.js
+var utils_exports = {};
+__export(utils_exports, {
+  escapeLast: () => escapeLast,
+  escapeRegex: () => escapeRegex,
+  hasRegexChars: () => hasRegexChars,
+  isObject: () => isObject,
+  isRegexChar: () => isRegexChar,
+  isWindows: () => isWindows,
+  removeBackslashes: () => removeBackslashes,
+  removePrefix: () => removePrefix,
+  supportsLookbehinds: () => supportsLookbehinds,
+  toPosixSlashes: () => toPosixSlashes,
+  wrapOutput: () => wrapOutput
+});
 var import_path2 = __toESM(require("path"), 1);
 
 // lib/constants.js
@@ -246,7 +261,9 @@ var globChars = (win322) => {
 
 // lib/utils.js
 var win32 = process.platform === "win32";
+var isObject = (val) => val !== null && typeof val === "object" && !Array.isArray(val);
 var hasRegexChars = (str) => REGEX_SPECIAL_CHARS.test(str);
+var isRegexChar = (str) => str.length === 1 && hasRegexChars(str);
 var escapeRegex = (str) => str.replace(REGEX_SPECIAL_CHARS_GLOBAL, "\\$1");
 var toPosixSlashes = (str) => str.replace(REGEX_BACKSLASH, "/");
 var removeBackslashes = (str) => {
@@ -1352,7 +1369,7 @@ parse.fastpaths = (input, options) => {
 };
 
 // lib/picomatch.js
-var isObject = (val) => val && typeof val === "object" && !Array.isArray(val);
+var isObject2 = (val) => val && typeof val === "object" && !Array.isArray(val);
 var picomatch = (glob, options, returnState = false) => {
   if (Array.isArray(glob)) {
     const fns = glob.map((input) => picomatch(input, options, returnState));
@@ -1366,7 +1383,7 @@ var picomatch = (glob, options, returnState = false) => {
     };
     return arrayMatcher;
   }
-  const isState = isObject(glob) && glob.tokens && glob.input;
+  const isState = isObject2(glob) && glob.tokens && glob.input;
   if (glob === "" || typeof glob !== "string" && !isState) {
     throw new TypeError("Expected pattern to be a non-empty string");
   }
@@ -1488,4 +1505,6 @@ var picomatch_default = picomatch;
 // lib/index.js
 var lib_default = picomatch_default;
 // Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {});
+0 && (module.exports = {
+  utils
+});
