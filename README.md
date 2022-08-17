@@ -524,9 +524,9 @@ console.log(pm.isMatch('az', 'a*(z)')); // true
 console.log(pm.isMatch('azzz', 'a*(z)')); // true
 
 // +(pattern) matches ONE or more of "pattern"
-console.log(pm.isMatch('a', 'a*(z)')); // true
-console.log(pm.isMatch('az', 'a*(z)')); // true
-console.log(pm.isMatch('azzz', 'a*(z)')); // true
+console.log(pm.isMatch('a', 'a+(z)')); // false
+console.log(pm.isMatch('az', 'a+(z)')); // true
+console.log(pm.isMatch('azzz', 'a+(z)')); // true
 
 // supports multiple extglobs
 console.log(pm.isMatch('foo.bar', '!(foo).!(bar)')); // false
