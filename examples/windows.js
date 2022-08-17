@@ -1,7 +1,6 @@
-'use strict';
 
-const path = require('path');
-const pm = require('..');
+import path from "path";
+const pm = require('../lib');
 const { sep } = path;
 
 console.log();

@@ -1,8 +1,8 @@
-'use strict';
 
-const assert = require('assert');
+import assert from 'assert';
 const format = str => str.replace(/^\.\//, '');
-const { isMatch, makeRe } = require('..');
+import picomatch from '../lib/index.js';
+const { isMatch, makeRe } = picomatch;
 
 describe('minimatch parity:', () => {
   describe('minimatch issues (as of 12/7/2016)', () => {

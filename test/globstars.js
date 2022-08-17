@@ -1,8 +1,8 @@
-'use strict';
 
-const assert = require('assert');
-const match = require('./support/match');
-const { isMatch } = require('..');
+import assert from 'assert';
+import match from './support/match.js';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('stars', () => {
   describe('issue related', () => {

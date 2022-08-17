@@ -1,9 +1,9 @@
-'use strict';
 
-const path = require('path');
-const assert = require('assert');
-const support = require('./support');
-const { isMatch, makeRe } = require('..');
+import path from 'path';
+import assert from 'assert';
+import support from './support/index.js';
+import picomatch from '../lib/index.js';
+const { isMatch, makeRe } = picomatch;
 
 describe('special characters', () => {
   before(() => support.resetPathSep());
@@ -232,7 +232,7 @@ describe('special characters', () => {
       assert(isMatch('foo(bar)baz', 'foo*baz'));
     });
 
-    it('should match literal parens with brackets', async() => {
+    it('should match literal parens with brackets', async () => {
       assert(isMatch('foo(bar)baz', 'foo[bar()]+baz'));
     });
 

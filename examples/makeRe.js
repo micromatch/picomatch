@@ -1,6 +1,5 @@
-'use strict';
 
-const pm = require('..');
+const pm = require('../lib');
 
 console.log(pm.makeRe('*'));
 // /^(?:(?!\.)(?=.)[^\\\/]*?\/?)$/

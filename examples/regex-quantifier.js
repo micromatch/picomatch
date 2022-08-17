@@ -1,6 +1,5 @@
-'use strict';
 
-const pico = require('..');
+const pico = require('../lib');
 
 /**
  * See: https://github.com/gulpjs/glob-parent/issues/39#issuecomment-794075641

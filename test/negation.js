@@ -1,7 +1,7 @@
-'use strict';
 
-const assert = require('assert');
-const { isMatch } = require('..');
+import assert from 'assert';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('negation patterns - "!"', () => {
   it('should patterns with a leading "!" as negated/inverted globs', () => {

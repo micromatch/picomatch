@@ -1,4 +1,3 @@
-'use strict';
 
 const { Suite } = require('benchmark');
 const { red } = require('ansi-colors');

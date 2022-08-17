@@ -1,8 +1,7 @@
-'use strict';
 
-const path = require('path');
-// const assert = require('assert');
-const pm = require('..');
+import path from "path";
+// import assert from "assert";
+const pm = require('../lib');
 
 /**
  * Example function for matching an array of strings

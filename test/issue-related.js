@@ -1,7 +1,7 @@
-'use strict';
 
-const assert = require('assert');
-const { isMatch } = require('..');
+import assert from 'assert';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('issue-related tests', () => {
   it('should match with braces (see picomatch/issues#8)', () => {

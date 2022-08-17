@@ -1,6 +1,5 @@
-'use strict';
 
-const pm = require('..');
+const pm = require('../lib');
 
 const onMatch = ({ glob, regex, input, output }) => {
   console.log({ input, output });

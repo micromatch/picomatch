@@ -1,9 +1,9 @@
-'use strict';
 
-const assert = require('assert');
-const support = require('./support');
-const match = require('./support/match');
-const { isMatch } = require('..');
+import assert from 'assert';
+import support from './support/index.js';
+import match from './support/match.js';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('options', () => {
   beforeEach(() => support.windowsPathSep());

@@ -1,8 +1,6 @@
-'use strict';
+import picomatch from '../../lib/picomatch.js';
 
-const picomatch = require('../..');
-
-module.exports = (list, pattern, options = {}) => {
+export default (list, pattern, options = {}) => {
   const isMatch = picomatch(pattern, options, true);
   const matches = options.matches || new Set();
 

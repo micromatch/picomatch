@@ -1,6 +1,5 @@
-'use strict';
 
-const pm = require('..');
+const pm = require('../lib');
 
 const onIgnore = ({ glob, regex, input, output }) => {
   console.log({ glob, regex, input, output });

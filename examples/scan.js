@@ -1,6 +1,5 @@
-'use strict';
 
-const pm = require('..');
+const pm = require('../lib');
 
 console.log(pm.scan('foo/bar/*/*/*.js'));
 console.log(pm.scan('foo/(*|**a).js'));

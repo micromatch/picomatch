@@ -1,7 +1,7 @@
-'use strict';
 
-const assert = require('assert');
-const { isMatch } = require('..');
+import assert from 'assert';
+import picomatch from '../lib/index.js';
+const isMatch = picomatch.isMatch;
 
 // $echo a/{1..3}/b
 describe('from the Bash 4.3 spec/unit tests', () => {

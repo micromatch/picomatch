@@ -1,7 +1,6 @@
-'use strict';
 
 const fill = require('fill-range');
-const pm = require('..');
+const pm = require('../lib');
 const regex = pm.makeRe('foo/{01..25}/bar', {
   expandRange(a, b) {
     return `(${fill(a, b, { toRegex: true })})`;

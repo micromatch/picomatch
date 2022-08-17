@@ -1,8 +1,8 @@
-'use strict';
 
-const assert = require('assert');
-const fill = require('fill-range');
-const { isMatch } = require('..');
+import assert from 'assert';
+import fill from 'fill-range';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('options.expandRange', () => {
   it('should support a custom function for expanding ranges in brace patterns', () => {

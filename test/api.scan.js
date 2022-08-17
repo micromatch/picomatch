@@ -1,7 +1,6 @@
-'use strict';
 
-const assert = require('assert');
-const scan = require('../lib/scan');
+import assert from 'assert';
+import { scan } from '../lib/scan.js';
 const base = (...args) => scan(...args).base;
 const both = (...args) => {
   const { base, glob } = scan(...args);

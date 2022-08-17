@@ -1,9 +1,7 @@
-'use strict';
+import assert from 'assert';
+import picomatch from '../lib/picomatch.js';
 
-const assert = require('assert');
-const picomatch = require('..');
 const { isMatch } = picomatch;
-
 const assertTokens = (actual, expected) => {
   const keyValuePairs = actual.map(token => [token.type, token.value]);
   assert.deepStrictEqual(keyValuePairs, expected);

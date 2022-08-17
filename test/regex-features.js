@@ -1,9 +1,9 @@
-'use strict';
 
 const { version } = process;
-const assert = require('assert');
-const utils = require('../lib/utils');
-const { isMatch } = require('..');
+import assert from 'assert';
+import * as utils from '../lib/utils.js';
+import picomatch from '../lib/index.js';
+const { isMatch } = picomatch;
 
 describe('regex features', () => {
   describe('word boundaries', () => {
