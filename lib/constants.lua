@@ -2,6 +2,7 @@
 The MIT License (MIT)
 
 Copyright (c) 2017-present, Jon Schlinkert.
+Lua port by Matt Hargett.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -14,7 +15,7 @@ The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+IMPLIED, INCLUDING BUT ! LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
@@ -23,7 +24,7 @@ THE SOFTWARE.
 ]]
 --!strict
 
---local path = require('path')
+local RegExp = require(script.Parent.regex)
 local WIN_SLASH = '\\\\/'
 local WIN_NO_SLASH = '[^' .. WIN_SLASH .. ']'
 
@@ -39,30 +40,30 @@ local ONE_CHAR = '(?=.)'
 local QMARK = '[^/]'
 local END_ANCHOR = '(?:' .. SLASH_LITERAL .. '|$)'
 local START_ANCHOR = '(?:^|' .. SLASH_LITERAL .. ')'
-local DOTS_SLASH = DOT_LITERAL .. {1,2} .. END_ANCHOR
+local DOTS_SLASH = DOT_LITERAL .. "{1,2}" .. END_ANCHOR
 local NO_DOT = '(?!' .. DOT_LITERAL .. ')'
 local NO_DOTS = '(?!' .. START_ANCHOR .. DOTS_SLASH .. ')'
-local NO_DOT_SLASH = '(?!' .. DOT_LITERAL .. {0,1} .. END_ANCHOR .. '})'
+local NO_DOT_SLASH = '(?!' .. DOT_LITERAL .. "{0,1}" .. END_ANCHOR .. ')'
 local NO_DOTS_SLASH = '(?!' .. DOTS_SLASH .. ')'
 local QMARK_NO_DOT = '[^.' .. SLASH_LITERAL .. ']'
 local STAR = QMARK .. '*?'
 
 local POSIX_CHARS = {
-  DOT_LITERAL,
-  PLUS_LITERAL,
-  QMARK_LITERAL,
-  SLASH_LITERAL,
-  ONE_CHAR,
-  QMARK,
-  END_ANCHOR,
-  DOTS_SLASH,
-  NO_DOT,
-  NO_DOTS,
-  NO_DOT_SLASH,
-  NO_DOTS_SLASH,
-  QMARK_NO_DOT,
-  STAR,
-  START_ANCHOR
+  DOT_LITERAL = DOT_LITERAL,
+  PLUS_LITERAL = PLUS_LITERAL,
+  QMARK_LITERAL = QMARK_LITERAL,
+  SLASH_LITERAL = SLASH_LITERAL,
+  ONE_CHAR = ONE_CHAR,
+  QMARK = QMARK,
+  END_ANCHOR = END_ANCHOR,
+  DOTS_SLASH = DOTS_SLASH,
+  NO_DOT = NO_DOT,
+  NO_DOTS = NO_DOTS,
+  NO_DOT_SLASH = NO_DOT_SLASH,
+  NO_DOTS_SLASH = NO_DOTS_SLASH,
+  QMARK_NO_DOT = QMARK_NO_DOT,
+  STAR = STAR,
+  START_ANCHOR = START_ANCHOR
 }
 
 --[[*
@@ -70,19 +71,21 @@ local POSIX_CHARS = {
  ]]
 
 local WINDOWS_CHARS = {
-  table.unpack(POSIX_CHARS),
   SLASH_LITERAL = '[' .. WIN_SLASH .. ']',
   QMARK = WIN_NO_SLASH,
   STAR = WIN_NO_SLASH .. '*?',
-  DOTS_SLASH = DOT_LITERAL .. {1,2} .. '(?:[' .. WIN_SLASH .. ']|$)',
+  DOTS_SLASH = DOT_LITERAL .. '{1,2}(?:[' .. WIN_SLASH .. ']|$)',
   NO_DOT = '(?!' .. DOT_LITERAL .. ')',
-  NO_DOTS = '(?!(?:^|[' .. WIN_SLASH .. '])' .. DOT_LITERAL .. {1,2} .. '(?:[' .. WIN_SLASH .. ']|$))',
-  NO_DOT_SLASH = '(?!' .. DOT_LITERAL .. {0,1} .. '(?:[' .. WIN_SLASH ']|$))',
-  NO_DOTS_SLASH = '(?!' .. DOT_LITERAL .. {1,2} .. '(?:[' .. WIN_SLASH .. ']|$))',
+  NO_DOTS = '(?!(?:^|[' .. WIN_SLASH .. '])' .. DOT_LITERAL .. "{1,2}" .. '(?:[' .. WIN_SLASH .. ']|$))',
+  NO_DOT_SLASH = '(?!' .. DOT_LITERAL .. '{0,1}(?:[' .. WIN_SLASH .. ']|$))',
+  NO_DOTS_SLASH = '(?!' .. DOT_LITERAL .. '{1,2}(?:[' .. WIN_SLASH .. ']|$))',
   QMARK_NO_DOT = '[^.' .. WIN_SLASH .. ']',
   START_ANCHOR = '(?:^|[' .. WIN_SLASH .. '])',
   END_ANCHOR = '(?:[' .. WIN_SLASH .. ']|$)'
 }
+for k,v in POSIX_CHARS :: { [string]: string } do
+  WINDOWS_CHARS[k] = v
+end
 
 --[[*
  * POSIX Bracket Regex
@@ -107,21 +110,23 @@ local POSIX_REGEX_SOURCE = {
 
 local exports = {
   MAX_LENGTH = 1024 * 64,
-  POSIX_REGEX_SOURCE,
+  POSIX_REGEX_SOURCE = POSIX_REGEX_SOURCE,
 
   -- regular expressions
-  REGEX_BACKSLASH = '/\\(?![*+?^${}(|)[\]])/g',
-  REGEX_NON_SPECIAL_CHARS = '/^[^@![\].,$*+?^{}()|\\/]+/',
-  REGEX_SPECIAL_CHARS = '/[-*+?.^${}(|)[\]]/',
-  REGEX_SPECIAL_CHARS_BACKREF = '/(\\?)((\W)(\3*))/g',
-  REGEX_SPECIAL_CHARS_GLOBAL = '/([-*+?.^${}(|)[\]])/g',
-  REGEX_REMOVE_BACKSLASH = '/(?:\[.*?[^\\]\]|\\(?=.))/g',
+  -- Lua TODO: global match ('g' flag) doesn't appear to quite work in the regexp polyfill
+  REGEX_BACKSLASH =  RegExp('\\\\(?![*+?^${}(|)[\\]])', 'g'),
+  REGEX_NON_SPECIAL_CHARS = RegExp('^[^@![%].,$*+?^{}()|\\/]+'),
+  REGEX_SPECIAL_CHARS = RegExp('[-*+?.^${}(|)[%]]'),
+  -- Lua TODO: regexp polyfill doesn't appear to currently support backmatches
+  REGEX_SPECIAL_CHARS_BACKREF = RegExp('(\\\\?)((\\W)(\\3*))', 'g'),
+  REGEX_SPECIAL_CHARS_GLOBAL = RegExp('([-*+?.^${}(|)[\\]])', 'g'),
+  REGEX_REMOVE_BACKSLASH = RegExp('(?:\\[.*?[^\\\\]\\]|\\(?=.))', 'g'),
 
   -- Replace globs with equivalent patterns to reduce parsing time.
   REPLACEMENTS = {
     ['***'] = '*',
-    ['**--[[*'] = '**',
-    ['**--[[*--[[*'] = '**'
+    ['**/**'] = '**',
+    ['**/**/**'] = '**'
   },
 
   -- Digits
@@ -145,7 +150,7 @@ local exports = {
   CHAR_BACKWARD_SLASH = 92, --[[ \ ]]
   CHAR_CARRIAGE_RETURN = 13, --[[ \r ]]
   CHAR_CIRCUMFLEX_ACCENT = 94, --[[ ^ ]]
-  CHAR_COLON = 58, --[[  = ]]
+  CHAR_COLON = 58, --[[ : ]]
   CHAR_COMMA = 44, --[[ , ]]
   CHAR_DOT = 46, --[[ . ]]
   CHAR_DOUBLE_QUOTE = 34, --[[ " ]]
@@ -175,13 +180,14 @@ local exports = {
   CHAR_VERTICAL_LINE = 124, --[[ | ]]
   CHAR_ZERO_WIDTH_NOBREAK_SPACE = 65279, --[[ \uFEFF ]]
 
-  SEP = path.sep,
+  -- Lua TODO: figure out how to determine system path separator at require time
+  SEP = "\\",
 
   --[[*
    * Create EXTGLOB_CHARS
    ]]
 
-  extglobChars = function(chars)
+  extglobChars = function(chars: { [string]: string }): { [string]: { type: string, open: string, close: string } }
     return {
       ['!'] = { type = 'negate', open = '(?:(?!(?:', close = ')) ' .. chars.STAR .. ')' },
       ['?'] = { type = 'qmark', open = '(?:', close = ')?' },
