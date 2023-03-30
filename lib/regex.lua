@@ -1352,778 +1352,911 @@ local other_valid_group_char = {
 }
 
 local function tokenize_ptn(codes, flags)
-	if flags.unicode and not options.unicodeData then
-		return "options.unicodeData cannot be turned off while having unicode flag";
-	end;
-	local i, len = 1, codes.n;
-	local group_n = 0;
-	local outln, group_id, verb_flags = { }, { }, {
-		newline = 1, newline_seq = 1, not_empty = 0,
-	};
-	while i <= len do
-		local c = codes[i];
-		if c == 0x28 then
-			-- Match
-			local ret;
-			if codes[i + 1] == 0x2A then
-				i += 2;
-				local start_i = i;
-				while codes[i]
-					and (codes[i] >= 0x30 and codes[i] <= 0x39
-					or codes[i] >= 0x41 and codes[i] <= 0x5A
-					or codes[i] >= 0x61 and codes[i] <= 0x7A
-					or codes[i] == 0x5F or codes[i] == 0x3A) do
-					i += 1;
-				end;
-				if codes[i] ~= 0x29 and codes[i - 1] ~= 0x3A then
-					-- fallback as normal and ( can't be repeated
-					return "quantifier doesn't follow a repeatable pattern";
-				end;
-				local selected_verb = utf8_sub(codes.s, start_i, i);
-				if selected_verb == "positive_lookahead:" or selected_verb == "negative_lookhead:"
-					or selected_verb == "positive_lookbehind:" or selected_verb == "negative_lookbehind:"
-					or selected_verb:find("^[pn]l[ab]:$") then
-					ret = { 0x28, nil, nil, selected_verb:find('^n') and 0x21 or 0x3D, selected_verb:find('b', 3, true) and 1 };
-				elseif selected_verb == "atomic:" then
-					ret = { 0x28, nil, nil, 0x3E, nil };
-				elseif selected_verb == "ACCEPT" or selected_verb == "FAIL" or selected_verb == 'F' or selected_verb == "PRUNE" or selected_verb == "SKIP" then
-					ret = selected_verb == 'F' and "FAIL" or selected_verb;
-				else
-					if line_verbs[selected_verb] then
-						verb_flags.newline = selected_verb;
-					elseif selected_verb == "BSR_ANYCRLF" or selected_verb == "BSR_UNICODE" then
-						verb_flags.newline_seq = selected_verb == "BSR_UNICODE" and 1 or 0;
-					elseif selected_verb == "NOTEMPTY" or selected_verb == "NOTEMPTY_ATSTART" then
-						verb_flags.not_empty = selected_verb == "NOTEMPTY" and 1 or 2;
-					else
-						return "unknown or malformed verb";
-					end;
-					if outln[1] then
-						return "this verb must be placed at the beginning of the regex";
-					end;
-				end;
-			elseif codes[i + 1] == 0x3F then
-				-- ? syntax
-				i += 2;
-				if codes[i] == 0x23 then
-					-- comments
-					i = table.find(codes, 0x29, i);
-					if not i then
-						return "unterminated parenthetical";
-					end;
-					i += 1;
-					continue;
-				elseif not codes[i] then
-					return "unterminated parenthetical";
-				end;
-				ret = { 0x28, nil, nil, codes[i], nil };
-				if codes[i] == 0x30 and codes[i + 1] == 0x29 then
-					-- recursive match entire pattern
-					ret[1], ret[2], ret[3], ret[5] = "recurmatch", 0, 0, nil;
-				elseif codes[i] > 0x30 and codes[i] <= 0x39 then
-					-- recursive match
-					local org_i = i;
-					i += 1;
-					while codes[i] >= 0x30 and codes[i] <= 0x30 do
-						i += 1;
-					end;
-					if codes[i] ~= 0x29 then
-						return "invalid group structure";
-					end;
-					ret[1], ret[2], ret[4] = "recurmatch", tonumber(utf8_sub(codes.s, org_i, i)), nil;
-				elseif codes[i] == 0x3C and codes[i + 1] == 0x21 or codes[i + 1] == 0x3D then
-					-- lookbehinds
-					i += 1;
-					ret[4], ret[5] = codes[i], 1;
-				elseif codes[i] == 0x7C then
-					-- branch reset
-					ret[5] = group_n;
-				elseif codes[i] == 0x50 or codes[i] == 0x3C or codes[i] == 0x27 then
-					if codes[i] == 0x50 then
-						i += 1;
-					end;
-					if codes[i] == 0x3D then
-						-- backref
-						local start_i = i + 1;
-						while codes[i] and
-							(codes[i] >= 0x30 and codes[i] <= 0x39
-								or codes[i] >= 0x41 and codes[i] <= 0x5A
-								or codes[i] >= 0x61 and codes[i] <= 0x7A
-								or codes[i] == 0x5F) do
-							i += 1;
-						end;
-						if not codes[i] then
-							return "unterminated parenthetical";
-						elseif codes[i] ~= 0x29 or i == start_i then
-							return "invalid group structure";
-						end;
-						ret = { "backref", utf8_sub(codes.s, start_i, i) };
-					elseif codes[i] == 0x3C or codes[i - 1] ~= 0x50 and codes[i] == 0x27 then
-						-- named capture
-						local delimiter = codes[i] == 0x27 and 0x27 or 0x3E;
-						local start_i = i + 1;
-						i += 1;
-						if codes[i] == 0x29 then
-							return "missing character in subpattern";
-						elseif codes[i] >= 0x30 and codes[i] <= 0x39 then
-							return "subpattern name must not begin with a digit";
-						elseif not (codes[i] >= 0x41 and codes[i] <= 0x5A or codes[i] >= 0x61 and codes[i] <= 0x7A or codes[i] == 0x5F) then
-							return "invalid character in subpattern";
-						end;
-						i += 1;
-						while codes[i] and
-							(codes[i] >= 0x30 and codes[i] <= 0x39
-								or codes[i] >= 0x41 and codes[i] <= 0x5A
-								or codes[i] >= 0x61 and codes[i] <= 0x7A
-								or codes[i] == 0x5F) do
-							i += 1;
-						end;
-						if not codes[i] then
-							return "unterminated parenthetical";
-						elseif codes[i] ~= delimiter then
-							return "invalid character in subpattern";
-						end;
-						local name = utf8_sub(codes.s, start_i, i);
-						group_n += 1;
-						if (group_id[name] or group_n) ~= group_n then
-							return "subpattern name already exists";
-						end;
-						for name1, group_n1 in pairs(group_id) do
-							if name ~= name1 and group_n == group_n1 then
-								return "different names for subpatterns of the same number aren't permitted";
-							end;
-						end;
-						group_id[name] = group_n;
-						ret[2], ret[4] = group_n, nil;
-					else
-						return "invalid group structure";
-					end;
-				elseif not other_valid_group_char[codes[i]] then
-					return "invalid group structure";
-				end;
-			else
-				group_n += 1;
-				ret = { 0x28, group_n, nil, nil };
-			end;
-			if ret then
-				table.insert(outln, ret);
-			end;
-		elseif c == 0x29 then
-			-- Close parenthesis
-			local i1 = #outln + 1;
-			local lookbehind_c = -1;
-			local current_lookbehind_c = 0;
-			local max_c, group_c = 0, 0;
-			repeat
-				i1 -= 1;
-				local v, is_table = outln[i1], type(outln[i1]) == "table";
-				if is_table and v[1] == 0x28 then
-					group_c += 1;
-					if current_lookbehind_c and v.count then
-						current_lookbehind_c += v.count;
-					end;
-					if not v[3] then
-						if v[4] == 0x7C then
-							group_n = v[5] + math.max(max_c, group_c);
-						end;
-						if current_lookbehind_c ~= lookbehind_c and lookbehind_c ~= -1 then
-							lookbehind_c = nil;
-						else
-							lookbehind_c = current_lookbehind_c;
-						end;
-						break;
-					end;
-				elseif v == alternation then
-					if current_lookbehind_c ~= lookbehind_c and lookbehind_c ~= -1 then
-						lookbehind_c, current_lookbehind_c = nil, nil;
-					else
-						lookbehind_c, current_lookbehind_c = current_lookbehind_c, 0;
-					end;
-					max_c, group_c = math.max(max_c, group_c), 0;
-				elseif current_lookbehind_c then
-					if is_table and v[1] == "quantifier" then
-						if v[2] == v[3] then
-							current_lookbehind_c += v[2];
-						else
-							current_lookbehind_c = nil;
-						end;
-					else
-						current_lookbehind_c += 1;
-					end;
-				end;
-			until i1 < 1;
-			if i1 < 1 then
-				return "unmatched ) in regular expression";
-			end;
-			local v = outln[i1];
-			local outln_len_p_1 = #outln + 1;
-			local ret = { 0x29, v[2], i1, v[4], v[5], count = lookbehind_c };
-			if (v[4] == 0x21 or v[4] == 0x3D) and v[5] and not lookbehind_c then
-				return "lookbehind assertion is not fixed width";
-			end;
-			v[3] = outln_len_p_1;
-			table.insert(outln, ret);
-		elseif c == 0x2E then
-			table.insert(outln, dot);
-		elseif c == 0x5B then
-			-- Character set
-			local negate, char_class = false, nil;
-			i += 1;
-			local start_i = i;
-			if codes[i] == 0x5E then
-				negate = true;
-				i += 1;
-			elseif codes[i] == 0x2E or codes[i] == 0x3A or codes[i] == 0x3D then
-				-- POSIX character classes
-				char_class = codes[i];
-			end;
-			local ret;
-			if codes[i] == 0x5B or codes[i] == 0x5C then
-				ret = { };
-			else
-				ret = { codes[i] };
-				i += 1;
-			end;
-			while codes[i] ~= 0x5D do
-				if not codes[i] then
-					return "unterminated character class";
-				elseif codes[i] == 0x2D and ret[1] and type(ret[1]) == "number" then
-					if codes[i + 1] == 0x5D then
-						table.insert(ret, 1, 0x2D);
-					else
-						i += 1;
-						local ret_c = codes[i];
-						if ret_c == 0x5B then
-							if codes[i + 1] == 0x2E or codes[i + 1] == 0x3A or codes[i + 1] == 0x3D then
-								-- Check for POSIX character class, name does not matter
-								local i1 = i + 2;
-								repeat
-									i1 = table.find(codes, 0x5D, i1);
-								until not i1 or codes[i1 - 1] ~= 0x5C;
-								if not i1 then
-									return "unterminated character class";
-								elseif codes[i1 - 1] == codes[i + 1] and i1 - 1 ~= i + 1 then
-									return "invalid range in character class";
-								end;
-							end;
-							if ret[1] > 0x5B then
-								return "invalid range in character class";
-							end;
-						elseif ret_c == 0x5C then
-							i += 1;
-							if codes[i] == 0x78 then
-								local radix0, radix1;
-								i += 1;
-								if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x39 or codes[i] >= 0x41 and codes[i] <= 0x46 or codes[i] >= 0x61 and codes[i] <= 0x66 then
-									radix0 = codes[i] - ((codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37 or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57 or 0x30);
-									i += 1;
-									if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x39 or codes[i] >= 0x41 and codes[i] <= 0x46 or codes[i] >= 0x61 and codes[i] <= 0x66 then
-										radix1 = codes[i] - ((codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37 or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57 or 0x30);
-									else
-										i -= 1;
-									end;
-								else
-									i -= 1;
-								end;
-								ret_c = radix0 and (radix1 and 16 * radix0 + radix1 or radix0) or 0;
-							elseif codes[i] >= 0x30 and codes[i] <= 0x37 then
-								local radix0, radix1, radix2 = codes[i] - 0x30, nil, nil;
-								i += 1;
-								if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
-									radix1 = codes[i] - 0x30;
-									i += 1;
-									if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
-										radix2 = codes[i] - 0x30;
-									else
-										i -= 1;
-									end;
-								else
-									i -= 1;
-								end;
-								ret_c = radix1 and (radix2 and 64 * radix0 + 8 * radix1 + radix2 or 8 * radix0 + radix1) or radix0;
-							else
-								ret_c = escape_chars[codes[i]] or codes[i];
-								if type(ret_c) ~= "number" then
-									return "invalid range in character class";
-								end;
-							end;
-						elseif ret[1] > ret_c then
-							return "invalid range in character class";
-						end;
-						ret[1] = { "range", ret[1], ret_c };
-					end;
-				elseif codes[i] == 0x5B then
-					if codes[i + 1] == 0x2E or codes[i + 1] == 0x3A or codes[i + 1] == 0x3D then
-						local i1 = i + 2;
-						repeat
-							i1 = table.find(codes, 0x5D, i1);
-						until not i1 or codes[i1 - 1] ~= 0x5C;
-						if not i1 then
-							return "unterminated character class";
-						elseif codes[i1 - 1] ~= codes[i + 1] or i1 - 1 == i + 1 then
-							table.insert(ret, 1, 0x5B);
-						elseif codes[i1 - 1] == 0x2E or codes[i1 - 1] == 0x3D then
-							return "POSIX collating elements aren't supported";
-						elseif codes[i1 - 1] == 0x3A then
-							-- I have no plans to support escape codes (\) in character class names
-							local negate = codes[i + 3] == 0x5E;
-							local class_name = utf8_sub(codes.s, i + (negate and 3 or 2), i1 - 1);
-							--  If not valid then throw an error
-							if not posix_class_names[class_name] then
-								return "unknown POSIX class name";
-							end;
-							table.insert(ret, 1, { "class", class_name, negate });
-							i = i1;
-						end;
-					else
-						table.insert(ret, 1, 0x5B);
-					end;
-				elseif codes[i] == 0x5C then
-					i += 1;
-					if codes[i] == 0x78 then
-						local radix0, radix1;
-						i += 1;
-						if codes[i] == 0x7B then
-							i += 1;
-							local org_i = i;
-							while codes[i] and
-								(codes[i] >= 0x30 and codes[i] <= 0x39
-									or codes[i] >= 0x41 and codes[i] <= 0x46
-									or codes[i] >= 0x61 and codes[i] <= 0x66) do
-								i += 1;
-							end;
-							if codes[i] ~= 0x7D or i == org_i then
-								return "malformed hexadecimal character";
-							elseif i - org_i > 4 then
-								return "character offset too large";
-							end;
-							table.insert(ret, 1, tonumber(utf8_sub(codes.s, org_i, i), 16));
-						else
-							if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x39 or codes[i] >= 0x41 and codes[i] <= 0x46 or codes[i] >= 0x61 and codes[i] <= 0x66 then
-								radix0 = codes[i] - ((codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37 or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57 or 0x30);
-								i += 1;
-								if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x39 or codes[i] >= 0x41 and codes[i] <= 0x46 or codes[i] >= 0x61 and codes[i] <= 0x66 then
-									radix1 = codes[i] - ((codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37 or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57 or 0x30);
-								else
-									i -= 1;
-								end;
-							else
-								i -= 1;
-							end;
-							table.insert(ret, 1, radix0 and (radix1 and 16 * radix0 + radix1 or radix0) or 0);
-						end;
-					elseif codes[i] >= 0x30 and codes[i] <= 0x37 then
-						local radix0, radix1, radix2 = codes[i] - 0x30, nil, nil;
-						i += 1;
-						if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
-							radix1 = codes[i] - 0x30;
-							i += 1;
-							if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
-								radix2 = codes[i] - 0x30;
-							else
-								i -= 1;
-							end;
-						else
-							i -= 1;
-						end;
-						table.insert(ret, 1, radix1 and (radix2 and 64 * radix0 + 8 * radix1 + radix2 or 8 * radix0 + radix1) or radix0);
-					elseif codes[i] == 0x45 then
-						-- intentionally left blank, \E that's not preceded \Q is ignored
-					elseif codes[i] == 0x51 then
-						local start_i = i + 1;
-						repeat
-							i = table.find(codes, 0x5C, i + 1);
-						until not i or codes[i + 1] == 0x45;
-						table.move(codes, start_i, i and i - 1 or #codes, #outln + 1, outln);
-						if not i then
-							break;
-						end;
-						i += 1;
-					elseif codes[i] == 0x4E then
-						if codes[i + 1] == 0x7B and codes[i + 2] == 0x55 and codes[i + 3] == 0x2B and flags.unicode then
-							i += 4;
-							local start_i = i;
-							while codes[i] and
-								(codes[i] >= 0x30 and codes[i] <= 0x39
-									or codes[i] >= 0x41 and codes[i] <= 0x46
-									or codes[i] >= 0x61 and codes[i] <= 0x66) do
-								i += 1;
-							end;
-							if codes[i] ~= 0x7D or i == start_i then
-								return "malformed Unicode code point";
-							end;
-							local code_point = tonumber(utf8_sub(codes.s, start_i, i));
-							table.insert(ret, 1, code_point);
-						else
-							return "invalid escape sequence";
-						end;
-					elseif codes[i] == 0x50 or codes[i] == 0x70 then
-						if not options.unicodeData then
-							return "options.unicodeData cannot be turned off when using \\p";
-						end;
-						i += 1;
-						if codes[i] ~= 0x7B then
-							local c_name = utf8.char(codes[i] or 0);
-							if not valid_categories[c_name] then
-								return "unknown or malformed script name";
-							end;
-							table.insert(ret, 1, { "category", false, c_name });
-						else
-							local negate = codes[i] == 0x50;
-							i += 1;
-							if codes[i] == 0x5E then
-								i += 1;
-								negate = not negate;
-							end;
-							local start_i = i;
-							while codes[i] and
-								(codes[i] >= 0x30 and codes[i] <= 0x39
-									or codes[i] >= 0x41 and codes[i] <= 0x5A
-									or codes[i] >= 0x61 and codes[i] <= 0x7A
-									or codes[i] == 0x5F) do
-								i += 1;
-							end;
-							if codes[i] ~= 0x7D then
-								return "unknown or malformed script name";
-							end;
-							local c_name = utf8_sub(codes.s, start_i, i);
-							local script_set = chr_scripts[c_name];
-							if script_set then
-								table.insert(ret, 1, { "charset", negate, script_set });
-							elseif not valid_categories[c_name] then
-								return "unknown or malformed script name";
-							else
-								table.insert(ret, 1, { "category", negate, c_name });
-							end;
-						end;
-					elseif codes[i] == 0x6F then
-						i += 1;
-						if codes[i] ~= 0x7B then
-							return "malformed octal code";
-						end;
-						i += 1;
-						local org_i = i;
-						while codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 do
-							i += 1;
-						end;
-						if codes[i] ~= 0x7D or i == org_i then
-							return "malformed octal code";
-						end;
-						local ret_chr = tonumber(utf8_sub(codes.s, org_i, i), 8);
-						if ret_chr > 0xFFFF then
-							return "character offset too large";
-						end;
-						table.insert(ret, 1, ret_chr);
-					else
-						local esc_char = escape_chars[codes[i]];
-						table.insert(ret, 1, type(esc_char) == "string" and { "class", esc_char, false } or esc_char or codes[i]);
-					end;
-				elseif flags.ignoreCase and codes[i] >= 0x61 and codes[i] <= 0x7A then
-					table.insert(ret, 1, codes[i] - 0x20);
-				else
-					table.insert(ret, 1, codes[i]);
-				end;
-				i += 1;
-			end;
-			if codes[i - 1] == char_class and i - 1 ~= start_i then
-				return char_class == 0x3A and "POSIX named classes are only support within a character set" or "POSIX collating elements aren't supported";
-			end;
-			if not ret[2] and not negate then
-				table.insert(outln, ret[1]);
-			else
-				table.insert(outln, { "charset", negate, ret });
-			end;
-		elseif c == 0x5C then
-			-- Escape char
-			i += 1;
-			local escape_c = codes[i];
-			if not escape_c then
-				return "pattern may not end with a trailing backslash";
-			elseif escape_c >= 0x30 and escape_c <= 0x39 then
-				local org_i = i;
-				while codes[i + 1] and codes[i + 1] >= 0x30 and codes[i + 1] <= 0x39 do
-					i += 1;
-				end;
-				local escape_d = tonumber(utf8_sub(codes.s, org_i, i + 1));
-				if escape_d > group_n and i ~= org_i then
-					i = org_i;
-					local radix0, radix1, radix2;
-					if codes[i] <= 0x37 then
-						radix0 = codes[i] - 0x30;
-						i += 1;
-						if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
-							radix1 = codes[i] - 0x30;
-							i += 1;
-							if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
-								radix2 = codes[i] - 0x30;
-							else
-								i -= 1;
-							end;
-						else
-							i -= 1;
-						end;
-					end;
-					table.insert(outln, radix0 and (radix1 and (radix2 and 64 * radix0 + 8 * radix1 + radix2 or 8 * radix0 + radix1) or radix0) or codes[org_i]);
-				else
-					table.insert(outln, { "backref", escape_d });
-				end;
-			elseif escape_c == 0x45 then
-				-- intentionally left blank, \E that's not preceded \Q is ignored
-			elseif escape_c == 0x51 then
-				local start_i = i + 1;
-				repeat
-					i = table.find(codes, 0x5C, i + 1);
-				until not i or codes[i + 1] == 0x45;
-				table.move(codes, start_i, i and i - 1 or #codes, #outln + 1, outln);
-				if not i then
-					break;
-				end;
-				i += 1;
-			elseif escape_c == 0x4E then
-				if codes[i + 1] == 0x7B and codes[i + 2] == 0x55 and codes[i + 3] == 0x2B and flags.unicode then
-					i += 4;
-					local start_i = i;
-					while codes[i] and
-						(codes[i] >= 0x30 and codes[i] <= 0x39
-							or codes[i] >= 0x41 and codes[i] <= 0x46
-							or codes[i] >= 0x61 and codes[i] <= 0x66) do
-						i += 1;
-					end;
-					if codes[i] ~= 0x7D or i == start_i then
-						return "malformed Unicode code point";
-					end;
-					local code_point = tonumber(utf8_sub(codes.s, start_i, i));
-					table.insert(outln, code_point);
-				else
-					table.insert(outln, escape_chars[0x4E]);
-				end;
-			elseif escape_c == 0x50 or escape_c == 0x70 then
-				if not options.unicodeData then
-					return "options.unicodeData cannot be turned off when using \\p";
-				end;
-				i += 1;
-				if codes[i] ~= 0x7B then
-					local c_name = utf8.char(codes[i] or 0);
-					if not valid_categories[c_name] then
-						return "unknown or malformed script name";
-					end;
-					table.insert(outln, { "category", false, c_name });
-				else
-					local negate = escape_c == 0x50;
-					i += 1;
-					if codes[i] == 0x5E then
-						i += 1;
-						negate = not negate;
-					end;
-					local start_i = i;
-					while codes[i] and
-						(codes[i] >= 0x30 and codes[i] <= 0x39
-							or codes[i] >= 0x41 and codes[i] <= 0x5A
-							or codes[i] >= 0x61 and codes[i] <= 0x7A
-							or codes[i] == 0x5F) do
-						i += 1;
-					end;
-					if codes[i] ~= 0x7D then
-						return "unknown or malformed script name";
-					end;
-					local c_name = utf8_sub(codes.s, start_i, i);
-					local script_set = chr_scripts[c_name];
-					if script_set then
-						table.insert(outln, { "charset", negate, script_set });
-					elseif not valid_categories[c_name] then
-						return "unknown or malformed script name";
-					else
-						table.insert(outln, { "category", negate, c_name });
-					end;
-				end;
-			elseif escape_c == 0x67 and (codes[i + 1] == 0x7B or codes[i + 1] >= 0x30 and codes[i + 1] <= 0x39) then
-				local is_grouped = false;
-				i += 1;
-				if codes[i] == 0x7B then
-					i += 1;
-					is_grouped = true;
-				elseif codes[i] < 0x30 or codes[i] > 0x39 then
-					return "malformed reference code";
-				end;
-				local org_i = i;
-				while codes[i] and
-					(codes[i] >= 0x30 and codes[i] <= 0x39
-						or codes[i] >= 0x41 and codes[i] <= 0x46
-						or codes[i] >= 0x61 and codes[i] <= 0x66) do
-					i += 1;
-				end;
-				if is_grouped and codes[i] ~= 0x7D then
-					return "malformed reference code";
-				end;
-				local ref_name = tonumber(utf8_sub(codes.s, org_i, i + (is_grouped and 0 or 1)));
-				table.insert(outln, { "backref", ref_name });
-				if not is_grouped then
-					i -= 1;
-				end;
-			elseif escape_c == 0x6F then
-				i += 1;
-				if codes[i + 1] ~= 0x7B then
-					return "malformed octal code";
-				end
-				i += 1;
-				local org_i = i;
-				while codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 do
-					i += 1;
-				end;
-				if codes[i] ~= 0x7D or i == org_i then
-					return "malformed octal code";
-				end;
-				local ret_chr = tonumber(utf8_sub(codes.s, org_i, i), 8);
-				if ret_chr > 0xFFFF then
-					return "character offset too large";
-				end;
-				table.insert(outln, ret_chr);
-			elseif escape_c == 0x78 then
-				local radix0, radix1;
-				i += 1;
-				if codes[i] == 0x7B then
-					i += 1;
-					local org_i = i;
-					while codes[i] and
-						(codes[i] >= 0x30 and codes[i] <= 0x39
-							or codes[i] >= 0x41 and codes[i] <= 0x46
-							or codes[i] >= 0x61 and codes[i] <= 0x66) do
-						i += 1;
-					end;
-					if codes[i] ~= 0x7D or i == org_i then
-						return "malformed hexadecimal code";
-					elseif i - org_i > 4 then
-						return "character offset too large";
-					end;
-					table.insert(outln, tonumber(utf8_sub(codes.s, org_i, i), 16));
-				else
-					if codes[i] and (codes[i] >= 0x30 and codes[i] <= 0x39 or codes[i] >= 0x41 and codes[i] <= 0x46 or codes[i] >= 0x61 and codes[i] <= 0x66) then
-						radix0 = codes[i] - ((codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37 or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57 or 0x30);
-						i += 1;
-						if codes[i] and (codes[i] >= 0x30 and codes[i] <= 0x39 or codes[i] >= 0x41 and codes[i] <= 0x46 or codes[i] >= 0x61 and codes[i] <= 0x66) then
-							radix1 = codes[i] - ((codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37 or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57 or 0x30);
-						else
-							i -= 1;
-						end;
-					else
-						i -= 1;
-					end;
-					table.insert(outln, radix0 and (radix1 and 16 * radix0 + radix1 or radix0) or 0);
-				end;
-			else
-				local esc_char = b_escape_chars[escape_c] or escape_chars[escape_c];
-				table.insert(outln, esc_char or escape_c);
-			end;
-		elseif c == 0x2A or c == 0x2B or c == 0x3F or c == 0x7B then
-			-- Quantifier
-			local start_q, end_q;
-			if c == 0x7B then
-				local org_i = i + 1;
-				local start_i;
-				while codes[i + 1] and (codes[i + 1] >= 0x30 and codes[i + 1] <= 0x39 or codes[i + 1] == 0x2C and not start_i and i + 1 ~= org_i) do
-					i += 1;
-					if codes[i] == 0x2C then
-						start_i = i;
-					end;
-				end;
-				if codes[i + 1] == 0x7D then
-					i += 1;
-					if not start_i then
-						start_q = tonumber(utf8_sub(codes.s, org_i, i));
-						end_q = start_q;
-					else
-						start_q, end_q = tonumber(utf8_sub(codes.s, org_i, start_i)), start_i + 1 == i and math.huge or tonumber(utf8_sub(codes.s, start_i + 1, i));
-						if end_q < start_q then
-							return "numbers out of order in {} quantifier";
-						end;
-					end;
-				else
-					table.move(codes, org_i - 1, i, #outln + 1, outln);
-				end;
-			else
-				start_q, end_q = c == 0x2B and 1 or 0, c == 0x3F and 1 or math.huge;
-			end;
-			if start_q then
-				local quantifier_type = flags.ungreedy and "lazy" or "greedy";
-				if codes[i + 1] == 0x2B or codes[i + 1] == 0x3F then
-					i += 1;
-					quantifier_type = codes[i] == 0x2B and "possessive" or flags.ungreedy and "greedy" or "lazy";
-				end;
-				local outln_len = #outln;
-				local last_outln_value = outln[outln_len];
-				if not last_outln_value or type(last_outln_value) == "table" and (last_outln_value[1] == "quantifier" or last_outln_value[1] == 0x28 or b_escape_chars[last_outln_value[1]])
-					or last_outln_value == alternation or type(last_outln_value) == "string" then
-					return "quantifier doesn't follow a repeatable pattern";
-				end;
-				if end_q == 0 then
-					table.remove(outln);
-				elseif start_q ~= 1 or end_q ~= 1 then
-					if type(last_outln_value) == "table" and last_outln_value[1] == 0x29 then
-						outln_len = last_outln_value[3];
-					end;
-					outln[outln_len] = { "quantifier", start_q, end_q, quantifier_type, outln[outln_len] };
-				end;
-			end;
-		elseif c == 0x7C then
-			-- Alternation
-			table.insert(outln, alternation);
-			local i1 = #outln;
-			repeat
-				i1 -= 1;
-				local v1, is_table = outln[i1], type(outln[i1]) == "table";
-				if is_table and v1[1] == 0x29 then
-					i1 = outln[i1][3];
-				elseif is_table and v1[1] == 0x28 then
-					if v1[4] == 0x7C then
-						group_n = v1[5];
-					end;
-					break;
-				end;
-			until not v1;
-		elseif c == 0x24 or c == 0x5E then
-			table.insert(outln, c == 0x5E and beginning_str or end_str);
-		elseif flags.ignoreCase and c >= 0x61 and c <= 0x7A then
-			table.insert(outln, c - 0x20);
-		elseif flags.extended and (c >= 0x09 and c <= 0x0D or c == 0x20 or c == 0x23) then
-			if c == 0x23 then
-				repeat
-					i += 1;
-				until not codes[i] or codes[i] == 0x0A or codes[i] == 0x0D;
-			end;
-		else
-			table.insert(outln, c);
-		end;
-		i += 1;
-	end;
-	local max_group_n = 0;
-	for i, v in ipairs(outln) do
-		if type(v) == "table" and (v[1] == 0x28 or v[1] == "quantifier" and type(v[5]) == "table" and v[5][1] == 0x28) then
-			if v[1] == "quantifier" then
-				v = v[5];
-			end;
-			if not v[3] then
-				return "unterminated parenthetical";
-			elseif v[2] then
-				max_group_n = math.max(max_group_n, v[2]);
-			end;
-		elseif type(v) == "table" and (v[1] == "backref" or v[1] == "recurmatch") then
-			if not group_id[v[2]] and (type(v[2]) ~= "number" or v[2] > group_n) then
-				return "reference to a non-existent or invalid subpattern";
-			elseif v[1] == "recurmatch" and v[2] ~= 0 then
-				for i1, v1 in ipairs(outln) do
-					if type(v1) == "table" and v1[1] == 0x28 and v1[2] == v[2] then
-						v[3] = i1;
-						break;
-					end;
-				end;
-			elseif type(v[2]) == "string" then
-				v[2] = group_id[v[2]];
-			end;
-		end;
-	end;
-	outln.group_n = max_group_n;
-	return outln, group_id, verb_flags;
-end;
+  if flags.unicode and not options.unicodeData then
+    return "options.unicodeData cannot be turned off while having unicode flag"
+  end
+  local i, len = 1, codes.n
+  local group_n = 0
+  local outln, group_id, verb_flags = {}, {}, {
+    newline = 1,
+    newline_seq = 1,
+    not_empty = 0,
+  }
+  while i <= len do
+    local c = codes[i]
+    if c == 0x28 then
+      -- Match
+      local ret
+      if codes[i + 1] == 0x2A then
+        i += 2
+        local start_i = i
+        while
+          codes[i]
+          and (
+            codes[i] >= 0x30 and codes[i] <= 0x39
+            or codes[i] >= 0x41 and codes[i] <= 0x5A
+            or codes[i] >= 0x61 and codes[i] <= 0x7A
+            or codes[i] == 0x5F
+            or codes[i] == 0x3A
+          )
+        do
+          i += 1
+        end
+        if codes[i] ~= 0x29 and codes[i - 1] ~= 0x3A then
+          -- fallback as normal and ( can't be repeated
+          return "quantifier doesn't follow a repeatable pattern"
+        end
+        local selected_verb = utf8_sub(codes.s, start_i, i)
+        if
+          selected_verb == "positive_lookahead:"
+          or selected_verb == "negative_lookhead:"
+          or selected_verb == "positive_lookbehind:"
+          or selected_verb == "negative_lookbehind:"
+          or selected_verb:find("^[pn]l[ab]:$")
+        then
+          ret = { 0x28, nil, nil, selected_verb:find("^n") and 0x21 or 0x3D, selected_verb:find("b", 3, true) and 1 }
+        elseif selected_verb == "atomic:" then
+          ret = { 0x28, nil, nil, 0x3E, nil }
+        elseif
+          selected_verb == "ACCEPT"
+          or selected_verb == "FAIL"
+          or selected_verb == "F"
+          or selected_verb == "PRUNE"
+          or selected_verb == "SKIP"
+        then
+          ret = selected_verb == "F" and "FAIL" or selected_verb
+        else
+          if line_verbs[selected_verb] then
+            verb_flags.newline = selected_verb
+          elseif selected_verb == "BSR_ANYCRLF" or selected_verb == "BSR_UNICODE" then
+            verb_flags.newline_seq = selected_verb == "BSR_UNICODE" and 1 or 0
+          elseif selected_verb == "NOTEMPTY" or selected_verb == "NOTEMPTY_ATSTART" then
+            verb_flags.not_empty = selected_verb == "NOTEMPTY" and 1 or 2
+          else
+            return "unknown or malformed verb"
+          end
+          if outln[1] then
+            return "this verb must be placed at the beginning of the regex"
+          end
+        end
+      elseif codes[i + 1] == 0x3F then
+        -- ? syntax
+        i += 2
+        if codes[i] == 0x23 then
+          -- comments
+          i = table.find(codes, 0x29, i)
+          if not i then
+            return "unterminated parenthetical"
+          end
+          i += 1
+          continue
+        elseif not codes[i] then
+          return "unterminated parenthetical"
+        end
+        ret = { 0x28, nil, nil, codes[i], nil }
+        if codes[i] == 0x30 and codes[i + 1] == 0x29 then
+          -- recursive match entire pattern
+          ret[1], ret[2], ret[3], ret[5] = "recurmatch", 0, 0, nil
+        elseif codes[i] > 0x30 and codes[i] <= 0x39 then
+          -- recursive match
+          local org_i = i
+          i += 1
+          while codes[i] >= 0x30 and codes[i] <= 0x30 do
+            i += 1
+          end
+          if codes[i] ~= 0x29 then
+            return "invalid group structure"
+          end
+          ret[1], ret[2], ret[4] = "recurmatch", tonumber(utf8_sub(codes.s, org_i, i)), nil
+        elseif codes[i] == 0x3C and codes[i + 1] == 0x21 or codes[i + 1] == 0x3D then
+          -- lookbehinds
+          i += 1
+          ret[4], ret[5] = codes[i], 1
+        elseif codes[i] == 0x7C then
+          -- branch reset
+          ret[5] = group_n
+        elseif codes[i] == 0x50 or codes[i] == 0x3C or codes[i] == 0x27 then
+          if codes[i] == 0x50 then
+            i += 1
+          end
+          if codes[i] == 0x3D then
+            -- backref
+            local start_i = i + 1
+            while
+              codes[i]
+              and (
+                codes[i] >= 0x30 and codes[i] <= 0x39
+                or codes[i] >= 0x41 and codes[i] <= 0x5A
+                or codes[i] >= 0x61 and codes[i] <= 0x7A
+                or codes[i] == 0x5F
+              )
+            do
+              i += 1
+            end
+            if not codes[i] then
+              return "unterminated parenthetical"
+            elseif codes[i] ~= 0x29 or i == start_i then
+              return "invalid group structure"
+            end
+            ret = { "backref", utf8_sub(codes.s, start_i, i) }
+          elseif codes[i] == 0x3C or codes[i - 1] ~= 0x50 and codes[i] == 0x27 then
+            -- named capture
+            local delimiter = codes[i] == 0x27 and 0x27 or 0x3E
+            local start_i = i + 1
+            i += 1
+            if codes[i] == 0x29 then
+              return "missing character in subpattern"
+            elseif codes[i] >= 0x30 and codes[i] <= 0x39 then
+              return "subpattern name must not begin with a digit"
+            elseif
+              not (codes[i] >= 0x41 and codes[i] <= 0x5A or codes[i] >= 0x61 and codes[i] <= 0x7A or codes[i] == 0x5F)
+            then
+              return "invalid character in subpattern"
+            end
+            i += 1
+            while
+              codes[i]
+              and (
+                codes[i] >= 0x30 and codes[i] <= 0x39
+                or codes[i] >= 0x41 and codes[i] <= 0x5A
+                or codes[i] >= 0x61 and codes[i] <= 0x7A
+                or codes[i] == 0x5F
+              )
+            do
+              i += 1
+            end
+            if not codes[i] then
+              return "unterminated parenthetical"
+            elseif codes[i] ~= delimiter then
+              return "invalid character in subpattern"
+            end
+            local name = utf8_sub(codes.s, start_i, i)
+            group_n += 1
+            if (group_id[name] or group_n) ~= group_n then
+              return "subpattern name already exists"
+            end
+            for name1, group_n1 in pairs(group_id) do
+              if name ~= name1 and group_n == group_n1 then
+                return "different names for subpatterns of the same number aren't permitted"
+              end
+            end
+            group_id[name] = group_n
+            ret[2], ret[4] = group_n, nil
+          else
+            return "invalid group structure"
+          end
+        elseif not other_valid_group_char[codes[i]] then
+          return "invalid group structure"
+        end
+      else
+        group_n += 1
+        ret = { 0x28, group_n, nil, nil }
+      end
+      if ret then
+        table.insert(outln, ret)
+      end
+    elseif c == 0x29 then
+      -- Close parenthesis
+      local i1 = #outln + 1
+      local lookbehind_c = -1
+      local current_lookbehind_c = 0
+      local max_c, group_c = 0, 0
+      repeat
+        i1 -= 1
+        local v, is_table = outln[i1], type(outln[i1]) == "table"
+        if is_table and v[1] == 0x28 then
+          group_c += 1
+          if current_lookbehind_c and v.count then
+            current_lookbehind_c += v.count
+          end
+          if not v[3] then
+            if v[4] == 0x7C then
+              group_n = v[5] + math.max(max_c, group_c)
+            end
+            if current_lookbehind_c ~= lookbehind_c and lookbehind_c ~= -1 then
+              lookbehind_c = nil
+            else
+              lookbehind_c = current_lookbehind_c
+            end
+            break
+          end
+        elseif v == alternation then
+          if current_lookbehind_c ~= lookbehind_c and lookbehind_c ~= -1 then
+            lookbehind_c, current_lookbehind_c = nil, nil
+          else
+            lookbehind_c, current_lookbehind_c = current_lookbehind_c, 0
+          end
+          max_c, group_c = math.max(max_c, group_c), 0
+        elseif current_lookbehind_c then
+          if is_table and v[1] == "quantifier" then
+            if v[2] == v[3] then
+              current_lookbehind_c += v[2]
+            else
+              current_lookbehind_c = nil
+            end
+          else
+            current_lookbehind_c += 1
+          end
+        end
+      until i1 < 1
+      if i1 < 1 then
+        return "unmatched ) in regular expression"
+      end
+      local v = outln[i1]
+      local outln_len_p_1 = #outln + 1
+      local ret = { 0x29, v[2], i1, v[4], v[5], count = lookbehind_c }
+      if (v[4] == 0x21 or v[4] == 0x3D) and v[5] and not lookbehind_c then
+        return "lookbehind assertion is not fixed width"
+      end
+      v[3] = outln_len_p_1
+      table.insert(outln, ret)
+    elseif c == 0x2E then
+      table.insert(outln, dot)
+    elseif c == 0x5B then
+      -- Character set
+      local negate, char_class = false, nil
+      i += 1
+      local start_i = i
+      if codes[i] == 0x5E then
+        negate = true
+        i += 1
+      elseif codes[i] == 0x2E or codes[i] == 0x3A or codes[i] == 0x3D then
+        -- POSIX character classes
+        char_class = codes[i]
+      end
+      local ret
+      if codes[i] == 0x5B or codes[i] == 0x5C then
+        ret = {}
+      else
+        ret = { codes[i] }
+        i += 1
+      end
+      while codes[i] ~= 0x5D do
+        if not codes[i] then
+          return "unterminated character class"
+        elseif codes[i] == 0x2D and ret[1] and type(ret[1]) == "number" then
+          if codes[i + 1] == 0x5D then
+            table.insert(ret, 1, 0x2D)
+          else
+            i += 1
+            local ret_c = codes[i]
+            if ret_c == 0x5B then
+              if codes[i + 1] == 0x2E or codes[i + 1] == 0x3A or codes[i + 1] == 0x3D then
+                -- Check for POSIX character class, name does not matter
+                local i1 = i + 2
+                repeat
+                  i1 = table.find(codes, 0x5D, i1)
+                until not i1 or codes[i1 - 1] ~= 0x5C
+                if not i1 then
+                  return "unterminated character class"
+                elseif codes[i1 - 1] == codes[i + 1] and i1 - 1 ~= i + 1 then
+                  return "invalid range in character class"
+                end
+              end
+              if ret[1] > 0x5B then
+                return "invalid range in character class"
+              end
+            elseif ret_c == 0x5C then
+              i += 1
+              if codes[i] == 0x78 then
+                local radix0, radix1
+                i += 1
+                if
+                  codes[i] and codes[i] >= 0x30 and codes[i] <= 0x39
+                  or codes[i] >= 0x41 and codes[i] <= 0x46
+                  or codes[i] >= 0x61 and codes[i] <= 0x66
+                then
+                  radix0 = codes[i]
+                    - (
+                      (codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37
+                      or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57
+                      or 0x30
+                    )
+                  i += 1
+                  if
+                    codes[i] and codes[i] >= 0x30 and codes[i] <= 0x39
+                    or codes[i] >= 0x41 and codes[i] <= 0x46
+                    or codes[i] >= 0x61 and codes[i] <= 0x66
+                  then
+                    radix1 = codes[i]
+                      - (
+                        (codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37
+                        or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57
+                        or 0x30
+                      )
+                  else
+                    i -= 1
+                  end
+                else
+                  i -= 1
+                end
+                ret_c = radix0 and (radix1 and 16 * radix0 + radix1 or radix0) or 0
+              elseif codes[i] >= 0x30 and codes[i] <= 0x37 then
+                local radix0, radix1, radix2 = codes[i] - 0x30, nil, nil
+                i += 1
+                if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
+                  radix1 = codes[i] - 0x30
+                  i += 1
+                  if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
+                    radix2 = codes[i] - 0x30
+                  else
+                    i -= 1
+                  end
+                else
+                  i -= 1
+                end
+                ret_c = radix1 and (radix2 and 64 * radix0 + 8 * radix1 + radix2 or 8 * radix0 + radix1) or radix0
+              else
+                ret_c = escape_chars[codes[i]] or codes[i]
+                if type(ret_c) ~= "number" then
+                  return "invalid range in character class"
+                end
+              end
+            elseif ret[1] > ret_c then
+              return "invalid range in character class"
+            end
+            ret[1] = { "range", ret[1], ret_c }
+          end
+        elseif codes[i] == 0x5B then
+          if codes[i + 1] == 0x2E or codes[i + 1] == 0x3A or codes[i + 1] == 0x3D then
+            local i1 = i + 2
+            repeat
+              i1 = table.find(codes, 0x5D, i1)
+            until not i1 or codes[i1 - 1] ~= 0x5C
+            if not i1 then
+              return "unterminated character class"
+            elseif codes[i1 - 1] ~= codes[i + 1] or i1 - 1 == i + 1 then
+              table.insert(ret, 1, 0x5B)
+            elseif codes[i1 - 1] == 0x2E or codes[i1 - 1] == 0x3D then
+              return "POSIX collating elements aren't supported"
+            elseif codes[i1 - 1] == 0x3A then
+              -- I have no plans to support escape codes (\) in character class names
+              local negate = codes[i + 3] == 0x5E
+              local class_name = utf8_sub(codes.s, i + (negate and 3 or 2), i1 - 1)
+              --  If not valid then throw an error
+              if not posix_class_names[class_name] then
+                return "unknown POSIX class name"
+              end
+              table.insert(ret, 1, { "class", class_name, negate })
+              i = i1
+            end
+          else
+            table.insert(ret, 1, 0x5B)
+          end
+        elseif codes[i] == 0x5C then
+          i += 1
+          if codes[i] == 0x78 then
+            local radix0, radix1
+            i += 1
+            if codes[i] == 0x7B then
+              i += 1
+              local org_i = i
+              while
+                codes[i]
+                and (
+                  codes[i] >= 0x30 and codes[i] <= 0x39
+                  or codes[i] >= 0x41 and codes[i] <= 0x46
+                  or codes[i] >= 0x61 and codes[i] <= 0x66
+                )
+              do
+                i += 1
+              end
+              if codes[i] ~= 0x7D or i == org_i then
+                return "malformed hexadecimal character"
+              elseif i - org_i > 4 then
+                return "character offset too large"
+              end
+              table.insert(ret, 1, tonumber(utf8_sub(codes.s, org_i, i), 16))
+            else
+              if
+                codes[i] and codes[i] >= 0x30 and codes[i] <= 0x39
+                or codes[i] >= 0x41 and codes[i] <= 0x46
+                or codes[i] >= 0x61 and codes[i] <= 0x66
+              then
+                radix0 = codes[i]
+                  - (
+                    (codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37
+                    or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57
+                    or 0x30
+                  )
+                i += 1
+                if
+                  codes[i] and codes[i] >= 0x30 and codes[i] <= 0x39
+                  or codes[i] >= 0x41 and codes[i] <= 0x46
+                  or codes[i] >= 0x61 and codes[i] <= 0x66
+                then
+                  radix1 = codes[i]
+                    - (
+                      (codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37
+                      or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57
+                      or 0x30
+                    )
+                else
+                  i -= 1
+                end
+              else
+                i -= 1
+              end
+              table.insert(ret, 1, radix0 and (radix1 and 16 * radix0 + radix1 or radix0) or 0)
+            end
+          elseif codes[i] >= 0x30 and codes[i] <= 0x37 then
+            local radix0, radix1, radix2 = codes[i] - 0x30, nil, nil
+            i += 1
+            if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
+              radix1 = codes[i] - 0x30
+              i += 1
+              if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
+                radix2 = codes[i] - 0x30
+              else
+                i -= 1
+              end
+            else
+              i -= 1
+            end
+            table.insert(
+              ret,
+              1,
+              radix1 and (radix2 and 64 * radix0 + 8 * radix1 + radix2 or 8 * radix0 + radix1) or radix0
+            )
+          elseif codes[i] == 0x45 then
+            -- intentionally left blank, \E that's not preceded \Q is ignored
+          elseif codes[i] == 0x51 then
+            local start_i = i + 1
+            repeat
+              i = table.find(codes, 0x5C, i + 1)
+            until not i or codes[i + 1] == 0x45
+            table.move(codes, start_i, i and i - 1 or #codes, #outln + 1, outln)
+            if not i then
+              break
+            end
+            i += 1
+          elseif codes[i] == 0x4E then
+            if codes[i + 1] == 0x7B and codes[i + 2] == 0x55 and codes[i + 3] == 0x2B and flags.unicode then
+              i += 4
+              local start_i = i
+              while
+                codes[i]
+                and (
+                  codes[i] >= 0x30 and codes[i] <= 0x39
+                  or codes[i] >= 0x41 and codes[i] <= 0x46
+                  or codes[i] >= 0x61 and codes[i] <= 0x66
+                )
+              do
+                i += 1
+              end
+              if codes[i] ~= 0x7D or i == start_i then
+                return "malformed Unicode code point"
+              end
+              local code_point = tonumber(utf8_sub(codes.s, start_i, i))
+              table.insert(ret, 1, code_point)
+            else
+              return "invalid escape sequence"
+            end
+          elseif codes[i] == 0x50 or codes[i] == 0x70 then
+            if not options.unicodeData then
+              return "options.unicodeData cannot be turned off when using \\p"
+            end
+            i += 1
+            if codes[i] ~= 0x7B then
+              local c_name = utf8.char(codes[i] or 0)
+              if not valid_categories[c_name] then
+                return "unknown or malformed script name"
+              end
+              table.insert(ret, 1, { "category", false, c_name })
+            else
+              local negate = codes[i] == 0x50
+              i += 1
+              if codes[i] == 0x5E then
+                i += 1
+                negate = not negate
+              end
+              local start_i = i
+              while
+                codes[i]
+                and (
+                  codes[i] >= 0x30 and codes[i] <= 0x39
+                  or codes[i] >= 0x41 and codes[i] <= 0x5A
+                  or codes[i] >= 0x61 and codes[i] <= 0x7A
+                  or codes[i] == 0x5F
+                )
+              do
+                i += 1
+              end
+              if codes[i] ~= 0x7D then
+                return "unknown or malformed script name"
+              end
+              local c_name = utf8_sub(codes.s, start_i, i)
+              local script_set = chr_scripts[c_name]
+              if script_set then
+                table.insert(ret, 1, { "charset", negate, script_set })
+              elseif not valid_categories[c_name] then
+                return "unknown or malformed script name"
+              else
+                table.insert(ret, 1, { "category", negate, c_name })
+              end
+            end
+          elseif codes[i] == 0x6F then
+            i += 1
+            if codes[i] ~= 0x7B then
+              return "malformed octal code"
+            end
+            i += 1
+            local org_i = i
+            while codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 do
+              i += 1
+            end
+            if codes[i] ~= 0x7D or i == org_i then
+              return "malformed octal code"
+            end
+            local ret_chr = tonumber(utf8_sub(codes.s, org_i, i), 8)
+            if ret_chr > 0xFFFF then
+              return "character offset too large"
+            end
+            table.insert(ret, 1, ret_chr)
+          else
+            local esc_char = escape_chars[codes[i]]
+            table.insert(ret, 1, type(esc_char) == "string" and { "class", esc_char, false } or esc_char or codes[i])
+          end
+        elseif flags.ignoreCase and codes[i] >= 0x61 and codes[i] <= 0x7A then
+          table.insert(ret, 1, codes[i] - 0x20)
+        else
+          table.insert(ret, 1, codes[i])
+        end
+        i += 1
+      end
+      if codes[i - 1] == char_class and i - 1 ~= start_i then
+        return char_class == 0x3A and "POSIX named classes are only support within a character set"
+          or "POSIX collating elements aren't supported"
+      end
+      if not ret[2] and not negate then
+        table.insert(outln, ret[1])
+      else
+        table.insert(outln, { "charset", negate, ret })
+      end
+    elseif c == 0x5C then
+      -- Escape char
+      i += 1
+      local escape_c = codes[i]
+      if not escape_c then
+        return "pattern may not end with a trailing backslash"
+      elseif escape_c >= 0x30 and escape_c <= 0x39 then
+        local org_i = i
+        while codes[i + 1] and codes[i + 1] >= 0x30 and codes[i + 1] <= 0x39 do
+          i += 1
+        end
+        local escape_d = tonumber(utf8_sub(codes.s, org_i, i + 1))
+        if escape_d > group_n and i ~= org_i then
+          i = org_i
+          local radix0, radix1, radix2
+          if codes[i] <= 0x37 then
+            radix0 = codes[i] - 0x30
+            i += 1
+            if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
+              radix1 = codes[i] - 0x30
+              i += 1
+              if codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 then
+                radix2 = codes[i] - 0x30
+              else
+                i -= 1
+              end
+            else
+              i -= 1
+            end
+          end
+          table.insert(
+            outln,
+            radix0 and (radix1 and (radix2 and 64 * radix0 + 8 * radix1 + radix2 or 8 * radix0 + radix1) or radix0)
+              or codes[org_i]
+          )
+        else
+          table.insert(outln, { "backref", escape_d })
+        end
+      elseif escape_c == 0x45 then
+        -- intentionally left blank, \E that's not preceded \Q is ignored
+      elseif escape_c == 0x51 then
+        local start_i = i + 1
+        repeat
+          i = table.find(codes, 0x5C, i + 1)
+        until not i or codes[i + 1] == 0x45
+        table.move(codes, start_i, i and i - 1 or #codes, #outln + 1, outln)
+        if not i then
+          break
+        end
+        i += 1
+      elseif escape_c == 0x4E then
+        if codes[i + 1] == 0x7B and codes[i + 2] == 0x55 and codes[i + 3] == 0x2B and flags.unicode then
+          i += 4
+          local start_i = i
+          while
+            codes[i]
+            and (
+              codes[i] >= 0x30 and codes[i] <= 0x39
+              or codes[i] >= 0x41 and codes[i] <= 0x46
+              or codes[i] >= 0x61 and codes[i] <= 0x66
+            )
+          do
+            i += 1
+          end
+          if codes[i] ~= 0x7D or i == start_i then
+            return "malformed Unicode code point"
+          end
+          local code_point = tonumber(utf8_sub(codes.s, start_i, i))
+          table.insert(outln, code_point)
+        else
+          table.insert(outln, escape_chars[0x4E])
+        end
+      elseif escape_c == 0x50 or escape_c == 0x70 then
+        if not options.unicodeData then
+          return "options.unicodeData cannot be turned off when using \\p"
+        end
+        i += 1
+        if codes[i] ~= 0x7B then
+          local c_name = utf8.char(codes[i] or 0)
+          if not valid_categories[c_name] then
+            return "unknown or malformed script name"
+          end
+          table.insert(outln, { "category", false, c_name })
+        else
+          local negate = escape_c == 0x50
+          i += 1
+          if codes[i] == 0x5E then
+            i += 1
+            negate = not negate
+          end
+          local start_i = i
+          while
+            codes[i]
+            and (
+              codes[i] >= 0x30 and codes[i] <= 0x39
+              or codes[i] >= 0x41 and codes[i] <= 0x5A
+              or codes[i] >= 0x61 and codes[i] <= 0x7A
+              or codes[i] == 0x5F
+            )
+          do
+            i += 1
+          end
+          if codes[i] ~= 0x7D then
+            return "unknown or malformed script name"
+          end
+          local c_name = utf8_sub(codes.s, start_i, i)
+          local script_set = chr_scripts[c_name]
+          if script_set then
+            table.insert(outln, { "charset", negate, script_set })
+          elseif not valid_categories[c_name] then
+            return "unknown or malformed script name"
+          else
+            table.insert(outln, { "category", negate, c_name })
+          end
+        end
+      elseif escape_c == 0x67 and (codes[i + 1] == 0x7B or codes[i + 1] >= 0x30 and codes[i + 1] <= 0x39) then
+        local is_grouped = false
+        i += 1
+        if codes[i] == 0x7B then
+          i += 1
+          is_grouped = true
+        elseif codes[i] < 0x30 or codes[i] > 0x39 then
+          return "malformed reference code"
+        end
+        local org_i = i
+        while
+          codes[i]
+          and (
+            codes[i] >= 0x30 and codes[i] <= 0x39
+            or codes[i] >= 0x41 and codes[i] <= 0x46
+            or codes[i] >= 0x61 and codes[i] <= 0x66
+          )
+        do
+          i += 1
+        end
+        if is_grouped and codes[i] ~= 0x7D then
+          return "malformed reference code"
+        end
+        local ref_name = tonumber(utf8_sub(codes.s, org_i, i + (is_grouped and 0 or 1)))
+        table.insert(outln, { "backref", ref_name })
+        if not is_grouped then
+          i -= 1
+        end
+      elseif escape_c == 0x6F then
+        i += 1
+        if codes[i + 1] ~= 0x7B then
+          return "malformed octal code"
+        end
+        i += 1
+        local org_i = i
+        while codes[i] and codes[i] >= 0x30 and codes[i] <= 0x37 do
+          i += 1
+        end
+        if codes[i] ~= 0x7D or i == org_i then
+          return "malformed octal code"
+        end
+        local ret_chr = tonumber(utf8_sub(codes.s, org_i, i), 8)
+        if ret_chr > 0xFFFF then
+          return "character offset too large"
+        end
+        table.insert(outln, ret_chr)
+      elseif escape_c == 0x78 then
+        local radix0, radix1
+        i += 1
+        if codes[i] == 0x7B then
+          i += 1
+          local org_i = i
+          while
+            codes[i]
+            and (
+              codes[i] >= 0x30 and codes[i] <= 0x39
+              or codes[i] >= 0x41 and codes[i] <= 0x46
+              or codes[i] >= 0x61 and codes[i] <= 0x66
+            )
+          do
+            i += 1
+          end
+          if codes[i] ~= 0x7D or i == org_i then
+            return "malformed hexadecimal code"
+          elseif i - org_i > 4 then
+            return "character offset too large"
+          end
+          table.insert(outln, tonumber(utf8_sub(codes.s, org_i, i), 16))
+        else
+          if
+            codes[i]
+            and (
+              codes[i] >= 0x30 and codes[i] <= 0x39
+              or codes[i] >= 0x41 and codes[i] <= 0x46
+              or codes[i] >= 0x61 and codes[i] <= 0x66
+            )
+          then
+            radix0 = codes[i]
+              - (
+                (codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37
+                or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57
+                or 0x30
+              )
+            i += 1
+            if
+              codes[i]
+              and (
+                codes[i] >= 0x30 and codes[i] <= 0x39
+                or codes[i] >= 0x41 and codes[i] <= 0x46
+                or codes[i] >= 0x61 and codes[i] <= 0x66
+              )
+            then
+              radix1 = codes[i]
+                - (
+                  (codes[i] >= 0x41 and codes[i] <= 0x5A) and 0x37
+                  or (codes[i] >= 0x61 and codes[i] <= 0x7A) and 0x57
+                  or 0x30
+                )
+            else
+              i -= 1
+            end
+          else
+            i -= 1
+          end
+          table.insert(outln, radix0 and (radix1 and 16 * radix0 + radix1 or radix0) or 0)
+        end
+      else
+        local esc_char = b_escape_chars[escape_c] or escape_chars[escape_c]
+        table.insert(outln, esc_char or escape_c)
+      end
+    elseif c == 0x2A or c == 0x2B or c == 0x3F or c == 0x7B then
+      -- Quantifier
+      local start_q, end_q
+      if c == 0x7B then
+        local org_i = i + 1
+        local start_i
+        while
+          codes[i + 1]
+          and (codes[i + 1] >= 0x30 and codes[i + 1] <= 0x39 or codes[i + 1] == 0x2C and not start_i and i + 1 ~= org_i)
+        do
+          i += 1
+          if codes[i] == 0x2C then
+            start_i = i
+          end
+        end
+        if codes[i + 1] == 0x7D then
+          i += 1
+          if not start_i then
+            start_q = tonumber(utf8_sub(codes.s, org_i, i))
+            end_q = start_q
+          else
+            start_q, end_q =
+              tonumber(utf8_sub(codes.s, org_i, start_i)),
+              start_i + 1 == i and math.huge or tonumber(utf8_sub(codes.s, start_i + 1, i))
+            if end_q < start_q then
+              return "numbers out of order in {} quantifier"
+            end
+          end
+        else
+          table.move(codes, org_i - 1, i, #outln + 1, outln)
+        end
+      else
+        start_q, end_q = c == 0x2B and 1 or 0, c == 0x3F and 1 or math.huge
+      end
+      if start_q then
+        local quantifier_type = flags.ungreedy and "lazy" or "greedy"
+        if codes[i + 1] == 0x2B or codes[i + 1] == 0x3F then
+          i += 1
+          quantifier_type = codes[i] == 0x2B and "possessive" or flags.ungreedy and "greedy" or "lazy"
+        end
+        local outln_len = #outln
+        local last_outln_value = outln[outln_len]
+        if
+          not last_outln_value
+          or type(last_outln_value) == "table" and (last_outln_value[1] == "quantifier" or last_outln_value[1] == 0x28 or b_escape_chars[last_outln_value[1]])
+          or last_outln_value == alternation
+          or type(last_outln_value) == "string"
+        then
+          return "quantifier doesn't follow a repeatable pattern"
+        end
+        if end_q == 0 then
+          table.remove(outln)
+        elseif start_q ~= 1 or end_q ~= 1 then
+          if type(last_outln_value) == "table" and last_outln_value[1] == 0x29 then
+            outln_len = last_outln_value[3]
+          end
+          outln[outln_len] = { "quantifier", start_q, end_q, quantifier_type, outln[outln_len] }
+        end
+      end
+    elseif c == 0x7C then
+      -- Alternation
+      table.insert(outln, alternation)
+      local i1 = #outln
+      repeat
+        i1 -= 1
+        local v1, is_table = outln[i1], type(outln[i1]) == "table"
+        if is_table and v1[1] == 0x29 then
+          i1 = outln[i1][3]
+        elseif is_table and v1[1] == 0x28 then
+          if v1[4] == 0x7C then
+            group_n = v1[5]
+          end
+          break
+        end
+      until not v1
+    elseif c == 0x24 or c == 0x5E then
+      table.insert(outln, c == 0x5E and beginning_str or end_str)
+    elseif flags.ignoreCase and c >= 0x61 and c <= 0x7A then
+      table.insert(outln, c - 0x20)
+    elseif flags.extended and (c >= 0x09 and c <= 0x0D or c == 0x20 or c == 0x23) then
+      if c == 0x23 then
+        repeat
+          i += 1
+        until not codes[i] or codes[i] == 0x0A or codes[i] == 0x0D
+      end
+    else
+      table.insert(outln, c)
+    end
+    i += 1
+  end
+  local max_group_n = 0
+  for i, v in ipairs(outln) do
+    if type(v) == "table" and (v[1] == 0x28 or v[1] == "quantifier" and type(v[5]) == "table" and v[5][1] == 0x28) then
+      if v[1] == "quantifier" then
+        v = v[5]
+      end
+      if not v[3] then
+        return "unterminated parenthetical"
+      elseif v[2] then
+        max_group_n = math.max(max_group_n, v[2])
+      end
+    elseif type(v) == "table" and (v[1] == "backref" or v[1] == "recurmatch") then
+      if not group_id[v[2]] and (type(v[2]) ~= "number" or v[2] > group_n) then
+        return "reference to a non-existent or invalid subpattern"
+      elseif v[1] == "recurmatch" and v[2] ~= 0 then
+        for i1, v1 in ipairs(outln) do
+          if type(v1) == "table" and v1[1] == 0x28 and v1[2] == v[2] then
+            v[3] = i1
+            break
+          end
+        end
+      elseif type(v[2]) == "string" then
+        v[2] = group_id[v[2]]
+      end
+    end
+  end
+  outln.group_n = max_group_n
+  return outln, group_id, verb_flags
+end
 
 local cacheSize = math.floor(options.cacheSize or 0) ~= 0 and tonumber(options.cacheSize)
 local cache_pattern, cache_pattern_names = table.create(options.cacheSize), table.create(options.cacheSize)
@@ -2137,8 +2270,7 @@ end
 local function new_re(str_arr, flags, flag_repr, pattern_repr)
   local tokenized_ptn, group_id, verb_flags
   local cache_format = cacheSize and string.format("%s|%s", str_arr.s, flag_repr)
-  local cached_token = cacheSize and cache_pattern[table.
-  find(cache_pattern_names, cache_format)]
+  local cached_token = cacheSize and cache_pattern[table.find(cache_pattern_names, cache_format)]
   if cached_token then
     tokenized_ptn, group_id, verb_flags = table.unpack(cached_token, 1, 3)
   else
@@ -2183,35 +2315,39 @@ local function sort_flag_chr(a, b)
 end
 
 function re.new(...)
-	if select('#', ...) == 0 then
-		error("missing argument #1 (string expected)", 2);
-end;
-local ptn, flags_str = ...;
-if type(ptn) == "number" then
-		ptn = tostring(ptn)
-elseif type(ptn) ~= "string" then
-		error(string.format("invalid argument #1 (string expected, got %s)", typeof(ptn)), 2
-);
-end;
-if type(flags_str) ~= "string" and type(flags_str) ~= "number" and flags_str ~= nil then
-		error(string.format("invalid argument #2 (string expected, got %s)", typeof(flags_str)), 2);
-end;
+  if select("#", ...) == 0 then
+    error("missing argument #1 (string expected)", 2)
+  end
+  local ptn, flags_str = ...
+  if type(ptn) == "number" then
+    ptn = tostring(ptn)
+  elseif type(ptn) ~= "string" then
+    error(string.format("invalid argument #1 (string expected, got %s)", typeof(ptn)), 2)
+  end
+  if type(flags_str) ~= "string" and type(flags_str) ~= "number" and flags_str ~= nil then
+    error(string.format("invalid argument #2 (string expected, got %s)", typeof(flags_str)), 2)
+  end
 
-local flags = {
-		anchored = false, caseless = false, multiline = false, dotall = false, unicode = false, ungreedy = false, extended = false,
-};
-local flag_repr: any = { };
-for f in string.gmatch(flags_str or '', utf8.charpattern) do
-		if flags[flag_map[f]] ~= false then
-				error("invalid regular expression flag " .. f, 3);
-		end;
-		flags[flag_map[f]] = true;
-		table.insert(flag_repr, f);
-end;
-table.sort(flag_repr, sort_flag_chr);
-flag_repr = table.concat(flag_repr);
-return new_re(to_str_arr(ptn), flags, flag_repr, string.format("/%s/", ptn:gsub("(\\*)/", escape_fslash)));
-
+  local flags = {
+    anchored = false,
+    caseless = false,
+    multiline = false,
+    dotall = false,
+    unicode = false,
+    ungreedy = false,
+    extended = false,
+  }
+  local flag_repr: any = {}
+  for f in string.gmatch(flags_str or "", utf8.charpattern) do
+    if flags[flag_map[f]] ~= false then
+      error("invalid regular expression flag " .. f, 3)
+    end
+    flags[flag_map[f]] = true
+    table.insert(flag_repr, f)
+  end
+  table.sort(flag_repr, sort_flag_chr)
+  flag_repr = table.concat(flag_repr)
+  return new_re(to_str_arr(ptn), flags, flag_repr, string.format("/%s/", ptn:gsub("(\\*)/", escape_fslash)))
 end
 
 function re.fromstring(...)

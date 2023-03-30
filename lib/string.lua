@@ -110,12 +110,12 @@ exports.slice = function(str: string, startIndex: number, lastIndex_: number?): 
 
   local lastIndex = lastIndex_ or stringLength + 1
 
-    -- utf8 support needed to pass picomatch tests
-    local utf8OffsetStart = utf8.offset(str, startIndex)
-    assert(utf8OffsetStart ~= nil, "invalid utf8")
-    local utf8OffsetEnd = utf8.offset(str, lastIndex) :: any - 1
-  
-    return string.sub(str, utf8OffsetStart, utf8OffsetEnd)
+  -- utf8 support needed to pass picomatch tests
+  local utf8OffsetStart = utf8.offset(str, startIndex)
+  assert(utf8OffsetStart ~= nil, "invalid utf8")
+  local utf8OffsetEnd = utf8.offset(str, lastIndex) :: any - 1
+
+  return string.sub(str, utf8OffsetStart, utf8OffsetEnd)
 end
 
 exports.startsWith = function(str: string, findValue: string, position: number?): boolean

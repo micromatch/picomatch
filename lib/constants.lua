@@ -25,28 +25,28 @@ THE SOFTWARE.
 --!strict
 
 local RegExp = require(script.Parent.regex)
-local WIN_SLASH = '\\\\/'
-local WIN_NO_SLASH = '[^' .. WIN_SLASH .. ']'
+local WIN_SLASH = "\\\\/"
+local WIN_NO_SLASH = "[^" .. WIN_SLASH .. "]"
 
 --[[*
  * Posix glob regex
  ]]
 
-local DOT_LITERAL = '\\.'
-local PLUS_LITERAL = '\\+'
-local QMARK_LITERAL = '\\?'
-local SLASH_LITERAL = '\\/'
-local ONE_CHAR = '(?=.)'
-local QMARK = '[^/]'
-local END_ANCHOR = '(?:' .. SLASH_LITERAL .. '|$)'
-local START_ANCHOR = '(?:^|' .. SLASH_LITERAL .. ')'
+local DOT_LITERAL = "\\."
+local PLUS_LITERAL = "\\+"
+local QMARK_LITERAL = "\\?"
+local SLASH_LITERAL = "\\/"
+local ONE_CHAR = "(?=.)"
+local QMARK = "[^/]"
+local END_ANCHOR = "(?:" .. SLASH_LITERAL .. "|$)"
+local START_ANCHOR = "(?:^|" .. SLASH_LITERAL .. ")"
 local DOTS_SLASH = DOT_LITERAL .. "{1,2}" .. END_ANCHOR
-local NO_DOT = '(?!' .. DOT_LITERAL .. ')'
-local NO_DOTS = '(?!' .. START_ANCHOR .. DOTS_SLASH .. ')'
-local NO_DOT_SLASH = '(?!' .. DOT_LITERAL .. "{0,1}" .. END_ANCHOR .. ')'
-local NO_DOTS_SLASH = '(?!' .. DOTS_SLASH .. ')'
-local QMARK_NO_DOT = '[^.' .. SLASH_LITERAL .. ']'
-local STAR = QMARK .. '*?'
+local NO_DOT = "(?!" .. DOT_LITERAL .. ")"
+local NO_DOTS = "(?!" .. START_ANCHOR .. DOTS_SLASH .. ")"
+local NO_DOT_SLASH = "(?!" .. DOT_LITERAL .. "{0,1}" .. END_ANCHOR .. ")"
+local NO_DOTS_SLASH = "(?!" .. DOTS_SLASH .. ")"
+local QMARK_NO_DOT = "[^." .. SLASH_LITERAL .. "]"
+local STAR = QMARK .. "*?"
 
 local POSIX_CHARS = {
   DOT_LITERAL = DOT_LITERAL,
@@ -63,49 +63,45 @@ local POSIX_CHARS = {
   NO_DOTS_SLASH = NO_DOTS_SLASH,
   QMARK_NO_DOT = QMARK_NO_DOT,
   STAR = STAR,
-  START_ANCHOR = START_ANCHOR
+  START_ANCHOR = START_ANCHOR,
 }
 
 --[[*
  * Windows glob regex
  ]]
 
-local WINDOWS_CHARS = {
-  SLASH_LITERAL = '[' .. WIN_SLASH .. ']',
-  QMARK = WIN_NO_SLASH,
-  STAR = WIN_NO_SLASH .. '*?',
-  DOTS_SLASH = DOT_LITERAL .. '{1,2}(?:[' .. WIN_SLASH .. ']|$)',
-  NO_DOT = '(?!' .. DOT_LITERAL .. ')',
-  NO_DOTS = '(?!(?:^|[' .. WIN_SLASH .. '])' .. DOT_LITERAL .. "{1,2}" .. '(?:[' .. WIN_SLASH .. ']|$))',
-  NO_DOT_SLASH = '(?!' .. DOT_LITERAL .. '{0,1}(?:[' .. WIN_SLASH .. ']|$))',
-  NO_DOTS_SLASH = '(?!' .. DOT_LITERAL .. '{1,2}(?:[' .. WIN_SLASH .. ']|$))',
-  QMARK_NO_DOT = '[^.' .. WIN_SLASH .. ']',
-  START_ANCHOR = '(?:^|[' .. WIN_SLASH .. '])',
-  END_ANCHOR = '(?:[' .. WIN_SLASH .. ']|$)'
-}
-for k,v in POSIX_CHARS :: { [string]: string } do
-  WINDOWS_CHARS[k] = v
-end
+local WINDOWS_CHARS = table.clone(POSIX_CHARS)
+WINDOWS_CHARS.SLASH_LITERAL = "[" .. WIN_SLASH .. "]"
+WINDOWS_CHARS.QMARK = WIN_NO_SLASH
+WINDOWS_CHARS.STAR = WIN_NO_SLASH .. "*?"
+WINDOWS_CHARS.DOTS_SLASH = DOT_LITERAL .. "{1,2}(?:[" .. WIN_SLASH .. "]|$)"
+WINDOWS_CHARS.NO_DOT = "(?!" .. DOT_LITERAL .. ")"
+WINDOWS_CHARS.NO_DOTS = "(?!(?:^|[" .. WIN_SLASH .. "])" .. DOT_LITERAL .. "{1,2}" .. "(?:[" .. WIN_SLASH .. "]|$))"
+WINDOWS_CHARS.NO_DOT_SLASH = "(?!" .. DOT_LITERAL .. "{0,1}(?:[" .. WIN_SLASH .. "]|$))"
+WINDOWS_CHARS.NO_DOTS_SLASH = "(?!" .. DOT_LITERAL .. "{1,2}(?:[" .. WIN_SLASH .. "]|$))"
+WINDOWS_CHARS.QMARK_NO_DOT = "[^." .. WIN_SLASH .. "]"
+WINDOWS_CHARS.START_ANCHOR = "(?:^|[" .. WIN_SLASH .. "])"
+WINDOWS_CHARS.END_ANCHOR = "(?:[" .. WIN_SLASH .. "]|$)"
 
 --[[*
  * POSIX Bracket Regex
  ]]
 
 local POSIX_REGEX_SOURCE = {
-  alnum = 'a-zA-Z0-9',
-  alpha = 'a-zA-Z',
-  ascii = '\\x00-\\x7F',
-  blank = ' \\t',
-  cntrl = '\\x00-\\x1F\\x7F',
-  digit = '0-9',
-  graph = '\\x21-\\x7E',
-  lower = 'a-z',
-  print = '\\x20-\\x7E ',
-  punct = '\\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~',
-  space = ' \\t\\r\\n\\v\\f',
-  upper = 'A-Z',
-  word = 'A-Za-z0-9_',
-  xdigit = 'A-Fa-f0-9'
+  alnum = "a-zA-Z0-9",
+  alpha = "a-zA-Z",
+  ascii = "\\x00-\\x7F",
+  blank = " \\t",
+  cntrl = "\\x00-\\x1F\\x7F",
+  digit = "0-9",
+  graph = "\\x21-\\x7E",
+  lower = "a-z",
+  print = "\\x20-\\x7E ",
+  punct = "\\-!\"#$%&'()\\*+,./:;<=>?@[\\]^_`{|}~",
+  space = " \\t\\r\\n\\v\\f",
+  upper = "A-Z",
+  word = "A-Za-z0-9_",
+  xdigit = "A-Fa-f0-9",
 }
 
 local exports = {
@@ -114,19 +110,20 @@ local exports = {
 
   -- regular expressions
   -- Lua TODO: global match ('g' flag) doesn't appear to quite work in the regexp polyfill
-  REGEX_BACKSLASH =  RegExp('\\\\(?![*+?^${}(|)[\\]])', 'g'),
-  REGEX_NON_SPECIAL_CHARS = RegExp('^[^@![%].,$*+?^{}()|\\/]+'),
-  REGEX_SPECIAL_CHARS = RegExp('[-*+?.^${}(|)[%]]'),
+  REGEX_BACKSLASH = RegExp("/\\(?![*]"),
+  -- The Lua RegEx implementation is missing enough features where we have to do these with lua patterns
+  REGEX_NON_SPECIAL_CHARS = "^[^@![%].,$*+?^{}()|\\/]+",
+  REGEX_SPECIAL_CHARS = "[-*+?.^$(|){}[%]]",
   -- Lua TODO: regexp polyfill doesn't appear to currently support backmatches
-  REGEX_SPECIAL_CHARS_BACKREF = RegExp('(\\\\?)((\\W)(\\3*))', 'g'),
-  REGEX_SPECIAL_CHARS_GLOBAL = RegExp('([-*+?.^${}(|)[\\]])', 'g'),
-  REGEX_REMOVE_BACKSLASH = RegExp('(?:\\[.*?[^\\\\]\\]|\\(?=.))', 'g'),
+  REGEX_SPECIAL_CHARS_BACKREF = RegExp("(\\\\?)((\\W)(\\3*))"),
+  REGEX_SPECIAL_CHARS_GLOBAL = RegExp("([-*+?.^${}(|)[\\]])"),
+  REGEX_REMOVE_BACKSLASH = RegExp("(?:\\[.*?[^\\\\]\\]|\\(?=.)"),
 
   -- Replace globs with equivalent patterns to reduce parsing time.
   REPLACEMENTS = {
-    ['***'] = '*',
-    ['**/**'] = '**',
-    ['**/**/**'] = '**'
+    ["***"] = "*",
+    ["**/**"] = "**",
+    ["**/**/**"] = "**",
   },
 
   -- Digits
@@ -181,7 +178,7 @@ local exports = {
   CHAR_ZERO_WIDTH_NOBREAK_SPACE = 65279, --[[ \uFEFF ]]
 
   -- Lua TODO: figure out how to determine system path separator at require time
-  SEP = "\\",
+  SEP = "/",
 
   --[[*
    * Create EXTGLOB_CHARS
@@ -189,11 +186,11 @@ local exports = {
 
   extglobChars = function(chars: { [string]: string }): { [string]: { type: string, open: string, close: string } }
     return {
-      ['!'] = { type = 'negate', open = '(?:(?!(?:', close = ')) ' .. chars.STAR .. ')' },
-      ['?'] = { type = 'qmark', open = '(?:', close = ')?' },
-      ['+'] = { type = 'plus', open = '(?:', close = ')+' },
-      ['*'] = { type = 'star', open = '(?:', close = ')*' },
-      ['@'] = { type = 'at', open = '(?:', close = ')' }
+      ["!"] = { type = "negate", open = "(?:(?!(?:", close = "))" .. chars.STAR .. ")" },
+      ["?"] = { type = "qmark", open = "(?:", close = ")?" },
+      ["+"] = { type = "plus", open = "(?:", close = ")+" },
+      ["*"] = { type = "star", open = "(?:", close = ")*" },
+      ["@"] = { type = "at", open = "(?:", close = ")" },
     }
   end,
 
@@ -203,7 +200,7 @@ local exports = {
 
   globChars = function(win32)
     return if win32 == true then WINDOWS_CHARS else POSIX_CHARS
-  end
+  end,
 }
 
 return exports
