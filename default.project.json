@@ -1,0 +1,6 @@
+{
+  "name": "picomatch",
+  "tree": {
+    "$path": "lib"
+  }
+}
