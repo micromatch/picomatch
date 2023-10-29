@@ -119,6 +119,8 @@ Creates a matcher function from one or more glob patterns. The returned function
 
 **Example**
 
+By default, `picomatch` uses [`os.platform()`](https://nodejs.org/api/os.html#osplatform) to detect the operating system.
+
 ```js
 const picomatch = require('picomatch');
 // picomatch(glob[, options]);
@@ -126,6 +128,23 @@ const picomatch = require('picomatch');
 const isMatch = picomatch('*.!(*a)');
 console.log(isMatch('a.a')); //=> false
 console.log(isMatch('a.b')); //=> true
+```
+
+**Example without node.js**
+
+For environments without `node.js`, `picomatch/posix` provides you a dependency-free matcher, without automatic OS detection.
+
+```js
+const picomatch = require('picomatch/posix');
+// the same API, defaulting to posix paths
+const isMatch = picomatch('a/*');
+console.log(isMatch('a\\b')); //=> false
+console.log(isMatch('a/b')); //=> true
+
+// you can still configure the matcher function to accept windows paths
+const isMatch = picomatch('a/*', { options: windows });
+console.log(isMatch('a\\b')); //=> true
+console.log(isMatch('a/b')); //=> true
 ```
 
 ### [.test](lib/picomatch.js#L117)
@@ -339,6 +358,7 @@ The following options may be used with the main `picomatch()` function or any of
 | `strictSlashes`       | `boolean`      | `undefined` | When true, picomatch won't match trailing slashes with single stars. |
 | `unescape`            | `boolean`      | `undefined` | Remove backslashes preceding escaped characters in the glob pattern. By default, backslashes are retained. |
 | `unixify`             | `boolean`      | `undefined` | Alias for `posixSlashes`, for backwards compatibility. |
+| `windows`             | `boolean`      | `false` | Also accept backslashes as the path separator. |
 
 picomatch has automatic detection for regex positive and negative lookbehinds. If the pattern contains a negative lookbehind, you must be using Node.js >= 8.10 or else picomatch will throw an error.
 
@@ -484,7 +504,7 @@ isMatch('baz');
 | **Character** | **Description** |
 | --- | --- |
 | `*` | Matches any character zero or more times, excluding path separators. Does _not match_ path separators or hidden files or directories ("dotfiles"), unless explicitly enabled by setting the `dot` option to `true`. |
-| `**` | Matches any character zero or more times, including path separators. Note that `**` will only match path separators (`/`, and `\\` on Windows) when they are the only characters in a path segment. Thus, `foo**/bar` is equivalent to `foo*/bar`, and `foo/a**b/bar` is equivalent to `foo/a*b/bar`, and _more than two_ consecutive stars in a glob path segment are regarded as _a single star_. Thus, `foo/***/bar` is equivalent to `foo/*/bar`. |
+| `**` | Matches any character zero or more times, including path separators. Note that `**` will only match path separators (`/`, and `\\` with the `windows` option) when they are the only characters in a path segment. Thus, `foo**/bar` is equivalent to `foo*/bar`, and `foo/a**b/bar` is equivalent to `foo/a*b/bar`, and _more than two_ consecutive stars in a glob path segment are regarded as _a single star_. Thus, `foo/***/bar` is equivalent to `foo/*/bar`. |
 | `?` | Matches any character excluding path separators one time. Does _not match_ path separators or leading dots.  |
 | `[abc]` | Matches any characters inside the brackets. For example, `[abc]` would match the characters `a`, `b` or `c`, and nothing else. |
 

@@ -1,14 +1,9 @@
 'use strict';
 
 const assert = require('assert');
-const support = require('./support');
 const { isMatch } = require('..');
 
 describe('non-globs', () => {
-  before(() => support.resetPathSep());
-  after(() => support.resetPathSep());
-  afterEach(() => support.resetPathSep());
-
   it('should match non-globs', () => {
     assert(!isMatch('/ab', '/a'));
     assert(!isMatch('a/a', 'a/b'));
@@ -53,9 +48,7 @@ describe('non-globs', () => {
   });
 
   it('should match windows paths', () => {
-    support.windowsPathSep();
-    assert(isMatch('aaa\\bbb', 'aaa/bbb'));
-    assert(isMatch('aaa/bbb', 'aaa/bbb'));
-    support.resetPathSep();
+    assert(isMatch('aaa\\bbb', 'aaa/bbb', { windows: true }));
+    assert(isMatch('aaa/bbb', 'aaa/bbb', { windows: true }));
   });
 });
