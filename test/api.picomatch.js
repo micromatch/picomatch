@@ -345,6 +345,22 @@ describe('picomatch', () => {
 
         assertTokens(tokens, expected);
       });
+
+      it('pictomatch issue#125, issue#100', () => {
+        const { tokens } = picomatch.parse('foo.(m|c|)js');
+
+        const expected = [
+          ['bos', { output: '', value: '' }],
+          ['text', { output: 'foo.', value: 'foo.' }],
+          ['paren', { output: undefined, value: '(' }],
+          ['text', { output: 'm|c|', value: 'm|c|' }],
+          ['paren', { output: ')', value: ')' }],
+          ['text', { output: undefined, value: 'js' }]
+        ];
+
+        const keyValuePairs = tokens.map(token => [token.type, { output: token.output, value: token.value }]);
+        assert.deepStrictEqual(keyValuePairs, expected);
+      });
     });
   });
 
