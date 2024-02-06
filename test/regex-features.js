@@ -18,12 +18,10 @@ describe('regex features', () => {
 
   describe('regex lookarounds', () => {
     it('should support regex lookbehinds', () => {
-      if (utils.supportsLookbehinds()) {
-        assert(isMatch('foo/cbaz', 'foo/*(?<!d)baz'));
-        assert(!isMatch('foo/cbaz', 'foo/*(?<!c)baz'));
-        assert(!isMatch('foo/cbaz', 'foo/*(?<=d)baz'));
-        assert(isMatch('foo/cbaz', 'foo/*(?<=c)baz'));
-      }
+      assert(isMatch('foo/cbaz', 'foo/*(?<!d)baz'));
+      assert(!isMatch('foo/cbaz', 'foo/*(?<!c)baz'));
+      assert(!isMatch('foo/cbaz', 'foo/*(?<=d)baz'));
+      assert(isMatch('foo/cbaz', 'foo/*(?<=c)baz'));
     });
 
     it('should throw an error when regex lookbehinds are used on an unsupported node version', () => {
