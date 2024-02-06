@@ -23,13 +23,6 @@ describe('regex features', () => {
       assert(!isMatch('foo/cbaz', 'foo/*(?<=d)baz'));
       assert(isMatch('foo/cbaz', 'foo/*(?<=c)baz'));
     });
-
-    it('should throw an error when regex lookbehinds are used on an unsupported node version', () => {
-      const nodeMajor = process.versions.node.split('.')[0];
-      if (nodeMajor < 10) {
-        assert.throws(() => isMatch('foo/cbaz', 'foo/*(?<!c)baz'), /Node\.js v10 or higher/);
-      }
-    });
   });
 
   describe('regex back-references', () => {
