@@ -32,6 +32,25 @@ Changelog entries are classified using the following labels _(from [keep-a-chang
 
 </details>
 
+## 4.0.0 (2024-02-07)
+
+### Fixes
+
+* Fix bad text values in parse #126, thanks to @connor4312
+
+### Changed
+
+* Remove process global to work outside of node #129, thanks to @styfle
+* Add sideEffects to package.json #128, thanks to @frandiox
+* Removed `os`, make compatible browser environment. See #124, thanks to @gwsbhqt
+
+## 3.0.1
+
+### Fixes
+
+* Support stars in negation extglobs with expression after closing parenthesis #102, thanks to @mrmlnc
+
+
 ## 2.3.1 (2022-01-02)
 
 ### Fixed
