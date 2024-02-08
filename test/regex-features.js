@@ -1,6 +1,5 @@
 'use strict';
 
-const { version } = process;
 const assert = require('assert');
 const utils = require('../lib/utils');
 const { isMatch } = require('..');

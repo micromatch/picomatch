@@ -43,32 +43,47 @@ const bench = (name, options) => {
   return suite;
 };
 
-bench(`${red('.makeRe')} star`)
+bench(`${red('.makeRe')} star (*)`)
   .add('picomatch', () => pm.makeRe('*'))
   .add('minimatch', () => mm.makeRe('*'))
   .run();
 
-bench(`${red('.makeRe')} star; dot=true`)
+bench(`${red('.makeRe')} star; dot=true (*)`)
   .add('picomatch', () => pm.makeRe('*', { dot: true }))
   .add('minimatch', () => mm.makeRe('*', { dot: true }))
   .run();
 
-bench(`${red('.makeRe')} globstar`)
+bench(`${red('.makeRe')} globstar (**)`)
   .add('picomatch', () => pm.makeRe('**'))
   .add('minimatch', () => mm.makeRe('**'))
   .run();
 
-bench(`${red('.makeRe')} globstars`)
+bench(`${red('.makeRe')} globstars (**/**/**)`)
   .add('picomatch', () => pm.makeRe('**/**/**'))
   .add('minimatch', () => mm.makeRe('**/**/**'))
   .run();
 
-bench(`${red('.makeRe')} with leading star`)
+bench(`${red('.makeRe')} with leading star (*.txt)`)
   .add('picomatch', () => pm.makeRe('*.txt'))
   .add('minimatch', () => mm.makeRe('*.txt'))
   .run();
 
-bench(`${red('.makeRe')} - basic braces`)
+bench(`${red('.makeRe')} - basic braces ({a,b,c}*.txt)`)
   .add('picomatch', () => pm.makeRe('{a,b,c}*.txt'))
   .add('minimatch', () => mm.makeRe('{a,b,c}*.txt'))
+  .run();
+
+bench(`${red('.makeRe')} - short ranges ({a..z}*.txt)`)
+  .add('picomatch', () => pm.makeRe('{a..z}*.txt'))
+  .add('minimatch', () => mm.makeRe('{a..z}*.txt'))
+  .run();
+
+bench(`${red('.makeRe')} - medium ranges ({1..100000}*.txt)`)
+  .add('picomatch', () => pm.makeRe('{1..100000}*.txt'))
+  .add('minimatch', () => mm.makeRe('{1..100000}*.txt'))
+  .run();
+
+bench(`${red('.makeRe')} - long ranges ({1..10000000}*.txt)`)
+  .add('picomatch', () => pm.makeRe('{1..10000000}*.txt'))
+  .add('minimatch', () => mm.makeRe('{1..10000000}*.txt'))
   .run();
