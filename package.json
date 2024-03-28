@@ -28,10 +28,10 @@
     "test:cover": "nyc npm run mocha"
   },
   "devDependencies": {
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "fill-range": "^7.0.1",
     "gulp-format-md": "^2.0.0",
-    "mocha": "^10.2.0",
+    "mocha": "^10.4.0",
     "nyc": "^15.1.0",
     "time-require": "github:jonschlinkert/time-require"
   },

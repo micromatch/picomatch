@@ -4,9 +4,9 @@
   "private": true,
   "main": "index.js",
   "dependencies": {
-    "ansi-colors": "^3.0.3",
+    "ansi-colors": "^4.1.3",
     "benchmark": "^2.1.4",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.8"
   },
   "devDependencies": {
     "glob-parent": "^6.0.2",
