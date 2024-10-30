@@ -474,6 +474,8 @@ isMatch('bar');
 isMatch('baz');
 ```
 
+Return `picomatch.constants.UNIGNORE` from `onIgnore` to un-ignore the result.
+
 #### options.onResult
 
 ```js
