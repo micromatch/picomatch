@@ -13,8 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [12, 14, 16, 18, 20, 21]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        node: [12, 14, 16, 18, 20, 22, 23]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        exclude:
+          - os: macos-latest
+            node: 12
+          - os: macos-latest
+            node: 14
 
     steps:
       - name: Clone repository
