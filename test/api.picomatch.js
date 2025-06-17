@@ -2,7 +2,7 @@
 
 const assert = require('assert');
 const picomatch = require('..');
-const { isMatch } = picomatch;
+const { isMatch, makeRe } = picomatch;
 
 const assertTokens = (actual, expected) => {
   const keyValuePairs = actual.map(token => [token.type, token.value]);
@@ -376,6 +376,12 @@ describe('picomatch', () => {
         assert(!picomatch('(!(abc))', {}, true).state.negatedExtglob);
         assert(!picomatch('**!(abc)', {}, true).state.negatedExtglob);
       });
+    });
+  });
+
+  describe('makeRe', () => {
+    it('should work when supplying constructor as input', () => {
+      assert.strictEqual(makeRe('constructor').source, '^(?:^(?:constructor)$)$');
     });
   });
 });
