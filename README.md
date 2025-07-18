@@ -585,7 +585,7 @@ See the [Bash Reference Manual](https://www.gnu.org/software/bash/manual/html_no
 
 ### Braces
 
-Picomatch does not do brace expansion. For [brace expansion](https://www.gnu.org/software/bash/manual/html_node/Brace-Expansion.html) and advanced matching with braces, use [micromatch](https://github.com/micromatch/micromatch) instead. Picomatch has very basic support for braces.
+Picomatch only does [brace expansion](https://www.gnu.org/software/bash/manual/html_node/Brace-Expansion.html) of comma-delimited lists (e.g. `a/{b,c}/d`). For advanced matching with braces, use [micromatch](https://github.com/micromatch/micromatch), which supports advanced syntax such as ranges (e.g. `{01..03}`) and increments (e.g. `{2..10..2}`).
 
 ### Matching special characters as literals
 
