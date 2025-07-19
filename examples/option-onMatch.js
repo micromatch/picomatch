@@ -9,7 +9,7 @@ const onMatch = ({ glob, regex, input, output }) => {
   // { input: 'some\\path', output: 'some/path' }
 };
 
-const isMatch = pm.matcher('**', { onMatch, posixSlashes: true });
+const isMatch = pm.matcher('**', { onMatch, windows: true });
 isMatch('some\\path');
 isMatch('some\\path');
 isMatch('some\\path');
