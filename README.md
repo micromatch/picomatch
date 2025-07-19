@@ -323,11 +323,9 @@ The following options may be used with the main `picomatch()` function or any of
 | `bash`                | `boolean`      | `false`     | Follow bash matching rules more strictly - disallows backslashes as escape characters, and treats single stars as globstars (`**`). |
 | `capture`             | `boolean`      | `undefined` | Return regex matches in supporting methods. |
 | `contains`            | `boolean`      | `undefined` | Allows glob to match any part of the given string(s). |
-| `cwd`                 | `string`       | `process.cwd()` | Current working directory. Used by `picomatch.split()` |
 | `debug`               | `boolean`      | `undefined` | Debug regular expressions when an error is thrown. |
 | `dot`                 | `boolean`      | `false`     | Enable dotfile matching. By default, dotfiles are ignored unless a `.` is explicitly defined in the pattern, or `options.dot` is true |
 | `expandRange`         | `function`     | `undefined` | Custom function for expanding ranges in brace patterns, such as `{a..z}`. The function receives the range values as two arguments, and it must return a string to be used in the generated regex. It's recommended that returned strings be wrapped in parentheses. |
-| `failglob`            | `boolean`      | `false`     | Throws an error if no matches are found. Based on the bash option of the same name. |
 | `fastpaths`           | `boolean`      | `true`      | To speed up processing, full parsing is skipped for a handful common glob patterns. Disable this behavior by setting this option to `false`. |
 | `flags`               | `string`      | `undefined` | Regex flags to use in the generated regex. If defined, the `nocase` option will be overridden. |
 | [format](#optionsformat) | `function` | `undefined` | Custom function for formatting the returned string. This is useful for removing leading slashes, converting Windows paths to Posix paths, etc. |
@@ -339,23 +337,19 @@ The following options may be used with the main `picomatch()` function or any of
 | `nobrace`             | `boolean`      | `false`     | Disable brace matching, so that `{a,b}` and `{1..3}` would be treated as literal characters. |
 | `nobracket`           | `boolean`      | `undefined` | Disable matching with regex brackets. |
 | `nocase`              | `boolean`      | `false`     | Make matching case-insensitive. Equivalent to the regex `i` flag. Note that this option is overridden by the `flags` option. |
-| `nodupes`             | `boolean`      | `true`      | Deprecated, use `nounique` instead. This option will be removed in a future major release. By default duplicates are removed. Disable uniquification by setting this option to false. |
 | `noext`               | `boolean`      | `false`     | Alias for `noextglob` |
 | `noextglob`           | `boolean`      | `false`     | Disable support for matching with extglobs (like `+(a\|b)`) |
 | `noglobstar`          | `boolean`      | `false`     | Disable support for matching nested directories with globstars (`**`) |
 | `nonegate`            | `boolean`      | `false`     | Disable support for negating with leading `!` |
-| `noquantifiers`       | `boolean`      | `false`     | Disable support for regex quantifiers (like `a{1,2}`) and treat them as brace patterns to be expanded. |
 | [onIgnore](#optionsonIgnore) | `function` | `undefined` | Function to be called on ignored items. |
 | [onMatch](#optionsonMatch) | `function` | `undefined` | Function to be called on matched items. |
 | [onResult](#optionsonResult) | `function` | `undefined` | Function to be called on all items, regardless of whether or not they are matched or ignored. |
 | `posix`               | `boolean`      | `false`     | Support POSIX character classes ("posix brackets"). |
-| `posixSlashes`        | `boolean`      | `undefined` | Convert all slashes in file paths to forward slashes. This does not convert slashes in the glob pattern itself |
 | `prepend`             | `boolean`      | `undefined` | String to prepend to the generated regex used for matching. |
 | `regex`               | `boolean`      | `false`     | Use regular expression rules for `+` (instead of matching literal `+`), and for stars that follow closing parentheses or brackets (as in `)*` and `]*`). |
 | `strictBrackets`      | `boolean`      | `undefined` | Throw an error if brackets, braces, or parens are imbalanced. |
 | `strictSlashes`       | `boolean`      | `undefined` | When true, picomatch won't match trailing slashes with single stars. |
 | `unescape`            | `boolean`      | `undefined` | Remove backslashes preceding escaped characters in the glob pattern. By default, backslashes are retained. |
-| `unixify`             | `boolean`      | `undefined` | Alias for `posixSlashes`, for backwards compatibility. |
 | `windows`             | `boolean`      | `false`     | Also accept backslashes as the path separator. |
 
 ### Scan Options
