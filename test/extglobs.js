@@ -1,8 +1,7 @@
-'use strict';
-
-const assert = require('assert');
-const match = require('./support/match');
-const { isMatch, makeRe } = require('..');
+import assert from 'assert';
+import picomatch from '../index.js';
+import match from './support/match.js';
+const { isMatch, makeRe } = picomatch;
 
 /**
  * Ported from Bash 4.3 and 4.4 unit tests

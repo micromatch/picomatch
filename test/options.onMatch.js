@@ -1,9 +1,7 @@
-'use strict';
-
-const assert = require('assert');
-const match = require('./support/match');
-const picomatch = require('..');
+import assert from 'assert';
+import picomatch from '../index.js';
 const { isMatch } = picomatch;
+import match from './support/match.js';
 
 const equal = (actual, expected, msg) => {
   assert.deepStrictEqual([].concat(actual).sort(), [].concat(expected).sort(), msg);

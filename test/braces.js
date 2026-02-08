@@ -1,9 +1,9 @@
-'use strict';
+import assert from 'assert';
+import picomatch from '../index.js';
+import fill from 'fill-range';
+import match from './support/match.js';
 
-const assert = require('assert');
-const fill = require('fill-range');
-const match = require('./support/match');
-const { isMatch } = require('..');
+const { isMatch } = picomatch;
 
 describe('braces', () => {
   it('should not match with brace patterns when disabled', () => {

@@ -1,8 +1,7 @@
-'use strict';
-
-const assert = require('assert');
-const utils = require('../lib/utils');
-const { isMatch } = require('..');
+import assert from 'assert';
+import picomatch from '../index.js';
+const { isMatch } = picomatch;
+import { basename } from '../lib/utils.js';
 
 describe('regex features', () => {
   describe('word boundaries', () => {
@@ -304,12 +303,12 @@ describe('regex features', () => {
     });
 
     it('should basename paths', () => {
-      assert.equal(utils.basename('/a/b/c'), 'c');
-      assert.equal(utils.basename('/a/b/c/'), 'c');
-      assert.equal(utils.basename('/a\\b/c', { windows: true }), 'c');
-      assert.equal(utils.basename('/a\\b/c\\', { windows: true }), 'c');
-      assert.equal(utils.basename('\\a/b\\c', { windows: true }), 'c');
-      assert.equal(utils.basename('\\a/b\\c/', { windows: true }), 'c');
+      assert.equal(basename('/a/b/c'), 'c');
+      assert.equal(basename('/a/b/c/'), 'c');
+      assert.equal(basename('/a\\b/c', { windows: true }), 'c');
+      assert.equal(basename('/a\\b/c\\', { windows: true }), 'c');
+      assert.equal(basename('\\a/b\\c', { windows: true }), 'c');
+      assert.equal(basename('\\a/b\\c/', { windows: true }), 'c');
     });
   });
 });

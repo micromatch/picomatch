@@ -1,8 +1,7 @@
-'use strict';
-
-const assert = require('assert');
-const match = require('./support/match');
-const { isMatch } = require('..');
+import assert from 'assert';
+import picomatch from '../index.js';
+const { isMatch } = picomatch;
+import match from './support/match.js';
 
 describe('options.ignore', () => {
   it('should not match ignored patterns', () => {
