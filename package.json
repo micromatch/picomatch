@@ -6,6 +6,7 @@
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "funding": "https://github.com/sponsors/jonschlinkert",
   "repository": "micromatch/picomatch",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/micromatch/picomatch/issues"
   },

@@ -1,7 +1,6 @@
-'use strict';
-
-const assert = require('assert');
-const { isMatch } = require('..');
+import assert from 'assert';
+import picomatch from '../index.js';
+const { isMatch } = picomatch;
 
 /**
  * Some of tests were converted from bash 4.3, 4.4, and minimatch unit tests.

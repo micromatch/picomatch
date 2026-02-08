@@ -1,7 +1,6 @@
-'use strict';
-
-const assert = require('assert');
-const { isMatch, makeRe } = require('..');
+import assert from 'assert';
+import picomatch from '../index.js';
+const { isMatch, makeRe } = picomatch;
 
 describe('special characters', () => {
   describe('numbers', () => {

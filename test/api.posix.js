@@ -1,7 +1,5 @@
-'use strict';
-
-const assert = require('assert');
-const picomatch = require('../posix');
+import assert from 'assert';
+import picomatch from '../posix.js';
 
 describe('picomatch/posix', () => {
   it('should use posix paths only by default', () => {
