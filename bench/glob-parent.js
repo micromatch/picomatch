@@ -4,7 +4,7 @@ const { Suite } = require('benchmark');
 const { red } = require('ansi-colors');
 const argv = require('minimist')(process.argv.slice(2));
 const parent = require('glob-parent');
-const scan = require('../lib/scan');
+const { default: scan } = require('../lib/scan');
 
 /**
  * Setup

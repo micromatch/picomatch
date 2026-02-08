@@ -2,7 +2,7 @@
 
 console.log('# Load time');
 console.time('picomatch');
-exports.pm = require('..');
+exports.pm = require('..').default;
 console.timeEnd('picomatch');
 console.time('minimatch');
 exports.mm = require('minimatch');
