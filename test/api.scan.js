@@ -253,8 +253,16 @@ describe('picomatch', () => {
       assert.strictEqual(base('path/**/subdir/foo.*'), 'path');
       assert.strictEqual(base('path/*/foo'), 'path');
       assert.strictEqual(base('path/*/foo/'), 'path');
-      assert.strictEqual(base('path/+/foo'), 'path/+/foo', 'plus sign must be escaped');
-      assert.strictEqual(base('path/+/foo/'), 'path/+/foo/', 'plus sign must be escaped');
+      assert.strictEqual(
+        base('path/+/foo'),
+        'path/+/foo',
+        'plus sign must be escaped'
+      );
+      assert.strictEqual(
+        base('path/+/foo/'),
+        'path/+/foo/',
+        'plus sign must be escaped'
+      );
       assert.strictEqual(base('path/?/foo'), 'path', 'qmarks must be escaped');
       assert.strictEqual(base('path/?/foo/'), 'path', 'qmarks must be escaped');
       assert.strictEqual(base('path/@/foo'), 'path/@/foo');
@@ -265,9 +273,18 @@ describe('picomatch', () => {
     });
 
     it('should respect escaped characters', () => {
-      assert.strictEqual(base('path/\\*\\*/subdir/foo.*'), 'path/\\*\\*/subdir');
-      assert.strictEqual(base('path/\\[\\*\\]/subdir/foo.*'), 'path/\\[\\*\\]/subdir');
-      assert.strictEqual(base('path/\\[foo bar\\]/subdir/foo.*'), 'path/\\[foo bar\\]/subdir');
+      assert.strictEqual(
+        base('path/\\*\\*/subdir/foo.*'),
+        'path/\\*\\*/subdir'
+      );
+      assert.strictEqual(
+        base('path/\\[\\*\\]/subdir/foo.*'),
+        'path/\\[\\*\\]/subdir'
+      );
+      assert.strictEqual(
+        base('path/\\[foo bar\\]/subdir/foo.*'),
+        'path/\\[foo bar\\]/subdir'
+      );
       assert.strictEqual(base('path/\\[bar]/'), 'path/\\[bar]/');
       assert.strictEqual(base('path/\\[bar]'), 'path/\\[bar]');
       assert.strictEqual(base('[bar]'), '');
@@ -368,7 +385,17 @@ describe('picomatch', () => {
       assertParts('a/**@(/x|/z)/*.md', ['a', '**@(/x|/z)', '*.md']);
       assertParts('foo/(bar|baz)/*.js', ['foo', '(bar|baz)', '*.js']);
 
-      assertParts('XXX/*/*/12/*/*/m/*/*', ['XXX', '*', '*', '12', '*', '*', 'm', '*', '*']);
+      assertParts('XXX/*/*/12/*/*/m/*/*', [
+        'XXX',
+        '*',
+        '*',
+        '12',
+        '*',
+        '*',
+        'm',
+        '*',
+        '*'
+      ]);
       assertParts('foo/\\"**\\"/bar', ['foo', '\\"**\\"', 'bar']);
 
       assertParts('[0-9]/[0-9]', ['[0-9]', '[0-9]']);
@@ -409,21 +436,45 @@ describe('picomatch', () => {
       assert.strictEqual(base('a/(b c)', { noparen: true }), 'a/(b c)');
       assert.strictEqual(base('a/(b c)/', { noparen: true }), 'a/(b c)/');
       assert.strictEqual(base('a/(b c)/d', { noparen: true }), 'a/(b c)/d');
-      assert.strictEqual(base('foo/(b c)/baz', { noparen: true }), 'foo/(b c)/baz');
-      assert.strictEqual(base('path/(foo bar)/subdir/foo.*', { noparen: true }), 'path/(foo bar)/subdir');
-      assert.strictEqual(base('a/\\(b c)'), 'a/\\(b c)', 'parens must be escaped');
-      assert.strictEqual(base('a/\\+\\(b c)/foo'), 'a/\\+\\(b c)/foo', 'parens must be escaped');
+      assert.strictEqual(
+        base('foo/(b c)/baz', { noparen: true }),
+        'foo/(b c)/baz'
+      );
+      assert.strictEqual(
+        base('path/(foo bar)/subdir/foo.*', { noparen: true }),
+        'path/(foo bar)/subdir'
+      );
+      assert.strictEqual(
+        base('a/\\(b c)'),
+        'a/\\(b c)',
+        'parens must be escaped'
+      );
+      assert.strictEqual(
+        base('a/\\+\\(b c)/foo'),
+        'a/\\+\\(b c)/foo',
+        'parens must be escaped'
+      );
       assert.strictEqual(base('js/t(wo|est)/*.js'), 'js');
       assert.strictEqual(base('js/t/(wo|est)/*.js'), 'js/t');
-      assert.strictEqual(base('path/(foo bar)/subdir/foo.*'), 'path', 'parens must be escaped');
+      assert.strictEqual(
+        base('path/(foo bar)/subdir/foo.*'),
+        'path',
+        'parens must be escaped'
+      );
       assert.strictEqual(base('path/(foo/bar|baz)'), 'path');
       assert.strictEqual(base('path/(foo/bar|baz)/'), 'path');
       assert.strictEqual(base('path/(to|from)'), 'path');
-      assert.strictEqual(base('path/\\(foo/bar|baz)/'), 'path/\\(foo/bar|baz)/');
+      assert.strictEqual(
+        base('path/\\(foo/bar|baz)/'),
+        'path/\\(foo/bar|baz)/'
+      );
       assert.strictEqual(base('path/\\*(a|b)'), 'path');
       assert.strictEqual(base('path/\\*(a|b)/subdir/foo.*'), 'path');
       assert.strictEqual(base('path/\\*/(a|b)/subdir/foo.*'), 'path/\\*');
-      assert.strictEqual(base('path/\\*\\(a\\|b\\)/subdir/foo.*'), 'path/\\*\\(a\\|b\\)/subdir');
+      assert.strictEqual(
+        base('path/\\*\\(a\\|b\\)/subdir/foo.*'),
+        'path/\\*\\(a\\|b\\)/subdir'
+      );
     });
   });
 
@@ -458,13 +509,22 @@ describe('picomatch', () => {
       assert.deepStrictEqual(both('*'), ['', '*']);
       assert.deepStrictEqual(both('a/**/j/**/z/*.md'), ['a', '**/j/**/z/*.md']);
       assert.deepStrictEqual(both('a/**/z/*.md'), ['a', '**/z/*.md']);
-      assert.deepStrictEqual(both('node_modules/*-glob/**/*.js'), ['node_modules', '*-glob/**/*.js']);
-      assert.deepStrictEqual(both('{a/b/{c,/foo.js}/e.f.g}'), ['', '{a/b/{c,/foo.js}/e.f.g}']);
+      assert.deepStrictEqual(both('node_modules/*-glob/**/*.js'), [
+        'node_modules',
+        '*-glob/**/*.js'
+      ]);
+      assert.deepStrictEqual(both('{a/b/{c,/foo.js}/e.f.g}'), [
+        '',
+        '{a/b/{c,/foo.js}/e.f.g}'
+      ]);
       assert.deepStrictEqual(both('.a*'), ['', '.a*']);
       assert.deepStrictEqual(both('.b*'), ['', '.b*']);
       assert.deepStrictEqual(both('/*'), ['/', '*']);
       assert.deepStrictEqual(both('a/***'), ['a', '***']);
-      assert.deepStrictEqual(both('a/**/b/*.{foo,bar}'), ['a', '**/b/*.{foo,bar}']);
+      assert.deepStrictEqual(both('a/**/b/*.{foo,bar}'), [
+        'a',
+        '**/b/*.{foo,bar}'
+      ]);
       assert.deepStrictEqual(both('a/**/c/*'), ['a', '**/c/*']);
       assert.deepStrictEqual(both('a/**/c/*.md'), ['a', '**/c/*.md']);
       assert.deepStrictEqual(both('a/**/e'), ['a', '**/e']);
@@ -474,7 +534,10 @@ describe('picomatch', () => {
       assert.deepStrictEqual(both('a/**c/*'), ['a', '**c/*']);
       assert.deepStrictEqual(both('a/*/*/e'), ['a', '*/*/e']);
       assert.deepStrictEqual(both('a/*/c/*.md'), ['a', '*/c/*.md']);
-      assert.deepStrictEqual(both('a/b/**/c{d,e}/**/xyz.md'), ['a/b', '**/c{d,e}/**/xyz.md']);
+      assert.deepStrictEqual(both('a/b/**/c{d,e}/**/xyz.md'), [
+        'a/b',
+        '**/c{d,e}/**/xyz.md'
+      ]);
       assert.deepStrictEqual(both('a/b/**/e'), ['a/b', '**/e']);
       assert.deepStrictEqual(both('a/b/*.{foo,bar}'), ['a/b', '*.{foo,bar}']);
       assert.deepStrictEqual(both('a/b/*/e'), ['a/b', '*/e']);
@@ -482,11 +545,20 @@ describe('picomatch', () => {
       assert.deepStrictEqual(both('a/b/.git/**'), ['a/b/.git', '**']);
       assert.deepStrictEqual(both('a/b/.{foo,bar}'), ['a/b', '.{foo,bar}']);
       assert.deepStrictEqual(both('a/b/c/*'), ['a/b/c', '*']);
-      assert.deepStrictEqual(both('a/b/c/**/*.min.js'), ['a/b/c', '**/*.min.js']);
+      assert.deepStrictEqual(both('a/b/c/**/*.min.js'), [
+        'a/b/c',
+        '**/*.min.js'
+      ]);
       assert.deepStrictEqual(both('a/b/c/*.md'), ['a/b/c', '*.md']);
       assert.deepStrictEqual(both('a/b/c/.*.md'), ['a/b/c', '.*.md']);
-      assert.deepStrictEqual(both('a/b/{c,.gitignore,{a,b}}/{a,b}/abc.foo.js'), ['a/b', '{c,.gitignore,{a,b}}/{a,b}/abc.foo.js']);
-      assert.deepStrictEqual(both('a/b/{c,/.gitignore}'), ['a/b', '{c,/.gitignore}']);
+      assert.deepStrictEqual(
+        both('a/b/{c,.gitignore,{a,b}}/{a,b}/abc.foo.js'),
+        ['a/b', '{c,.gitignore,{a,b}}/{a,b}/abc.foo.js']
+      );
+      assert.deepStrictEqual(both('a/b/{c,/.gitignore}'), [
+        'a/b',
+        '{c,/.gitignore}'
+      ]);
       assert.deepStrictEqual(both('a/b/{c,d}/'), ['a/b', '{c,d}/']);
       assert.deepStrictEqual(both('a/b/{c,d}/e/f.g'), ['a/b', '{c,d}/e/f.g']);
       assert.deepStrictEqual(both('b/*/*/*'), ['b', '*/*/*']);
@@ -500,15 +572,30 @@ describe('picomatch', () => {
       assert.deepStrictEqual(both('!*.min.js'), ['', '*.min.js']);
       assert.deepStrictEqual(both('!foo'), ['foo', '']);
       assert.deepStrictEqual(both('!foo/*.js'), ['foo', '*.js']);
-      assert.deepStrictEqual(both('!foo/(a|b).min.js'), ['foo', '(a|b).min.js']);
-      assert.deepStrictEqual(both('!foo/[a-b].min.js'), ['foo', '[a-b].min.js']);
-      assert.deepStrictEqual(both('!foo/{a,b}.min.js'), ['foo', '{a,b}.min.js']);
+      assert.deepStrictEqual(both('!foo/(a|b).min.js'), [
+        'foo',
+        '(a|b).min.js'
+      ]);
+      assert.deepStrictEqual(both('!foo/[a-b].min.js'), [
+        'foo',
+        '[a-b].min.js'
+      ]);
+      assert.deepStrictEqual(both('!foo/{a,b}.min.js'), [
+        'foo',
+        '{a,b}.min.js'
+      ]);
       assert.deepStrictEqual(both('a/b/c/!foo'), ['a/b/c/!foo', '']);
     });
 
     it('should support extglobs', () => {
-      assert.deepStrictEqual(both('/a/b/!(a|b)/e.f.g/'), ['/a/b', '!(a|b)/e.f.g/']);
-      assert.deepStrictEqual(both('/a/b/@(a|b)/e.f.g/'), ['/a/b', '@(a|b)/e.f.g/']);
+      assert.deepStrictEqual(both('/a/b/!(a|b)/e.f.g/'), [
+        '/a/b',
+        '!(a|b)/e.f.g/'
+      ]);
+      assert.deepStrictEqual(both('/a/b/@(a|b)/e.f.g/'), [
+        '/a/b',
+        '@(a|b)/e.f.g/'
+      ]);
       assert.deepStrictEqual(both('@(a|b)/e.f.g/'), ['', '@(a|b)/e.f.g/']);
       assert.strictEqual(base('path/!(to|from)'), 'path');
       assert.strictEqual(base('path/*(to|from)'), 'path');
@@ -569,7 +656,10 @@ describe('picomatch', () => {
       assert.deepStrictEqual(both('a/.x.md'), ['a/.x.md', '']);
       assert.deepStrictEqual(both('a/b/.gitignore'), ['a/b/.gitignore', '']);
       assert.deepStrictEqual(both('a/b/c/d.md'), ['a/b/c/d.md', '']);
-      assert.deepStrictEqual(both('a/b/c/d.e.f/g.min.js'), ['a/b/c/d.e.f/g.min.js', '']);
+      assert.deepStrictEqual(both('a/b/c/d.e.f/g.min.js'), [
+        'a/b/c/d.e.f/g.min.js',
+        ''
+      ]);
       assert.deepStrictEqual(both('a/b/.git'), ['a/b/.git', '']);
       assert.deepStrictEqual(both('a/b/.git/'), ['a/b/.git/', '']);
       assert.deepStrictEqual(both('a/b/c'), ['a/b/c', '']);
@@ -602,23 +692,56 @@ describe('picomatch', () => {
     it('should respect brace enclosures with embedded separators', () => {
       const opts = { unescape: true };
       assert.strictEqual(base('path/{,/,bar/baz,qux}/', opts), 'path');
-      assert.strictEqual(base('path/\\{,/,bar/baz,qux}/', opts), 'path/{,/,bar/baz,qux}/');
-      assert.strictEqual(base('path/\\{,/,bar/baz,qux\\}/', opts), 'path/{,/,bar/baz,qux}/');
+      assert.strictEqual(
+        base('path/\\{,/,bar/baz,qux}/', opts),
+        'path/{,/,bar/baz,qux}/'
+      );
+      assert.strictEqual(
+        base('path/\\{,/,bar/baz,qux\\}/', opts),
+        'path/{,/,bar/baz,qux}/'
+      );
       assert.strictEqual(base('/{,/,bar/baz,qux}/', opts), '/');
-      assert.strictEqual(base('/\\{,/,bar/baz,qux}/', opts), '/{,/,bar/baz,qux}/');
+      assert.strictEqual(
+        base('/\\{,/,bar/baz,qux}/', opts),
+        '/{,/,bar/baz,qux}/'
+      );
       assert.strictEqual(base('{,/,bar/baz,qux}', opts), '');
-      assert.strictEqual(base('\\{,/,bar/baz,qux\\}', opts), '{,/,bar/baz,qux}');
-      assert.strictEqual(base('\\{,/,bar/baz,qux}/', opts), '{,/,bar/baz,qux}/');
+      assert.strictEqual(
+        base('\\{,/,bar/baz,qux\\}', opts),
+        '{,/,bar/baz,qux}'
+      );
+      assert.strictEqual(
+        base('\\{,/,bar/baz,qux}/', opts),
+        '{,/,bar/baz,qux}/'
+      );
     });
 
     it('should handle escaped nested braces', () => {
       const opts = { unescape: true };
-      assert.strictEqual(base('\\{../,./,\\{bar,/baz},qux}', opts), '{../,./,{bar,/baz},qux}');
-      assert.strictEqual(base('\\{../,./,\\{bar,/baz},qux}/', opts), '{../,./,{bar,/baz},qux}/');
-      assert.strictEqual(base('path/\\{,/,bar/{baz,qux}}/', opts), 'path/{,/,bar/{baz,qux}}/');
-      assert.strictEqual(base('path/\\{../,./,\\{bar,/baz},qux}/', opts), 'path/{../,./,{bar,/baz},qux}/');
-      assert.strictEqual(base('path/\\{../,./,\\{bar,/baz},qux}/', opts), 'path/{../,./,{bar,/baz},qux}/');
-      assert.strictEqual(base('path/\\{../,./,{bar,/baz},qux}/', opts), 'path/{../,./,{bar,/baz},qux}/');
+      assert.strictEqual(
+        base('\\{../,./,\\{bar,/baz},qux}', opts),
+        '{../,./,{bar,/baz},qux}'
+      );
+      assert.strictEqual(
+        base('\\{../,./,\\{bar,/baz},qux}/', opts),
+        '{../,./,{bar,/baz},qux}/'
+      );
+      assert.strictEqual(
+        base('path/\\{,/,bar/{baz,qux}}/', opts),
+        'path/{,/,bar/{baz,qux}}/'
+      );
+      assert.strictEqual(
+        base('path/\\{../,./,\\{bar,/baz},qux}/', opts),
+        'path/{../,./,{bar,/baz},qux}/'
+      );
+      assert.strictEqual(
+        base('path/\\{../,./,\\{bar,/baz},qux}/', opts),
+        'path/{../,./,{bar,/baz},qux}/'
+      );
+      assert.strictEqual(
+        base('path/\\{../,./,{bar,/baz},qux}/', opts),
+        'path/{../,./,{bar,/baz},qux}/'
+      );
       assert.strictEqual(base('path/{,/,bar/\\{baz,qux}}/', opts), 'path');
     });
 
@@ -637,39 +760,90 @@ describe('picomatch', () => {
     });
 
     it('should support braces: no path', () => {
-      assert.deepStrictEqual(both('/a/b/{c,/foo.js}/e.f.g/'), ['/a/b', '{c,/foo.js}/e.f.g/']);
-      assert.deepStrictEqual(both('{a/b/c.js,/a/b/{c,/foo.js}/e.f.g/}'), ['', '{a/b/c.js,/a/b/{c,/foo.js}/e.f.g/}']);
+      assert.deepStrictEqual(both('/a/b/{c,/foo.js}/e.f.g/'), [
+        '/a/b',
+        '{c,/foo.js}/e.f.g/'
+      ]);
+      assert.deepStrictEqual(both('{a/b/c.js,/a/b/{c,/foo.js}/e.f.g/}'), [
+        '',
+        '{a/b/c.js,/a/b/{c,/foo.js}/e.f.g/}'
+      ]);
       assert.deepStrictEqual(both('/a/b/{c,d}/'), ['/a/b', '{c,d}/']);
       assert.deepStrictEqual(both('/a/b/{c,d}/*.js'), ['/a/b', '{c,d}/*.js']);
-      assert.deepStrictEqual(both('/a/b/{c,d}/*.min.js'), ['/a/b', '{c,d}/*.min.js']);
-      assert.deepStrictEqual(both('/a/b/{c,d}/e.f.g/'), ['/a/b', '{c,d}/e.f.g/']);
+      assert.deepStrictEqual(both('/a/b/{c,d}/*.min.js'), [
+        '/a/b',
+        '{c,d}/*.min.js'
+      ]);
+      assert.deepStrictEqual(both('/a/b/{c,d}/e.f.g/'), [
+        '/a/b',
+        '{c,d}/e.f.g/'
+      ]);
       assert.deepStrictEqual(both('{.,*}'), ['', '{.,*}']);
     });
 
     it('should support braces in filename', () => {
-      assert.deepStrictEqual(both('a/b/.{c,.gitignore}'), ['a/b', '.{c,.gitignore}']);
-      assert.deepStrictEqual(both('a/b/.{c,/.gitignore}'), ['a/b', '.{c,/.gitignore}']);
+      assert.deepStrictEqual(both('a/b/.{c,.gitignore}'), [
+        'a/b',
+        '.{c,.gitignore}'
+      ]);
+      assert.deepStrictEqual(both('a/b/.{c,/.gitignore}'), [
+        'a/b',
+        '.{c,/.gitignore}'
+      ]);
       assert.deepStrictEqual(both('a/b/.{foo,bar}'), ['a/b', '.{foo,bar}']);
-      assert.deepStrictEqual(both('a/b/{c,.gitignore}'), ['a/b', '{c,.gitignore}']);
-      assert.deepStrictEqual(both('a/b/{c,/.gitignore}'), ['a/b', '{c,/.gitignore}']);
-      assert.deepStrictEqual(both('a/b/{c,/gitignore}'), ['a/b', '{c,/gitignore}']);
+      assert.deepStrictEqual(both('a/b/{c,.gitignore}'), [
+        'a/b',
+        '{c,.gitignore}'
+      ]);
+      assert.deepStrictEqual(both('a/b/{c,/.gitignore}'), [
+        'a/b',
+        '{c,/.gitignore}'
+      ]);
+      assert.deepStrictEqual(both('a/b/{c,/gitignore}'), [
+        'a/b',
+        '{c,/gitignore}'
+      ]);
       assert.deepStrictEqual(both('a/b/{c,d}'), ['a/b', '{c,d}']);
     });
 
     it('should support braces in dirname', () => {
-      assert.deepStrictEqual(both('a/b/{c,./d}/e/f.g'), ['a/b', '{c,./d}/e/f.g']);
-      assert.deepStrictEqual(both('a/b/{c,./d}/e/f.min.g'), ['a/b', '{c,./d}/e/f.min.g']);
-      assert.deepStrictEqual(both('a/b/{c,.gitignore,{a,./b}}/{a,b}/abc.foo.js'), ['a/b', '{c,.gitignore,{a,./b}}/{a,b}/abc.foo.js']);
-      assert.deepStrictEqual(both('a/b/{c,.gitignore,{a,b}}/{a,b}/*.foo.js'), ['a/b', '{c,.gitignore,{a,b}}/{a,b}/*.foo.js']);
-      assert.deepStrictEqual(both('a/b/{c,.gitignore,{a,b}}/{a,b}/abc.foo.js'), ['a/b', '{c,.gitignore,{a,b}}/{a,b}/abc.foo.js']);
+      assert.deepStrictEqual(both('a/b/{c,./d}/e/f.g'), [
+        'a/b',
+        '{c,./d}/e/f.g'
+      ]);
+      assert.deepStrictEqual(both('a/b/{c,./d}/e/f.min.g'), [
+        'a/b',
+        '{c,./d}/e/f.min.g'
+      ]);
+      assert.deepStrictEqual(
+        both('a/b/{c,.gitignore,{a,./b}}/{a,b}/abc.foo.js'),
+        ['a/b', '{c,.gitignore,{a,./b}}/{a,b}/abc.foo.js']
+      );
+      assert.deepStrictEqual(both('a/b/{c,.gitignore,{a,b}}/{a,b}/*.foo.js'), [
+        'a/b',
+        '{c,.gitignore,{a,b}}/{a,b}/*.foo.js'
+      ]);
+      assert.deepStrictEqual(
+        both('a/b/{c,.gitignore,{a,b}}/{a,b}/abc.foo.js'),
+        ['a/b', '{c,.gitignore,{a,b}}/{a,b}/abc.foo.js']
+      );
       assert.deepStrictEqual(both('a/b/{c,/d}/e/f.g'), ['a/b', '{c,/d}/e/f.g']);
-      assert.deepStrictEqual(both('a/b/{c,/d}/e/f.min.g'), ['a/b', '{c,/d}/e/f.min.g']);
+      assert.deepStrictEqual(both('a/b/{c,/d}/e/f.min.g'), [
+        'a/b',
+        '{c,/d}/e/f.min.g'
+      ]);
       assert.deepStrictEqual(both('a/b/{c,d}/'), ['a/b', '{c,d}/']);
       assert.deepStrictEqual(both('a/b/{c,d}/*.js'), ['a/b', '{c,d}/*.js']);
-      assert.deepStrictEqual(both('a/b/{c,d}/*.min.js'), ['a/b', '{c,d}/*.min.js']);
+      assert.deepStrictEqual(both('a/b/{c,d}/*.min.js'), [
+        'a/b',
+        '{c,d}/*.min.js'
+      ]);
       assert.deepStrictEqual(both('a/b/{c,d}/e.f.g/'), ['a/b', '{c,d}/e.f.g/']);
       assert.deepStrictEqual(both('a/b/{c,d}/e/f.g'), ['a/b', '{c,d}/e/f.g']);
-      assert.deepStrictEqual(both('a/b/{c,d}/e/f.min.g'), ['a/b', '{c,d}/e/f.min.g']);
+      assert.deepStrictEqual(both('a/b/{c,d}/e/f.min.g'), [
+        'a/b',
+        '{c,d}/e/f.min.g'
+      ]);
       assert.deepStrictEqual(both('foo/{a,b}.min.js'), ['foo', '{a,b}.min.js']);
     });
   });

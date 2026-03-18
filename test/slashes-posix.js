@@ -1151,7 +1151,9 @@ describe('slash handling - posix', () => {
     const format = str => str.replace(/^\.\//, '');
     assert(!isMatch('./a/b/c/d/e/z/c.md', './a/**/j/**/z/*.md', { format }));
     assert(!isMatch('./a/b/c/j/e/z/c.txt', './a/**/j/**/z/*.md', { format }));
-    assert(isMatch('./a/b/c/d/e/j/n/p/o/z/c.md', './a/**/j/**/z/*.md', { format }));
+    assert(
+      isMatch('./a/b/c/d/e/j/n/p/o/z/c.md', './a/**/j/**/z/*.md', { format })
+    );
     assert(isMatch('./a/b/c/d/e/z/c.md', './a/**/z/*.md', { format }));
     assert(isMatch('./a/b/c/j/e/z/c.md', './a/**/j/**/z/*.md', { format }));
     assert(isMatch('./a/b/z/.a', './a/**/z/.a', { format }));
@@ -1198,14 +1200,55 @@ describe('slash handling - posix', () => {
     assert(!isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*'));
     assert(!isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*'));
     assert(isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**'));
-    assert(!isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**', { noglobstar: true }));
+    assert(
+      !isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**', {
+        noglobstar: true
+      })
+    );
     assert(isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**'));
-    assert(isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**/app.min.js'));
-    assert(isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*/*/app.min.js'));
-    assert(isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*/*/app.min.js', { noglobstar: true }));
-    assert(!isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*/app.min.js'));
-    assert(!isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/*/app.min.js'));
-    assert(isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**/app.min.js'));
-    assert(!isMatch('https://foo.com/bar/baz/app.min.js', 'https://foo.com/**/app.min.js', { noglobstar: true }));
+    assert(
+      isMatch(
+        'https://foo.com/bar/baz/app.min.js',
+        'https://foo.com/**/app.min.js'
+      )
+    );
+    assert(
+      isMatch(
+        'https://foo.com/bar/baz/app.min.js',
+        'https://foo.com/*/*/app.min.js'
+      )
+    );
+    assert(
+      isMatch(
+        'https://foo.com/bar/baz/app.min.js',
+        'https://foo.com/*/*/app.min.js',
+        { noglobstar: true }
+      )
+    );
+    assert(
+      !isMatch(
+        'https://foo.com/bar/baz/app.min.js',
+        'https://foo.com/*/app.min.js'
+      )
+    );
+    assert(
+      !isMatch(
+        'https://foo.com/bar/baz/app.min.js',
+        'https://foo.com/*/app.min.js'
+      )
+    );
+    assert(
+      isMatch(
+        'https://foo.com/bar/baz/app.min.js',
+        'https://foo.com/**/app.min.js'
+      )
+    );
+    assert(
+      !isMatch(
+        'https://foo.com/bar/baz/app.min.js',
+        'https://foo.com/**/app.min.js',
+        { noglobstar: true }
+      )
+    );
   });
 });

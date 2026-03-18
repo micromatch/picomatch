@@ -12,8 +12,14 @@ const assertTokens = (actual, expected) => {
 describe('picomatch', () => {
   describe('validation', () => {
     it('should throw an error when invalid arguments are given', () => {
-      assert.throws(() => isMatch('foo', ''), /Expected pattern to be a non-empty string/);
-      assert.throws(() => isMatch('foo', null), /Expected pattern to be a non-empty string/);
+      assert.throws(
+        () => isMatch('foo', ''),
+        /Expected pattern to be a non-empty string/
+      );
+      assert.throws(
+        () => isMatch('foo', null),
+        /Expected pattern to be a non-empty string/
+      );
     });
   });
 
@@ -246,7 +252,9 @@ describe('picomatch', () => {
       assert(!isMatch('foo/baz/bar', 'foo**bar'));
       assert(!isMatch('foo/baz/bar', 'foo*bar'));
       assert(!isMatch('deep/foo/bar/baz', '**/bar/*/'));
-      assert(!isMatch('deep/foo/bar/baz/', '**/bar/*', { strictSlashes: true }));
+      assert(
+        !isMatch('deep/foo/bar/baz/', '**/bar/*', { strictSlashes: true })
+      );
       assert(isMatch('deep/foo/bar/baz/', '**/bar/*'));
       assert(isMatch('deep/foo/bar/baz', '**/bar/*'));
       assert(isMatch('foo', 'foo/**'));
@@ -358,7 +366,10 @@ describe('picomatch', () => {
           ['text', { output: undefined, value: 'js' }]
         ];
 
-        const keyValuePairs = tokens.map(token => [token.type, { output: token.output, value: token.value }]);
+        const keyValuePairs = tokens.map(token => [
+          token.type,
+          { output: token.output, value: token.value }
+        ]);
         assert.deepStrictEqual(keyValuePairs, expected);
       });
     });

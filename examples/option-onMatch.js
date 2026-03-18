@@ -2,7 +2,7 @@
 
 const pm = require('..');
 
-const onMatch = ({ glob, regex, input, output }) => {
+const onMatch = ({ input, output }) => {
   console.log({ input, output });
   // { input: 'some\\path', output: 'some/path' }
   // { input: 'some\\path', output: 'some/path' }

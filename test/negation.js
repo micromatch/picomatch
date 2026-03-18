@@ -49,24 +49,24 @@ describe('negation patterns - "!"', () => {
 
   it('should support multiple leading ! to toggle negation', () => {
     assert(!isMatch('abc', '!abc'));
-    assert(isMatch('abc',  '!!abc'));
+    assert(isMatch('abc', '!!abc'));
     assert(!isMatch('abc', '!!!abc'));
-    assert(isMatch('abc',  '!!!!abc'));
+    assert(isMatch('abc', '!!!!abc'));
     assert(!isMatch('abc', '!!!!!abc'));
-    assert(isMatch('abc',  '!!!!!!abc'));
+    assert(isMatch('abc', '!!!!!!abc'));
     assert(!isMatch('abc', '!!!!!!!abc'));
-    assert(isMatch('abc',  '!!!!!!!!abc'));
+    assert(isMatch('abc', '!!!!!!!!abc'));
   });
 
   it('should support negation extglobs after leading !', () => {
     assert(!isMatch('abc', '!(abc)'));
-    assert(isMatch('abc',  '!!(abc)'));
+    assert(isMatch('abc', '!!(abc)'));
     assert(!isMatch('abc', '!!!(abc)'));
-    assert(isMatch('abc',  '!!!!(abc)'));
+    assert(isMatch('abc', '!!!!(abc)'));
     assert(!isMatch('abc', '!!!!!(abc)'));
-    assert(isMatch('abc',  '!!!!!!(abc)'));
+    assert(isMatch('abc', '!!!!!!(abc)'));
     assert(!isMatch('abc', '!!!!!!!(abc)'));
-    assert(isMatch('abc',  '!!!!!!!!(abc)'));
+    assert(isMatch('abc', '!!!!!!!!(abc)'));
   });
 
   it('should support negation with globs', () => {

@@ -25,19 +25,41 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1" should not match "-*-*-*-*-*-*-12-*-*-*-m-*-*-*"', () => {
-    assert(!isMatch('-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*', { windows: true }));
+    assert(
+      !isMatch(
+        '-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1',
+        '-*-*-*-*-*-*-12-*-*-*-m-*-*-*',
+        { windows: true }
+      )
+    );
   });
 
   it('"-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1" should match "-*-*-*-*-*-*-12-*-*-*-m-*-*-*"', () => {
-    assert(isMatch('-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*', { windows: true }));
+    assert(
+      isMatch(
+        '-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1',
+        '-*-*-*-*-*-*-12-*-*-*-m-*-*-*',
+        { windows: true }
+      )
+    );
   });
 
   it('"-adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1" should not match "-*-*-*-*-*-*-12-*-*-*-m-*-*-*"', () => {
-    assert(!isMatch('-adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*', { windows: true }));
+    assert(
+      !isMatch(
+        '-adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1',
+        '-*-*-*-*-*-*-12-*-*-*-m-*-*-*',
+        { windows: true }
+      )
+    );
   });
 
   it('"/dev/udp/129.22.8.102/45" should match "/dev\\/@(tcp|udp)\\/*\\/*"', () => {
-    assert(isMatch('/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*', { windows: true }));
+    assert(
+      isMatch('/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*', {
+        windows: true
+      })
+    );
   });
 
   it('"/x/y/z" should match "/x/y/z"', () => {
@@ -933,11 +955,23 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txt" should match "**/*a*b*g*n*t"', () => {
-    assert(isMatch('abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txt', '**/*a*b*g*n*t', { windows: true }));
+    assert(
+      isMatch(
+        'abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txt',
+        '**/*a*b*g*n*t',
+        { windows: true }
+      )
+    );
   });
 
   it('"abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txtz" should not match "**/*a*b*g*n*t"', () => {
-    assert(!isMatch('abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txtz', '**/*a*b*g*n*t', { windows: true }));
+    assert(
+      !isMatch(
+        'abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txtz',
+        '**/*a*b*g*n*t',
+        { windows: true }
+      )
+    );
   });
 
   it('"abcdef" should match "(a+|b)*"', () => {
@@ -1869,7 +1903,9 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"effgz" should match "@(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
-    assert(isMatch('effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true }));
+    assert(
+      isMatch('effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true })
+    );
   });
 
   it('"efgz" should match "@(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
@@ -1885,7 +1921,11 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"egzefffgzbcdij" should match "*(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
-    assert(isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true }));
+    assert(
+      isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', {
+        windows: true
+      })
+    );
   });
 
   it('"f" should not match "!(f!(o))"', () => {
@@ -1965,7 +2005,9 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"fffooofoooooffoofffooofff" should match "*(*(f)*(o))"', () => {
-    assert(isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))', { windows: true }));
+    assert(
+      isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))', { windows: true })
+    );
   });
 
   it('"ffo" should match "*(f*(o))"', () => {
@@ -2177,11 +2219,15 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"foo/bar/baz.jsx" should match "foo/bar/**/*.+(js|jsx)"', () => {
-    assert(isMatch('foo/bar/baz.jsx', 'foo/bar/**/*.+(js|jsx)', { windows: true }));
+    assert(
+      isMatch('foo/bar/baz.jsx', 'foo/bar/**/*.+(js|jsx)', { windows: true })
+    );
   });
 
   it('"foo/bar/baz.jsx" should match "foo/bar/*.+(js|jsx)"', () => {
-    assert(isMatch('foo/bar/baz.jsx', 'foo/bar/*.+(js|jsx)', { windows: true }));
+    assert(
+      isMatch('foo/bar/baz.jsx', 'foo/bar/*.+(js|jsx)', { windows: true })
+    );
   });
 
   it('"foo/bb/aa/rr" should match "**/**/**"', () => {
@@ -2349,11 +2395,19 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"Makefile" should match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
-    assert(isMatch('Makefile', '!(*.c|*.h|Makefile.in|config*|README)', { windows: true }));
+    assert(
+      isMatch('Makefile', '!(*.c|*.h|Makefile.in|config*|README)', {
+        windows: true
+      })
+    );
   });
 
   it('"Makefile.in" should not match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
-    assert(!isMatch('Makefile.in', '!(*.c|*.h|Makefile.in|config*|README)', { windows: true }));
+    assert(
+      !isMatch('Makefile.in', '!(*.c|*.h|Makefile.in|config*|README)', {
+        windows: true
+      })
+    );
   });
 
   it('"moo" should match "!(*.*)"', () => {
@@ -2401,19 +2455,29 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"ofoooxoofxoofoooxoofxo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', { windows: true }));
+    assert(
+      isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', { windows: true })
+    );
   });
 
   it('"ofoooxoofxoofoooxoofxofo" should not match "*(*(of*(o)x)o)"', () => {
-    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)', { windows: true }));
+    assert(
+      !isMatch('ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)', { windows: true })
+    );
   });
 
   it('"ofoooxoofxoofoooxoofxoo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', { windows: true }));
+    assert(
+      isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', { windows: true })
+    );
   });
 
   it('"ofoooxoofxoofoooxoofxooofxofxo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', { windows: true }));
+    assert(
+      isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', {
+        windows: true
+      })
+    );
   });
 
   it('"ofxoofxo" should match "*(*(of*(o)x)o)"', () => {
@@ -2497,11 +2561,19 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"parse.y" should match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
-    assert(isMatch('parse.y', '!(*.c|*.h|Makefile.in|config*|README)', { windows: true }));
+    assert(
+      isMatch('parse.y', '!(*.c|*.h|Makefile.in|config*|README)', {
+        windows: true
+      })
+    );
   });
 
   it('"shell.c" should not match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
-    assert(!isMatch('shell.c', '!(*.c|*.h|Makefile.in|config*|README)', { windows: true }));
+    assert(
+      !isMatch('shell.c', '!(*.c|*.h|Makefile.in|config*|README)', {
+        windows: true
+      })
+    );
   });
 
   it('"VMS.FILE;" should not match "*\\;[1-9]*([0-9])"', () => {
@@ -2533,11 +2605,23 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"XXX/adobe/courier/bold/o/normal//12/120/75/75/m/70/iso8859/1" should match "XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*"', () => {
-    assert(isMatch('XXX/adobe/courier/bold/o/normal//12/120/75/75/m/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*', { windows: false }));
+    assert(
+      isMatch(
+        'XXX/adobe/courier/bold/o/normal//12/120/75/75/m/70/iso8859/1',
+        'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*',
+        { windows: false }
+      )
+    );
   });
 
   it('"XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1" should not match "XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*"', () => {
-    assert(!isMatch('XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*', { windows: true }));
+    assert(
+      !isMatch(
+        'XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1',
+        'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*',
+        { windows: true }
+      )
+    );
   });
 
   it('"z" should match "*(z)"', () => {

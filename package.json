@@ -21,18 +21,23 @@
     "node": ">=12"
   },
   "scripts": {
-    "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives --ignore-path .gitignore .",
+    "lint": "eslint --cache --cache-location node_modules/.cache/.eslintcache --report-unused-disable-directives .",
     "mocha": "mocha --reporter dot",
     "test": "npm run lint && npm run mocha",
     "test:ci": "npm run test:cover",
     "test:cover": "nyc npm run mocha"
   },
   "devDependencies": {
-    "eslint": "^8.57.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
     "fill-range": "^7.0.1",
+    "globals": "^17.4.0",
     "gulp-format-md": "^2.0.0",
     "mocha": "^10.4.0",
     "nyc": "^15.1.0",
+    "prettier": "^3.8.1",
     "time-require": "github:jonschlinkert/time-require"
   },
   "keywords": [

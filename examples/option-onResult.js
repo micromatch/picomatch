@@ -2,7 +2,7 @@
 
 const pm = require('..');
 
-const onResult = ({ glob, regex, input, output }) => {
+const onResult = ({ input, output }) => {
   console.log({ input, output });
 };
 

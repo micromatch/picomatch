@@ -7,9 +7,19 @@ const { isMatch } = require('..');
 
 describe('braces', () => {
   it('should not match with brace patterns when disabled', () => {
-    assert.deepStrictEqual(match(['a', 'b', 'c'], '{a,b,c,d}'), ['a', 'b', 'c']);
-    assert.deepStrictEqual(match(['a', 'b', 'c'], '{a,b,c,d}', { nobrace: true }), []);
-    assert.deepStrictEqual(match(['1', '2', '3'], '{1..2}', { nobrace: true }), []);
+    assert.deepStrictEqual(match(['a', 'b', 'c'], '{a,b,c,d}'), [
+      'a',
+      'b',
+      'c'
+    ]);
+    assert.deepStrictEqual(
+      match(['a', 'b', 'c'], '{a,b,c,d}', { nobrace: true }),
+      []
+    );
+    assert.deepStrictEqual(
+      match(['1', '2', '3'], '{1..2}', { nobrace: true }),
+      []
+    );
     assert(!isMatch('a/a', 'a/{a,b}', { nobrace: true }));
     assert(!isMatch('a/b', 'a/{a,b}', { nobrace: true }));
     assert(!isMatch('a/c', 'a/{a,b}', { nobrace: true }));
@@ -193,21 +203,35 @@ describe('braces', () => {
     const expandRange = (a, b) => `(${fill(a, b, { toRegex: true })})`;
 
     assert(!isMatch('foo/bar - 1', '*/* {4..10}', { expandRange }));
-    assert(!isMatch('foo/bar - copy (1)', '*/* - * \\({4..10}\\)', { expandRange }));
+    assert(
+      !isMatch('foo/bar - copy (1)', '*/* - * \\({4..10}\\)', { expandRange })
+    );
     assert(!isMatch('foo/bar (1)', '*/* \\({4..10}\\)', { expandRange }));
     assert(isMatch('foo/bar (4)', '*/* \\({4..10}\\)', { expandRange }));
     assert(isMatch('foo/bar (7)', '*/* \\({4..10}\\)', { expandRange }));
     assert(!isMatch('foo/bar (42)', '*/* \\({4..10}\\)', { expandRange }));
     assert(isMatch('foo/bar (42)', '*/* \\({4..43}\\)', { expandRange }));
     assert(isMatch('foo/bar - copy [1]', '*/* \\[{0..5}\\]', { expandRange }));
-    assert(isMatch('foo/bar - foo + bar - copy [1]', '*/* \\[{0..5}\\]', { expandRange }));
+    assert(
+      isMatch('foo/bar - foo + bar - copy [1]', '*/* \\[{0..5}\\]', {
+        expandRange
+      })
+    );
     assert(!isMatch('foo/bar - 1', '*/* \\({4..10}\\)', { expandRange }));
-    assert(!isMatch('foo/bar - copy (1)', '*/* \\({4..10}\\)', { expandRange }));
+    assert(
+      !isMatch('foo/bar - copy (1)', '*/* \\({4..10}\\)', { expandRange })
+    );
     assert(!isMatch('foo/bar (1)', '*/* \\({4..10}\\)', { expandRange }));
     assert(isMatch('foo/bar (4)', '*/* \\({4..10}\\)', { expandRange }));
     assert(isMatch('foo/bar (7)', '*/* \\({4..10}\\)', { expandRange }));
     assert(!isMatch('foo/bar (42)', '*/* \\({4..10}\\)', { expandRange }));
-    assert(!isMatch('foo/bar - copy [1]', '*/* \\({4..10}\\)', { expandRange }));
-    assert(!isMatch('foo/bar - foo + bar - copy [1]', '*/* \\({4..10}\\)', { expandRange }));
+    assert(
+      !isMatch('foo/bar - copy [1]', '*/* \\({4..10}\\)', { expandRange })
+    );
+    assert(
+      !isMatch('foo/bar - foo + bar - copy [1]', '*/* \\({4..10}\\)', {
+        expandRange
+      })
+    );
   });
 });

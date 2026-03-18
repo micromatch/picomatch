@@ -270,7 +270,9 @@ describe('special characters', () => {
       assert(isMatch('\\\\foo/bar', '//*/*', { windows: true }));
       assert(isMatch('\\\\unc\\admin$', '**', { windows: true }));
       assert(isMatch('\\\\unc\\admin$', '//*/*$', { windows: true }));
-      assert(isMatch('\\\\unc\\admin$\\system32', '//*/*$/*32', { windows: true }));
+      assert(
+        isMatch('\\\\unc\\admin$\\system32', '//*/*$/*32', { windows: true })
+      );
       assert(isMatch('\\\\unc\\share\\foo', '//u*/s*/f*', { windows: true }));
       assert(isMatch('foo\\bar\\baz', 'f*/*/*', { windows: true }));
     });
@@ -284,9 +286,16 @@ describe('special characters', () => {
       assert(isMatch('\\\\foo/bar', '//*/*', { windows: true }));
       assert(isMatch('\\\\unc\\admin$', '//**', { windows: true }));
       assert(isMatch('\\\\unc\\admin$', '//*/*$', { windows: true }));
-      assert(isMatch('\\\\unc\\admin$\\system32', '//*/*$/*32', { windows: true }));
+      assert(
+        isMatch('\\\\unc\\admin$\\system32', '//*/*$/*32', { windows: true })
+      );
       assert(isMatch('\\\\unc\\share\\foo', '//u*/s*/f*', { windows: true }));
-      assert(isMatch('\\\\\\\\\\\\unc\\share\\foo', '/\\{1,\\}u*/s*/f*', { windows: true, unescape: true }));
+      assert(
+        isMatch('\\\\\\\\\\\\unc\\share\\foo', '/\\{1,\\}u*/s*/f*', {
+          windows: true,
+          unescape: true
+        })
+      );
       assert(isMatch('foo\\bar\\baz', 'f*/*/*', { windows: true }));
       assert(isMatch('//*:/**', '**'));
       assert(!isMatch('//server/file', '//*'));

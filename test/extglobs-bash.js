@@ -17,7 +17,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"*(a|b[)" should not match "\\*\\(a|b\\[\\)"', () => {
-    assert(!isMatch('*(a|b[)', '\\*\\(a|b\\[\\)', { bash: true, windows: true }));
+    assert(
+      !isMatch('*(a|b[)', '\\*\\(a|b\\[\\)', { bash: true, windows: true })
+    );
   });
 
   it('"***" should match "\\*\\*\\*"', () => {
@@ -25,19 +27,42 @@ describe('extglobs (bash)', () => {
   });
 
   it('"-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1" should not match "-*-*-*-*-*-*-12-*-*-*-m-*-*-*"', () => {
-    assert(!isMatch('-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*', { bash: true, windows: true }));
+    assert(
+      !isMatch(
+        '-adobe-courier-bold-o-normal--12-120-75-75-/-70-iso8859-1',
+        '-*-*-*-*-*-*-12-*-*-*-m-*-*-*',
+        { bash: true, windows: true }
+      )
+    );
   });
 
   it('"-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1" should match "-*-*-*-*-*-*-12-*-*-*-m-*-*-*"', () => {
-    assert(isMatch('-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*', { bash: true, windows: true }));
+    assert(
+      isMatch(
+        '-adobe-courier-bold-o-normal--12-120-75-75-m-70-iso8859-1',
+        '-*-*-*-*-*-*-12-*-*-*-m-*-*-*',
+        { bash: true, windows: true }
+      )
+    );
   });
 
   it('"-adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1" should not match "-*-*-*-*-*-*-12-*-*-*-m-*-*-*"', () => {
-    assert(!isMatch('-adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1', '-*-*-*-*-*-*-12-*-*-*-m-*-*-*', { bash: true, windows: true }));
+    assert(
+      !isMatch(
+        '-adobe-courier-bold-o-normal--12-120-75-75-X-70-iso8859-1',
+        '-*-*-*-*-*-*-12-*-*-*-m-*-*-*',
+        { bash: true, windows: true }
+      )
+    );
   });
 
   it('"/dev/udp/129.22.8.102/45" should match "/dev\\/@(tcp|udp)\\/*\\/*"', () => {
-    assert(isMatch('/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*', { bash: true, windows: true }));
+    assert(
+      isMatch('/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"/x/y/z" should match "/x/y/z"', () => {
@@ -77,7 +102,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"123abc" should not match "a(b*(foo|bar))d"', () => {
-    assert(!isMatch('123abc', 'a(b*(foo|bar))d', { bash: true, windows: true }));
+    assert(
+      !isMatch('123abc', 'a(b*(foo|bar))d', { bash: true, windows: true })
+    );
   });
 
   it('"123abc" should not match "ab*(e|f)"', () => {
@@ -117,7 +144,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"137577991" should match "*(0|1|3|5|7|9)"', () => {
-    assert(isMatch('137577991', '*(0|1|3|5|7|9)', { bash: true, windows: true }));
+    assert(
+      isMatch('137577991', '*(0|1|3|5|7|9)', { bash: true, windows: true })
+    );
   });
 
   it('"2468" should not match "*(0|1|3|5|7|9)"', () => {
@@ -249,7 +278,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"a." should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
-    assert(!isMatch('a.', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true }));
+    assert(
+      !isMatch('a.', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true })
+    );
   });
 
   it('"a." should not match "*.+(b|d)"', () => {
@@ -297,7 +328,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"a.a" should match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
-    assert(isMatch('a.a', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true }));
+    assert(
+      isMatch('a.a', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true })
+    );
   });
 
   it('"a.a" should not match "*.+(b|d)"', () => {
@@ -313,7 +346,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"a.a.a" should not match "!(*[a-b].[a-b]*)"', () => {
-    assert(!isMatch('a.a.a', '!(*[a-b].[a-b]*)', { bash: true, windows: true }));
+    assert(
+      !isMatch('a.a.a', '!(*[a-b].[a-b]*)', { bash: true, windows: true })
+    );
   });
 
   it('"a.a.a" should not match "!*.(a|b)"', () => {
@@ -345,11 +380,15 @@ describe('extglobs (bash)', () => {
   });
 
   it('"a.abcd" should not match "!(*.a|*.b|*.c)*"', () => {
-    assert(!isMatch('a.abcd', '!(*.a|*.b|*.c)*', { bash: true, windows: true }));
+    assert(
+      !isMatch('a.abcd', '!(*.a|*.b|*.c)*', { bash: true, windows: true })
+    );
   });
 
   it('"a.abcd" should match "*!(*.a|*.b|*.c)*"', () => {
-    assert(isMatch('a.abcd', '*!(*.a|*.b|*.c)*', { bash: true, windows: true }));
+    assert(
+      isMatch('a.abcd', '*!(*.a|*.b|*.c)*', { bash: true, windows: true })
+    );
   });
 
   it('"a.abcd" should match "*!(.a|.b|.c)"', () => {
@@ -365,7 +404,12 @@ describe('extglobs (bash)', () => {
   });
 
   it('"a.abcd" should match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
-    assert(isMatch('a.abcd', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true }));
+    assert(
+      isMatch('a.abcd', '*.(a|b|@(ab|a*@(b))*(c)d)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"a.b" should not match "!(*.*)"', () => {
@@ -409,7 +453,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"a.b" should match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
-    assert(isMatch('a.b', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true }));
+    assert(
+      isMatch('a.b', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true })
+    );
   });
 
   it('"a.b" should match "*.+(b|d)"', () => {
@@ -465,7 +511,12 @@ describe('extglobs (bash)', () => {
   });
 
   it('"a.c" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
-    assert(!isMatch('a.c', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true }));
+    assert(
+      !isMatch('a.c', '*.(a|b|@(ab|a*@(b))*(c)d)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"a.c.d" should match "!(*.a|*.b|*.c)"', () => {
@@ -481,7 +532,12 @@ describe('extglobs (bash)', () => {
   });
 
   it('"a.c.d" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
-    assert(!isMatch('a.c.d', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true }));
+    assert(
+      !isMatch('a.c.d', '*.(a|b|@(ab|a*@(b))*(c)d)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"a.ccc" should match "!(*.[a-b]*)"', () => {
@@ -581,31 +637,48 @@ describe('extglobs (bash)', () => {
   });
 
   it('"a/b/c.txt" should not match "*/b/!(*).txt"', () => {
-    assert(!isMatch('a/b/c.txt', '*/b/!(*).txt', { bash: true, windows: true }));
+    assert(
+      !isMatch('a/b/c.txt', '*/b/!(*).txt', { bash: true, windows: true })
+    );
   });
 
   it('"a/b/c.txt" should not match "*/b/!(c).txt"', () => {
-    assert(!isMatch('a/b/c.txt', '*/b/!(c).txt', { bash: true, windows: true }));
+    assert(
+      !isMatch('a/b/c.txt', '*/b/!(c).txt', { bash: true, windows: true })
+    );
   });
 
   it('"a/b/c.txt" should match "*/b/!(cc).txt"', () => {
-    assert(isMatch('a/b/c.txt', '*/b/!(cc).txt', { bash: true, windows: true }));
+    assert(
+      isMatch('a/b/c.txt', '*/b/!(cc).txt', { bash: true, windows: true })
+    );
   });
 
   it('"a/b/cc.txt" should not match "*/b/!(*).txt"', () => {
-    assert(!isMatch('a/b/cc.txt', '*/b/!(*).txt', { bash: true, windows: true }));
+    assert(
+      !isMatch('a/b/cc.txt', '*/b/!(*).txt', { bash: true, windows: true })
+    );
   });
 
   it('"a/b/cc.txt" should not match "*/b/!(c).txt"', () => {
-    assert(!isMatch('a/b/cc.txt', '*/b/!(c).txt', { bash: true, windows: true }));
+    assert(
+      !isMatch('a/b/cc.txt', '*/b/!(c).txt', { bash: true, windows: true })
+    );
   });
 
   it('"a/b/cc.txt" should not match "*/b/!(cc).txt"', () => {
-    assert(!isMatch('a/b/cc.txt', '*/b/!(cc).txt', { bash: true, windows: true }));
+    assert(
+      !isMatch('a/b/cc.txt', '*/b/!(cc).txt', { bash: true, windows: true })
+    );
   });
 
   it('"a/dir/foo.txt" should match "*/dir/**/!(bar).txt"', () => {
-    assert(isMatch('a/dir/foo.txt', '*/dir/**/!(bar).txt', { bash: true, windows: true }));
+    assert(
+      isMatch('a/dir/foo.txt', '*/dir/**/!(bar).txt', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"a/z" should not match "a/!(z)"', () => {
@@ -838,11 +911,15 @@ describe('extglobs (bash)', () => {
   });
 
   it('"ab/cXd/efXg/hi" should match "**/*X*/**/*i"', () => {
-    assert(isMatch('ab/cXd/efXg/hi', '**/*X*/**/*i', { bash: true, windows: true }));
+    assert(
+      isMatch('ab/cXd/efXg/hi', '**/*X*/**/*i', { bash: true, windows: true })
+    );
   });
 
   it('"ab/cXd/efXg/hi" should match "*/*X*/*/*i"', () => {
-    assert(isMatch('ab/cXd/efXg/hi', '*/*X*/*/*i', { bash: true, windows: true }));
+    assert(
+      isMatch('ab/cXd/efXg/hi', '*/*X*/*/*i', { bash: true, windows: true })
+    );
   });
 
   it('"ab/cXd/efXg/hi" should match "*X*i"', () => {
@@ -938,11 +1015,23 @@ describe('extglobs (bash)', () => {
   });
 
   it('"abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txt" should match "**/*a*b*g*n*t"', () => {
-    assert(isMatch('abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txt', '**/*a*b*g*n*t', { bash: true, windows: true }));
+    assert(
+      isMatch(
+        'abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txt',
+        '**/*a*b*g*n*t',
+        { bash: true, windows: true }
+      )
+    );
   });
 
   it('"abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txtz" should not match "**/*a*b*g*n*t"', () => {
-    assert(!isMatch('abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txtz', '**/*a*b*g*n*t', { bash: true, windows: true }));
+    assert(
+      !isMatch(
+        'abcd/abcdefg/abcdefghijk/abcdefghijklmnop.txtz',
+        '**/*a*b*g*n*t',
+        { bash: true, windows: true }
+      )
+    );
   });
 
   it('"abcdef" should match "(a+|b)*"', () => {
@@ -958,7 +1047,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"abcdef" should not match "a(b*(foo|bar))d"', () => {
-    assert(!isMatch('abcdef', 'a(b*(foo|bar))d', { bash: true, windows: true }));
+    assert(
+      !isMatch('abcdef', 'a(b*(foo|bar))d', { bash: true, windows: true })
+    );
   });
 
   it('"abcdef" should not match "ab*(e|f)"', () => {
@@ -1006,7 +1097,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"abcfef" should not match "a(b*(foo|bar))d"', () => {
-    assert(!isMatch('abcfef', 'a(b*(foo|bar))d', { bash: true, windows: true }));
+    assert(
+      !isMatch('abcfef', 'a(b*(foo|bar))d', { bash: true, windows: true })
+    );
   });
 
   it('"abcfef" should not match "ab*(e|f)"', () => {
@@ -1054,7 +1147,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"abcfefg" should not match "a(b*(foo|bar))d"', () => {
-    assert(!isMatch('abcfefg', 'a(b*(foo|bar))d', { bash: true, windows: true }));
+    assert(
+      !isMatch('abcfefg', 'a(b*(foo|bar))d', { bash: true, windows: true })
+    );
   });
 
   it('"abcfefg" should not match "ab*(e|f)"', () => {
@@ -1306,7 +1401,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"accdef" should not match "a(b*(foo|bar))d"', () => {
-    assert(!isMatch('accdef', 'a(b*(foo|bar))d', { bash: true, windows: true }));
+    assert(
+      !isMatch('accdef', 'a(b*(foo|bar))d', { bash: true, windows: true })
+    );
   });
 
   it('"accdef" should not match "ab*(e|f)"', () => {
@@ -1658,7 +1755,12 @@ describe('extglobs (bash)', () => {
   });
 
   it('"c.c" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
-    assert(!isMatch('c.c', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true }));
+    assert(
+      !isMatch('c.c', '*.(a|b|@(ab|a*@(b))*(c)d)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"c.ccc" should match "!(*.[a-b]*)"', () => {
@@ -1834,7 +1936,12 @@ describe('extglobs (bash)', () => {
   });
 
   it('"d.d" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
-    assert(!isMatch('d.d', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true }));
+    assert(
+      !isMatch('d.d', '*.(a|b|@(ab|a*@(b))*(c)d)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"d.js.d" should match "!(*.js)"', () => {
@@ -1874,7 +1981,12 @@ describe('extglobs (bash)', () => {
   });
 
   it('"e.e" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
-    assert(!isMatch('e.e', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true }));
+    assert(
+      !isMatch('e.e', '*.(a|b|@(ab|a*@(b))*(c)d)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"ef" should match "()ef"', () => {
@@ -1882,23 +1994,48 @@ describe('extglobs (bash)', () => {
   });
 
   it('"effgz" should match "@(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
-    assert(isMatch('effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { bash: true, windows: true }));
+    assert(
+      isMatch('effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"efgz" should match "@(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
-    assert(isMatch('efgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { bash: true, windows: true }));
+    assert(
+      isMatch('efgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"egz" should match "@(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
-    assert(isMatch('egz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { bash: true, windows: true }));
+    assert(
+      isMatch('egz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"egz" should not match "@(b+(c)d|e+(f)g?|?(h)i@(j|k))"', () => {
-    assert(!isMatch('egz', '@(b+(c)d|e+(f)g?|?(h)i@(j|k))', { bash: true, windows: true }));
+    assert(
+      !isMatch('egz', '@(b+(c)d|e+(f)g?|?(h)i@(j|k))', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"egzefffgzbcdij" should match "*(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
-    assert(isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', { bash: true, windows: true }));
+    assert(
+      isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"f" should not match "!(f!(o))"', () => {
@@ -1946,7 +2083,12 @@ describe('extglobs (bash)', () => {
   });
 
   it('"f.f" should not match "*.(a|b|@(ab|a*@(b))*(c)d)"', () => {
-    assert(!isMatch('f.f', '*.(a|b|@(ab|a*@(b))*(c)d)', { bash: true, windows: true }));
+    assert(
+      !isMatch('f.f', '*.(a|b|@(ab|a*@(b))*(c)d)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"fa" should not match "!(f!(o))"', () => {
@@ -1978,7 +2120,12 @@ describe('extglobs (bash)', () => {
   });
 
   it('"fffooofoooooffoofffooofff" should match "*(*(f)*(o))"', () => {
-    assert(isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))', { bash: true, windows: true }));
+    assert(
+      isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"ffo" should match "*(f*(o))"', () => {
@@ -2014,11 +2161,15 @@ describe('extglobs (bash)', () => {
   });
 
   it('"fofoofoofofoo" should match "*(fo|foo)"', () => {
-    assert(isMatch('fofoofoofofoo', '*(fo|foo)', { bash: true, windows: true }));
+    assert(
+      isMatch('fofoofoofofoo', '*(fo|foo)', { bash: true, windows: true })
+    );
   });
 
   it('"fofoofoofofoo" should match "*(fo|foo)"', () => {
-    assert(isMatch('fofoofoofofoo', '*(fo|foo)', { bash: true, windows: true }));
+    assert(
+      isMatch('fofoofoofofoo', '*(fo|foo)', { bash: true, windows: true })
+    );
   });
 
   it('"foo" should match "!(!(foo))"', () => {
@@ -2154,7 +2305,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foo.js.js" should not match "*.!(js)*.!(js)"', () => {
-    assert(!isMatch('foo.js.js', '*.!(js)*.!(js)', { bash: true, windows: true }));
+    assert(
+      !isMatch('foo.js.js', '*.!(js)*.!(js)', { bash: true, windows: true })
+    );
   });
 
   it('"foo.js.js" should not match "*.!(js)+"', () => {
@@ -2190,11 +2343,21 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foo/bar/baz.jsx" should match "foo/bar/**/*.+(js|jsx)"', () => {
-    assert(isMatch('foo/bar/baz.jsx', 'foo/bar/**/*.+(js|jsx)', { bash: true, windows: true }));
+    assert(
+      isMatch('foo/bar/baz.jsx', 'foo/bar/**/*.+(js|jsx)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"foo/bar/baz.jsx" should match "foo/bar/*.+(js|jsx)"', () => {
-    assert(isMatch('foo/bar/baz.jsx', 'foo/bar/*.+(js|jsx)', { bash: true, windows: true }));
+    assert(
+      isMatch('foo/bar/baz.jsx', 'foo/bar/*.+(js|jsx)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"foo/bb/aa/rr" should match "**/**/**"', () => {
@@ -2290,11 +2453,21 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foofoofo" should match "@(foo|f|fo)*(f|of+(o))"', () => {
-    assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { bash: true, windows: true }));
+    assert(
+      isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"foofoofo" should match "@(foo|f|fo)*(f|of+(o))"', () => {
-    assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { bash: true, windows: true }));
+    assert(
+      isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"fooofoofofooo" should match "*(f*(o))"', () => {
@@ -2318,15 +2491,21 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foooxfooxfoxfooox" should match "*(f*(o)x)"', () => {
-    assert(isMatch('foooxfooxfoxfooox', '*(f*(o)x)', { bash: true, windows: true }));
+    assert(
+      isMatch('foooxfooxfoxfooox', '*(f*(o)x)', { bash: true, windows: true })
+    );
   });
 
   it('"foooxfooxfxfooox" should match "*(f*(o)x)"', () => {
-    assert(isMatch('foooxfooxfxfooox', '*(f*(o)x)', { bash: true, windows: true }));
+    assert(
+      isMatch('foooxfooxfxfooox', '*(f*(o)x)', { bash: true, windows: true })
+    );
   });
 
   it('"foooxfooxofoxfooox" should not match "*(f*(o)x)"', () => {
-    assert(!isMatch('foooxfooxofoxfooox', '*(f*(o)x)', { bash: true, windows: true }));
+    assert(
+      !isMatch('foooxfooxofoxfooox', '*(f*(o)x)', { bash: true, windows: true })
+    );
   });
 
   it('"foot" should match "@(!(z*)|*x)"', () => {
@@ -2362,7 +2541,9 @@ describe('extglobs (bash)', () => {
   });
 
   it('"mad.moo.cow" should not match "!(*.*).!(*.*)"', () => {
-    assert(!isMatch('mad.moo.cow', '!(*.*).!(*.*)', { bash: true, windows: true }));
+    assert(
+      !isMatch('mad.moo.cow', '!(*.*).!(*.*)', { bash: true, windows: true })
+    );
   });
 
   it('"mad.moo.cow" should not match ".!(*.*)"', () => {
@@ -2370,11 +2551,21 @@ describe('extglobs (bash)', () => {
   });
 
   it('"Makefile" should match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
-    assert(isMatch('Makefile', '!(*.c|*.h|Makefile.in|config*|README)', { bash: true, windows: true }));
+    assert(
+      isMatch('Makefile', '!(*.c|*.h|Makefile.in|config*|README)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"Makefile.in" should not match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
-    assert(!isMatch('Makefile.in', '!(*.c|*.h|Makefile.in|config*|README)', { bash: true, windows: true }));
+    assert(
+      !isMatch('Makefile.in', '!(*.c|*.h|Makefile.in|config*|README)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"moo" should match "!(*.*)"', () => {
@@ -2402,7 +2593,12 @@ describe('extglobs (bash)', () => {
   });
 
   it('"mucca.pazza" should not match "mu!(*(c))?.pa!(*(z))?"', () => {
-    assert(!isMatch('mucca.pazza', 'mu!(*(c))?.pa!(*(z))?', { bash: true, windows: true }));
+    assert(
+      !isMatch('mucca.pazza', 'mu!(*(c))?.pa!(*(z))?', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"ofoofo" should match "*(of+(o))"', () => {
@@ -2414,31 +2610,57 @@ describe('extglobs (bash)', () => {
   });
 
   it('"ofooofoofofooo" should not match "*(f*(o))"', () => {
-    assert(!isMatch('ofooofoofofooo', '*(f*(o))', { bash: true, windows: true }));
+    assert(
+      !isMatch('ofooofoofofooo', '*(f*(o))', { bash: true, windows: true })
+    );
   });
 
   it('"ofoooxoofxo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(
+      isMatch('ofoooxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true })
+    );
   });
 
   it('"ofoooxoofxoofoooxoofxo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(
+      isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"ofoooxoofxoofoooxoofxofo" should not match "*(*(of*(o)x)o)"', () => {
-    assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(
+      !isMatch('ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"ofoooxoofxoofoooxoofxoo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(
+      isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"ofoooxoofxoofoooxoofxooofxofxo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(
+      isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"ofxoofxo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(
+      isMatch('ofxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true })
+    );
   });
 
   it('"oofooofo" should match "*(of|oof+(o))"', () => {
@@ -2474,19 +2696,30 @@ describe('extglobs (bash)', () => {
   });
 
   it('"para.38" should match "para!(*.[00-09])"', () => {
-    assert(isMatch('para.38', 'para!(*.[00-09])', { bash: true, windows: true }));
+    assert(
+      isMatch('para.38', 'para!(*.[00-09])', { bash: true, windows: true })
+    );
   });
 
   it('"para.graph" should match "para!(*.[0-9])"', () => {
-    assert(isMatch('para.graph', 'para!(*.[0-9])', { bash: true, windows: true }));
+    assert(
+      isMatch('para.graph', 'para!(*.[0-9])', { bash: true, windows: true })
+    );
   });
 
   it('"para13829383746592" should match "para*([0-9])"', () => {
-    assert(isMatch('para13829383746592', 'para*([0-9])', { bash: true, windows: true }));
+    assert(
+      isMatch('para13829383746592', 'para*([0-9])', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"para381" should not match "para?([345]|99)1"', () => {
-    assert(!isMatch('para381', 'para?([345]|99)1', { bash: true, windows: true }));
+    assert(
+      !isMatch('para381', 'para?([345]|99)1', { bash: true, windows: true })
+    );
   });
 
   it('"para39" should match "para!(*.[0-9])"', () => {
@@ -2494,63 +2727,105 @@ describe('extglobs (bash)', () => {
   });
 
   it('"para987346523" should match "para+([0-9])"', () => {
-    assert(isMatch('para987346523', 'para+([0-9])', { bash: true, windows: true }));
+    assert(
+      isMatch('para987346523', 'para+([0-9])', { bash: true, windows: true })
+    );
   });
 
   it('"para991" should match "para?([345]|99)1"', () => {
-    assert(isMatch('para991', 'para?([345]|99)1', { bash: true, windows: true }));
+    assert(
+      isMatch('para991', 'para?([345]|99)1', { bash: true, windows: true })
+    );
   });
 
   it('"paragraph" should match "para!(*.[0-9])"', () => {
-    assert(isMatch('paragraph', 'para!(*.[0-9])', { bash: true, windows: true }));
+    assert(
+      isMatch('paragraph', 'para!(*.[0-9])', { bash: true, windows: true })
+    );
   });
 
   it('"paragraph" should not match "para*([0-9])"', () => {
-    assert(!isMatch('paragraph', 'para*([0-9])', { bash: true, windows: true }));
+    assert(
+      !isMatch('paragraph', 'para*([0-9])', { bash: true, windows: true })
+    );
   });
 
   it('"paragraph" should match "para@(chute|graph)"', () => {
-    assert(isMatch('paragraph', 'para@(chute|graph)', { bash: true, windows: true }));
+    assert(
+      isMatch('paragraph', 'para@(chute|graph)', { bash: true, windows: true })
+    );
   });
 
   it('"paramour" should not match "para@(chute|graph)"', () => {
-    assert(!isMatch('paramour', 'para@(chute|graph)', { bash: true, windows: true }));
+    assert(
+      !isMatch('paramour', 'para@(chute|graph)', { bash: true, windows: true })
+    );
   });
 
   it('"parse.y" should match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
-    assert(isMatch('parse.y', '!(*.c|*.h|Makefile.in|config*|README)', { bash: true, windows: true }));
+    assert(
+      isMatch('parse.y', '!(*.c|*.h|Makefile.in|config*|README)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"shell.c" should not match "!(*.c|*.h|Makefile.in|config*|README)"', () => {
-    assert(!isMatch('shell.c', '!(*.c|*.h|Makefile.in|config*|README)', { bash: true, windows: true }));
+    assert(
+      !isMatch('shell.c', '!(*.c|*.h|Makefile.in|config*|README)', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"VMS.FILE;" should not match "*\\;[1-9]*([0-9])"', () => {
-    assert(!isMatch('VMS.FILE;', '*\\;[1-9]*([0-9])', { bash: true, windows: true }));
+    assert(
+      !isMatch('VMS.FILE;', '*\\;[1-9]*([0-9])', { bash: true, windows: true })
+    );
   });
 
   it('"VMS.FILE;0" should not match "*\\;[1-9]*([0-9])"', () => {
-    assert(!isMatch('VMS.FILE;0', '*\\;[1-9]*([0-9])', { bash: true, windows: true }));
+    assert(
+      !isMatch('VMS.FILE;0', '*\\;[1-9]*([0-9])', { bash: true, windows: true })
+    );
   });
 
   it('"VMS.FILE;9" should match "*\\;[1-9]*([0-9])"', () => {
-    assert(isMatch('VMS.FILE;9', '*\\;[1-9]*([0-9])', { bash: true, windows: true }));
+    assert(
+      isMatch('VMS.FILE;9', '*\\;[1-9]*([0-9])', { bash: true, windows: true })
+    );
   });
 
   it('"VMS.FILE;1" should match "*\\;[1-9]*([0-9])"', () => {
-    assert(isMatch('VMS.FILE;1', '*\\;[1-9]*([0-9])', { bash: true, windows: true }));
+    assert(
+      isMatch('VMS.FILE;1', '*\\;[1-9]*([0-9])', { bash: true, windows: true })
+    );
   });
 
   it('"VMS.FILE;1" should match "*;[1-9]*([0-9])"', () => {
-    assert(isMatch('VMS.FILE;1', '*;[1-9]*([0-9])', { bash: true, windows: true }));
+    assert(
+      isMatch('VMS.FILE;1', '*;[1-9]*([0-9])', { bash: true, windows: true })
+    );
   });
 
   it('"VMS.FILE;139" should match "*\\;[1-9]*([0-9])"', () => {
-    assert(isMatch('VMS.FILE;139', '*\\;[1-9]*([0-9])', { bash: true, windows: true }));
+    assert(
+      isMatch('VMS.FILE;139', '*\\;[1-9]*([0-9])', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"VMS.FILE;1N" should not match "*\\;[1-9]*([0-9])"', () => {
-    assert(!isMatch('VMS.FILE;1N', '*\\;[1-9]*([0-9])', { bash: true, windows: true }));
+    assert(
+      !isMatch('VMS.FILE;1N', '*\\;[1-9]*([0-9])', {
+        bash: true,
+        windows: true
+      })
+    );
   });
 
   it('"xfoooofof" should not match "*(f*(o))"', () => {
@@ -2558,11 +2833,23 @@ describe('extglobs (bash)', () => {
   });
 
   it('"XXX/adobe/courier/bold/o/normal//12/120/75/75/m/70/iso8859/1" should match "XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*"', () => {
-    assert(isMatch('XXX/adobe/courier/bold/o/normal//12/120/75/75/m/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*', { bash: true, windows: false }));
+    assert(
+      isMatch(
+        'XXX/adobe/courier/bold/o/normal//12/120/75/75/m/70/iso8859/1',
+        'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*',
+        { bash: true, windows: false }
+      )
+    );
   });
 
   it('"XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1" should not match "XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*"', () => {
-    assert(!isMatch('XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1', 'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*', { bash: true, windows: true }));
+    assert(
+      !isMatch(
+        'XXX/adobe/courier/bold/o/normal//12/120/75/75/X/70/iso8859/1',
+        'XXX/*/*/*/*/*/*/12/*/*/*/m/*/*/*',
+        { bash: true, windows: true }
+      )
+    );
   });
 
   it('"z" should match "*(z)"', () => {
@@ -2601,4 +2888,3 @@ describe('extglobs (bash)', () => {
     assert(!isMatch('zz', '(a+|b)*', { bash: true, windows: true }));
   });
 });
-

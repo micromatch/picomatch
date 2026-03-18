@@ -26,13 +26,17 @@ describe('minimatch parity:', () => {
     it('https://github.com/isaacs/minimatch/issues/50', () => {
       assert(isMatch('foo/bar-[ABC].txt', 'foo/**/*-\\[ABC\\].txt'));
       assert(!isMatch('foo/bar-[ABC].txt', 'foo/**/*-\\[abc\\].txt'));
-      assert(isMatch('foo/bar-[ABC].txt', 'foo/**/*-\\[abc\\].txt', { nocase: true }));
+      assert(
+        isMatch('foo/bar-[ABC].txt', 'foo/**/*-\\[abc\\].txt', { nocase: true })
+      );
     });
 
     it('https://github.com/isaacs/minimatch/issues/67 (should work consistently with `makeRe` and matcher functions)', () => {
       const re = makeRe('node_modules/foobar/**/*.bar');
       assert(re.test('node_modules/foobar/foo.bar'));
-      assert(isMatch('node_modules/foobar/foo.bar', 'node_modules/foobar/**/*.bar'));
+      assert(
+        isMatch('node_modules/foobar/foo.bar', 'node_modules/foobar/**/*.bar')
+      );
     });
 
     it('https://github.com/isaacs/minimatch/issues/75', () => {
