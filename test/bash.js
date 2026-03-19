@@ -208,7 +208,7 @@ describe('from the Bash 4.3 spec/unit tests', () => {
     assert(!isMatch('d', "'***'"));
     assert(!isMatch('dd', "'***'"));
     assert(!isMatch('de', "'***'"));
-    assert(isMatch("'***'", "'***'"));
+    assert(isMatch('\'***\'', "'***'"));
 
     assert(!isMatch('*', '"***"'));
     assert(!isMatch('**', '"***"'));

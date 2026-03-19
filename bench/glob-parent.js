@@ -68,9 +68,7 @@ bench('*.js { parts: true, tokens: true }')
   .run();
 
 bench('foo/bar/baz { parts: true, tokens: true }')
-  .add('picomatch.scan', () =>
-    scan('foo/bar/baz', { parts: true, tokens: true })
-  )
+  .add('picomatch.scan', () => scan('foo/bar/baz', { parts: true, tokens: true }))
   .add('   glob-parent', () => parent('foo/bar/baz'))
   .run();
 
@@ -80,8 +78,6 @@ bench('foo/*.js { parts: true, tokens: true }')
   .run();
 
 bench('foo/{a,b}/*.js { parts: true, tokens: true }')
-  .add('picomatch.scan', () =>
-    scan('foo/{a,b}/*.js', { parts: true, tokens: true })
-  )
+  .add('picomatch.scan', () => scan('foo/{a,b}/*.js', { parts: true, tokens: true }))
   .add('   glob-parent', () => parent('foo/{a,b}/*.js'))
   .run();

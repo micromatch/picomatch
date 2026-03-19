@@ -356,9 +356,7 @@ describe('extglobs', () => {
       assert(!isMatch('xx', 'foo/!(foo)', { windows: true }));
 
       assert(!isMatch('ffffffo', '(foo)bb', { windows: true }));
-      assert(
-        !isMatch('fffooofoooooffoofffooofff', '(foo)bb', { windows: true })
-      );
+      assert(!isMatch('fffooofoooooffoofffooofff', '(foo)bb', { windows: true }));
       assert(!isMatch('ffo', '(foo)bb', { windows: true }));
       assert(!isMatch('fofo', '(foo)bb', { windows: true }));
       assert(!isMatch('fofoofoofofoo', '(foo)bb', { windows: true }));
@@ -379,13 +377,9 @@ describe('extglobs', () => {
       assert(!isMatch('ofooofoofofooo', '(foo)bb', { windows: true }));
       assert(!isMatch('ofoooxoofxo', '(foo)bb', { windows: true }));
       assert(!isMatch('ofoooxoofxoofoooxoofxo', '(foo)bb', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '(foo)bb', { windows: true })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '(foo)bb', { windows: true }));
       assert(!isMatch('ofoooxoofxoofoooxoofxoo', '(foo)bb', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '(foo)bb', { windows: true })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '(foo)bb', { windows: true }));
       assert(!isMatch('ofxoofxo', '(foo)bb', { windows: true }));
       assert(!isMatch('oofooofo', '(foo)bb', { windows: true }));
       assert(!isMatch('ooo', '(foo)bb', { windows: true }));
@@ -394,9 +388,7 @@ describe('extglobs', () => {
       assert(!isMatch('xfoooofof', '(foo)bb', { windows: true }));
 
       assert(isMatch('ffffffo', '*(*(f)*(o))', { windows: true }));
-      assert(
-        isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))', { windows: true })
-      );
+      assert(isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))', { windows: true }));
       assert(isMatch('ffo', '*(*(f)*(o))', { windows: true }));
       assert(isMatch('fofo', '*(*(f)*(o))', { windows: true }));
       assert(isMatch('fofoofoofofoo', '*(*(f)*(o))', { windows: true }));
@@ -416,20 +408,10 @@ describe('extglobs', () => {
       assert(isMatch('ofoofo', '*(*(f)*(o))', { windows: true }));
       assert(isMatch('ofooofoofofooo', '*(*(f)*(o))', { windows: true }));
       assert(!isMatch('ofoooxoofxo', '*(*(f)*(o))', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxo', '*(*(f)*(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(*(f)*(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxoo', '*(*(f)*(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(f)*(o))', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(*(f)*(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(*(f)*(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(*(f)*(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(f)*(o))', { windows: true }));
       assert(!isMatch('ofxoofxo', '*(*(f)*(o))', { windows: true }));
       assert(isMatch('oofooofo', '*(*(f)*(o))', { windows: true }));
       assert(isMatch('ooo', '*(*(f)*(o))', { windows: true }));
@@ -438,11 +420,7 @@ describe('extglobs', () => {
       assert(!isMatch('xfoooofof', '*(*(f)*(o))', { windows: true }));
 
       assert(!isMatch('ffffffo', '*(*(of*(o)x)o)', { windows: true }));
-      assert(
-        !isMatch('fffooofoooooffoofffooofff', '*(*(of*(o)x)o)', {
-          windows: true
-        })
-      );
+      assert(!isMatch('fffooofoooooffoofffooofff', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('ffo', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('fofo', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('fofoofoofofoo', '*(*(of*(o)x)o)', { windows: true }));
@@ -454,34 +432,18 @@ describe('extglobs', () => {
       assert(!isMatch('foooofo', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('foooofof', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('foooofofx', '*(*(of*(o)x)o)', { windows: true }));
-      assert(
-        !isMatch('foooxfooxfoxfooox', '*(*(of*(o)x)o)', { windows: true })
-      );
+      assert(!isMatch('foooxfooxfoxfooox', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('foooxfooxfxfooox', '*(*(of*(o)x)o)', { windows: true }));
-      assert(
-        !isMatch('foooxfooxofoxfooox', '*(*(of*(o)x)o)', { windows: true })
-      );
+      assert(!isMatch('foooxfooxofoxfooox', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('foot', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('foox', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('ofoofo', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('ofooofoofofooo', '*(*(of*(o)x)o)', { windows: true }));
       assert(isMatch('ofoooxoofxo', '*(*(of*(o)x)o)', { windows: true }));
-      assert(
-        isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)', {
-          windows: true
-        })
-      );
-      assert(
-        isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', { windows: true })
-      );
-      assert(
-        isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', {
-          windows: true
-        })
-      );
+      assert(isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)', { windows: true }));
+      assert(isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', { windows: true }));
+      assert(isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', { windows: true }));
       assert(isMatch('ofxoofxo', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('oofooofo', '*(*(of*(o)x)o)', { windows: true }));
       assert(isMatch('ooo', '*(*(of*(o)x)o)', { windows: true }));
@@ -490,9 +452,7 @@ describe('extglobs', () => {
       assert(!isMatch('xfoooofof', '*(*(of*(o)x)o)', { windows: true }));
 
       assert(isMatch('ffffffo', '*(f*(o))', { windows: true }));
-      assert(
-        isMatch('fffooofoooooffoofffooofff', '*(f*(o))', { windows: true })
-      );
+      assert(isMatch('fffooofoooooffoofffooofff', '*(f*(o))', { windows: true }));
       assert(isMatch('ffo', '*(f*(o))', { windows: true }));
       assert(isMatch('fofo', '*(f*(o))', { windows: true }));
       assert(isMatch('fofoofoofofoo', '*(f*(o))', { windows: true }));
@@ -513,17 +473,9 @@ describe('extglobs', () => {
       assert(!isMatch('ofooofoofofooo', '*(f*(o))', { windows: true }));
       assert(!isMatch('ofoooxoofxo', '*(f*(o))', { windows: true }));
       assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(f*(o))', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(f*(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxoo', '*(f*(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(f*(o))', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(f*(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(f*(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(f*(o))', { windows: true }));
       assert(!isMatch('ofxoofxo', '*(f*(o))', { windows: true }));
       assert(!isMatch('oofooofo', '*(f*(o))', { windows: true }));
       assert(!isMatch('ooo', '*(f*(o))', { windows: true }));
@@ -532,9 +484,7 @@ describe('extglobs', () => {
       assert(!isMatch('xfoooofof', '*(f*(o))', { windows: true }));
 
       assert(!isMatch('ffffffo', '*(f*(o)x)', { windows: true }));
-      assert(
-        !isMatch('fffooofoooooffoofffooofff', '*(f*(o)x)', { windows: true })
-      );
+      assert(!isMatch('fffooofoooooffoofffooofff', '*(f*(o)x)', { windows: true }));
       assert(!isMatch('ffo', '*(f*(o)x)', { windows: true }));
       assert(!isMatch('fofo', '*(f*(o)x)', { windows: true }));
       assert(!isMatch('fofoofoofofoo', '*(f*(o)x)', { windows: true }));
@@ -554,20 +504,10 @@ describe('extglobs', () => {
       assert(!isMatch('ofoofo', '*(f*(o)x)', { windows: true }));
       assert(!isMatch('ofooofoofofooo', '*(f*(o)x)', { windows: true }));
       assert(!isMatch('ofoooxoofxo', '*(f*(o)x)', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxo', '*(f*(o)x)', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(f*(o)x)', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxoo', '*(f*(o)x)', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(f*(o)x)', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(f*(o)x)', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(f*(o)x)', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(f*(o)x)', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(f*(o)x)', { windows: true }));
       assert(!isMatch('ofxoofxo', '*(f*(o)x)', { windows: true }));
       assert(!isMatch('oofooofo', '*(f*(o)x)', { windows: true }));
       assert(!isMatch('ooo', '*(f*(o)x)', { windows: true }));
@@ -576,9 +516,7 @@ describe('extglobs', () => {
       assert(!isMatch('xfoooofof', '*(f*(o)x)', { windows: true }));
 
       assert(!isMatch('ffffffo', '*(f+(o))', { windows: true }));
-      assert(
-        !isMatch('fffooofoooooffoofffooofff', '*(f+(o))', { windows: true })
-      );
+      assert(!isMatch('fffooofoooooffoofffooofff', '*(f+(o))', { windows: true }));
       assert(!isMatch('ffo', '*(f+(o))', { windows: true }));
       assert(isMatch('fofo', '*(f+(o))', { windows: true }));
       assert(isMatch('fofoofoofofoo', '*(f+(o))', { windows: true }));
@@ -599,17 +537,9 @@ describe('extglobs', () => {
       assert(!isMatch('ofooofoofofooo', '*(f+(o))', { windows: true }));
       assert(!isMatch('ofoooxoofxo', '*(f+(o))', { windows: true }));
       assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(f+(o))', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(f+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxoo', '*(f+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(f+(o))', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(f+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(f+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(f+(o))', { windows: true }));
       assert(!isMatch('ofxoofxo', '*(f+(o))', { windows: true }));
       assert(!isMatch('oofooofo', '*(f+(o))', { windows: true }));
       assert(!isMatch('ooo', '*(f+(o))', { windows: true }));
@@ -618,9 +548,7 @@ describe('extglobs', () => {
       assert(!isMatch('xfoooofof', '*(f+(o))', { windows: true }));
 
       assert(!isMatch('ffffffo', '*(of+(o))', { windows: true }));
-      assert(
-        !isMatch('fffooofoooooffoofffooofff', '*(of+(o))', { windows: true })
-      );
+      assert(!isMatch('fffooofoooooffoofffooofff', '*(of+(o))', { windows: true }));
       assert(!isMatch('ffo', '*(of+(o))', { windows: true }));
       assert(!isMatch('fofo', '*(of+(o))', { windows: true }));
       assert(!isMatch('fofoofoofofoo', '*(of+(o))', { windows: true }));
@@ -640,20 +568,10 @@ describe('extglobs', () => {
       assert(isMatch('ofoofo', '*(of+(o))', { windows: true }));
       assert(!isMatch('ofooofoofofooo', '*(of+(o))', { windows: true }));
       assert(!isMatch('ofoooxoofxo', '*(of+(o))', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxo', '*(of+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(of+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxoo', '*(of+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(of+(o))', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(of+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(of+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(of+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(of+(o))', { windows: true }));
       assert(!isMatch('ofxoofxo', '*(of+(o))', { windows: true }));
       assert(!isMatch('oofooofo', '*(of+(o))', { windows: true }));
       assert(!isMatch('ooo', '*(of+(o))', { windows: true }));
@@ -662,9 +580,7 @@ describe('extglobs', () => {
       assert(!isMatch('xfoooofof', '*(of+(o))', { windows: true }));
 
       assert(!isMatch('ffffffo', '*(of+(o)|f)', { windows: true }));
-      assert(
-        !isMatch('fffooofoooooffoofffooofff', '*(of+(o)|f)', { windows: true })
-      );
+      assert(!isMatch('fffooofoooooffoofffooofff', '*(of+(o)|f)', { windows: true }));
       assert(!isMatch('ffo', '*(of+(o)|f)', { windows: true }));
       assert(isMatch('fofo', '*(of+(o)|f)', { windows: true }));
       assert(isMatch('fofoofoofofoo', '*(of+(o)|f)', { windows: true }));
@@ -684,20 +600,10 @@ describe('extglobs', () => {
       assert(isMatch('ofoofo', '*(of+(o)|f)', { windows: true }));
       assert(isMatch('ofooofoofofooo', '*(of+(o)|f)', { windows: true }));
       assert(!isMatch('ofoooxoofxo', '*(of+(o)|f)', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxo', '*(of+(o)|f)', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(of+(o)|f)', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxoo', '*(of+(o)|f)', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(of+(o)|f)', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(of+(o)|f)', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(of+(o)|f)', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(of+(o)|f)', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(of+(o)|f)', { windows: true }));
       assert(!isMatch('ofxoofxo', '*(of+(o)|f)', { windows: true }));
       assert(!isMatch('oofooofo', '*(of+(o)|f)', { windows: true }));
       assert(!isMatch('ooo', '*(of+(o)|f)', { windows: true }));
@@ -706,11 +612,7 @@ describe('extglobs', () => {
       assert(!isMatch('xfoooofof', '*(of+(o)|f)', { windows: true }));
 
       assert(!isMatch('ffffffo', '*(of|oof+(o))', { windows: true }));
-      assert(
-        !isMatch('fffooofoooooffoofffooofff', '*(of|oof+(o))', {
-          windows: true
-        })
-      );
+      assert(!isMatch('fffooofoooooffoofffooofff', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('ffo', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('fofo', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('fofoofoofofoo', '*(of|oof+(o))', { windows: true }));
@@ -724,28 +626,16 @@ describe('extglobs', () => {
       assert(!isMatch('foooofofx', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('foooxfooxfoxfooox', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('foooxfooxfxfooox', '*(of|oof+(o))', { windows: true }));
-      assert(
-        !isMatch('foooxfooxofoxfooox', '*(of|oof+(o))', { windows: true })
-      );
+      assert(!isMatch('foooxfooxofoxfooox', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('foot', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('foox', '*(of|oof+(o))', { windows: true }));
       assert(isMatch('ofoofo', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('ofooofoofofooo', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('ofoooxoofxo', '*(of|oof+(o))', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxo', '*(of|oof+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(of|oof+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxoo', '*(of|oof+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(of|oof+(o))', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(of|oof+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(of|oof+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(of|oof+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('ofxoofxo', '*(of|oof+(o))', { windows: true }));
       assert(isMatch('oofooofo', '*(of|oof+(o))', { windows: true }));
       assert(!isMatch('ooo', '*(of|oof+(o))', { windows: true }));
@@ -754,9 +644,7 @@ describe('extglobs', () => {
       assert(!isMatch('xfoooofof', '*(of|oof+(o))', { windows: true }));
 
       assert(!isMatch('ffffffo', '*(oxf+(ox))', { windows: true }));
-      assert(
-        !isMatch('fffooofoooooffoofffooofff', '*(oxf+(ox))', { windows: true })
-      );
+      assert(!isMatch('fffooofoooooffoofffooofff', '*(oxf+(ox))', { windows: true }));
       assert(!isMatch('ffo', '*(oxf+(ox))', { windows: true }));
       assert(!isMatch('fofo', '*(oxf+(ox))', { windows: true }));
       assert(!isMatch('fofoofoofofoo', '*(oxf+(ox))', { windows: true }));
@@ -776,20 +664,10 @@ describe('extglobs', () => {
       assert(!isMatch('ofoofo', '*(oxf+(ox))', { windows: true }));
       assert(!isMatch('ofooofoofofooo', '*(oxf+(ox))', { windows: true }));
       assert(!isMatch('ofoooxoofxo', '*(oxf+(ox))', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxo', '*(oxf+(ox))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(oxf+(ox))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxoo', '*(oxf+(ox))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(oxf+(ox))', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(oxf+(ox))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(oxf+(ox))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(oxf+(ox))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(oxf+(ox))', { windows: true }));
       assert(!isMatch('ofxoofxo', '*(oxf+(ox))', { windows: true }));
       assert(!isMatch('oofooofo', '*(oxf+(ox))', { windows: true }));
       assert(!isMatch('ooo', '*(oxf+(ox))', { windows: true }));
@@ -798,9 +676,7 @@ describe('extglobs', () => {
       assert(!isMatch('xfoooofof', '*(oxf+(ox))', { windows: true }));
 
       assert(isMatch('ffffffo', '@(!(z*)|*x)', { windows: true }));
-      assert(
-        isMatch('fffooofoooooffoofffooofff', '@(!(z*)|*x)', { windows: true })
-      );
+      assert(isMatch('fffooofoooooffoofffooofff', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('ffo', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('fofo', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('fofoofoofofoo', '@(!(z*)|*x)', { windows: true }));
@@ -820,20 +696,10 @@ describe('extglobs', () => {
       assert(isMatch('ofoofo', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('ofooofoofofooo', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('ofoooxoofxo', '@(!(z*)|*x)', { windows: true }));
-      assert(
-        isMatch('ofoooxoofxoofoooxoofxo', '@(!(z*)|*x)', { windows: true })
-      );
-      assert(
-        isMatch('ofoooxoofxoofoooxoofxofo', '@(!(z*)|*x)', { windows: true })
-      );
-      assert(
-        isMatch('ofoooxoofxoofoooxoofxoo', '@(!(z*)|*x)', { windows: true })
-      );
-      assert(
-        isMatch('ofoooxoofxoofoooxoofxooofxofxo', '@(!(z*)|*x)', {
-          windows: true
-        })
-      );
+      assert(isMatch('ofoooxoofxoofoooxoofxo', '@(!(z*)|*x)', { windows: true }));
+      assert(isMatch('ofoooxoofxoofoooxoofxofo', '@(!(z*)|*x)', { windows: true }));
+      assert(isMatch('ofoooxoofxoofoooxoofxoo', '@(!(z*)|*x)', { windows: true }));
+      assert(isMatch('ofoooxoofxoofoooxoofxooofxofxo', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('ofxoofxo', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('oofooofo', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('ooo', '@(!(z*)|*x)', { windows: true }));
@@ -842,82 +708,36 @@ describe('extglobs', () => {
       assert(isMatch('xfoooofof', '@(!(z*)|*x)', { windows: true }));
 
       assert(!isMatch('ffffffo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
-      assert(
-        !isMatch('fffooofoooooffoofffooofff', '@(foo|f|fo)*(f|of+(o))', {
-          windows: true
-        })
-      );
+      assert(!isMatch('fffooofoooooffoofffooofff', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('ffo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(isMatch('fofo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
-      assert(
-        isMatch('fofoofoofofoo', '@(foo|f|fo)*(f|of+(o))', { windows: true })
-      );
+      assert(isMatch('fofoofoofofoo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(isMatch('foo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('foob', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('foobb', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
-      assert(
-        isMatch('fooofoofofooo', '@(foo|f|fo)*(f|of+(o))', { windows: true })
-      );
+      assert(isMatch('fooofoofofooo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('foooofo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('foooofof', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
-      assert(
-        !isMatch('foooofofx', '@(foo|f|fo)*(f|of+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('foooxfooxfoxfooox', '@(foo|f|fo)*(f|of+(o))', {
-          windows: true
-        })
-      );
-      assert(
-        !isMatch('foooxfooxfxfooox', '@(foo|f|fo)*(f|of+(o))', {
-          windows: true
-        })
-      );
-      assert(
-        !isMatch('foooxfooxofoxfooox', '@(foo|f|fo)*(f|of+(o))', {
-          windows: true
-        })
-      );
+      assert(!isMatch('foooofofx', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
+      assert(!isMatch('foooxfooxfoxfooox', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
+      assert(!isMatch('foooxfooxfxfooox', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
+      assert(!isMatch('foooxfooxofoxfooox', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('foot', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('foox', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('ofoofo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
-      assert(
-        !isMatch('ofooofoofofooo', '@(foo|f|fo)*(f|of+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxo', '@(foo|f|fo)*(f|of+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxo', '@(foo|f|fo)*(f|of+(o))', {
-          windows: true
-        })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '@(foo|f|fo)*(f|of+(o))', {
-          windows: true
-        })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxoo', '@(foo|f|fo)*(f|of+(o))', {
-          windows: true
-        })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '@(foo|f|fo)*(f|of+(o))', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofooofoofofooo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxoo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('ofxoofxo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('oofooofo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('ooo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
       assert(!isMatch('oxfoxfox', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
-      assert(
-        !isMatch('oxfoxoxfox', '@(foo|f|fo)*(f|of+(o))', { windows: true })
-      );
-      assert(
-        !isMatch('xfoooofof', '@(foo|f|fo)*(f|of+(o))', { windows: true })
-      );
+      assert(!isMatch('oxfoxoxfox', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
+      assert(!isMatch('xfoooofof', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
 
       assert(isMatch('aaac', '*(@(a))a@(c)', { windows: true }));
       assert(isMatch('aac', '*(@(a))a@(c)', { windows: true }));
@@ -961,15 +781,14 @@ describe('extglobs', () => {
 
       assert(!isMatch('aac', '*(@(a))b@(c)', { windows: true }));
     });
+
   });
 
   describe('other', () => {
     it('should support backtracking in alternation matches', () => {
       assert(isMatch('fofoofoofofoo', '*(fo|foo)', { windows: true }));
       assert(!isMatch('ffffffo', '*(fo|foo)', { windows: true }));
-      assert(
-        !isMatch('fffooofoooooffoofffooofff', '*(fo|foo)', { windows: true })
-      );
+      assert(!isMatch('fffooofoooooffoofffooofff', '*(fo|foo)', { windows: true }));
       assert(!isMatch('ffo', '*(fo|foo)', { windows: true }));
       assert(isMatch('fofo', '*(fo|foo)', { windows: true }));
       assert(isMatch('fofoofoofofoo', '*(fo|foo)', { windows: true }));
@@ -989,20 +808,10 @@ describe('extglobs', () => {
       assert(!isMatch('ofoofo', '*(fo|foo)', { windows: true }));
       assert(!isMatch('ofooofoofofooo', '*(fo|foo)', { windows: true }));
       assert(!isMatch('ofoooxoofxo', '*(fo|foo)', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxo', '*(fo|foo)', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(fo|foo)', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxoo', '*(fo|foo)', { windows: true })
-      );
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(fo|foo)', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(fo|foo)', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(fo|foo)', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(fo|foo)', { windows: true }));
+      assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(fo|foo)', { windows: true }));
       assert(!isMatch('ofxoofxo', '*(fo|foo)', { windows: true }));
       assert(!isMatch('oofooofo', '*(fo|foo)', { windows: true }));
       assert(!isMatch('ooo', '*(fo|foo)', { windows: true }));
@@ -1047,35 +856,17 @@ describe('extglobs', () => {
       assert(!isMatch('moo', '.!(*.*)', { windows: true }));
       assert(!isMatch('cow', '.!(*.*)', { windows: true }));
 
-      assert(
-        !isMatch('mucca.pazza', 'mu!(*(c))?.pa!(*(z))?', { windows: true })
-      );
+      assert(!isMatch('mucca.pazza', 'mu!(*(c))?.pa!(*(z))?', { windows: true }));
 
-      assert(
-        isMatch('effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true })
-      );
-      assert(
-        isMatch('efgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true })
-      );
-      assert(
-        isMatch('egz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true })
-      );
-      assert(
-        !isMatch('egz', '@(b+(c)d|e+(f)g?|?(h)i@(j|k))', { windows: true })
-      );
-      assert(
-        isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', {
-          windows: true
-        })
-      );
+      assert(isMatch('effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true }));
+      assert(isMatch('efgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true }));
+      assert(isMatch('egz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true }));
+      assert(!isMatch('egz', '@(b+(c)d|e+(f)g?|?(h)i@(j|k))', { windows: true }));
+      assert(isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true }));
     });
 
     it('valid numbers', () => {
-      assert(
-        isMatch('/dev/udp/129.22.8.102/45', '/dev/@(tcp|udp)/*/*', {
-          windows: true
-        })
-      );
+      assert(isMatch('/dev/udp/129.22.8.102/45', '/dev/@(tcp|udp)/*/*', { windows: true }));
 
       assert(!isMatch('0', '[1-6]([0-9])', { windows: true }));
       assert(isMatch('12', '[1-6]([0-9])', { windows: true }));
@@ -1135,11 +926,7 @@ describe('extglobs', () => {
     });
 
     it('More tests derived from a bug report (in bash) concerning extended glob patterns following a *', () => {
-      assert(
-        isMatch('/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*', {
-          windows: true
-        })
-      );
+      assert(isMatch('/dev/udp/129.22.8.102/45', '/dev\\/@(tcp|udp)\\/*\\/*', { windows: true }));
       assert(!isMatch('123abc', '(a+|b)*', { windows: true }));
       assert(isMatch('ab', '(a+|b)*', { windows: true }));
       assert(isMatch('abab', '(a+|b)*', { windows: true }));
@@ -1347,12 +1134,8 @@ describe('extglobs', () => {
       assert(isMatch('a.c', '+([[:alpha:].])+([[:alpha:].])', opts));
       assert(isMatch('a.c', '*([[:alpha:].])', opts));
       assert(isMatch('a.c', '*([[:alpha:].])*([[:alpha:].])', opts));
-      assert(
-        isMatch('a.c', '?([[:alpha:].])?([[:alpha:].])?([[:alpha:].])', opts)
-      );
-      assert(
-        isMatch('a.c', '@([[:alpha:].])@([[:alpha:].])@([[:alpha:].])', opts)
-      );
+      assert(isMatch('a.c', '?([[:alpha:].])?([[:alpha:].])?([[:alpha:].])', opts));
+      assert(isMatch('a.c', '@([[:alpha:].])@([[:alpha:].])@([[:alpha:].])', opts));
       assert(!isMatch('.', '!(\\.)', opts));
       assert(!isMatch('.', '!([[:alpha:].])', opts));
       assert(isMatch('.', '?([[:alpha:].])', opts));
@@ -1363,18 +1146,12 @@ describe('extglobs', () => {
     it('should pass extglob2 tests', () => {
       assert(!isMatch('baaac', '*(@(a))a@(c)', { windows: true }));
       assert(!isMatch('c', '*(@(a))a@(c)', { windows: true }));
-      assert(
-        !isMatch('egz', '@(b+(c)d|e+(f)g?|?(h)i@(j|k))', { windows: true })
-      );
+      assert(!isMatch('egz', '@(b+(c)d|e+(f)g?|?(h)i@(j|k))', { windows: true }));
       assert(!isMatch('foooofof', '*(f+(o))', { windows: true }));
       assert(!isMatch('foooofofx', '*(f*(o))', { windows: true }));
       assert(!isMatch('foooxfooxofoxfooox', '*(f*(o)x)', { windows: true }));
       assert(!isMatch('ofooofoofofooo', '*(f*(o))', { windows: true }));
-      assert(
-        !isMatch('ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)', {
-          windows: true
-        })
-      );
+      assert(!isMatch('ofoooxoofxoofoooxoofxofo', '*(*(of*(o)x)o)', { windows: true }));
       assert(!isMatch('oxfoxfox', '*(oxf+(ox))', { windows: true }));
       assert(!isMatch('xfoooofof', '*(f*(o))', { windows: true }));
       assert(isMatch('aaac', '*(@(a))a@(c)', { windows: true }));
@@ -1384,23 +1161,11 @@ describe('extglobs', () => {
       assert(isMatch('abcd', '@(ab|a*@(b))*(c)d', { windows: true }));
       assert(isMatch('ac', '*(@(a))a@(c)', { windows: true }));
       assert(isMatch('acd', '@(ab|a*(b))*(c)d', { windows: true }));
-      assert(
-        isMatch('effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true })
-      );
-      assert(
-        isMatch('efgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true })
-      );
-      assert(
-        isMatch('egz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true })
-      );
-      assert(
-        isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', {
-          windows: true
-        })
-      );
-      assert(
-        isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))', { windows: true })
-      );
+      assert(isMatch('effgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true }));
+      assert(isMatch('efgz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true }));
+      assert(isMatch('egz', '@(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true }));
+      assert(isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', { windows: true }));
+      assert(isMatch('fffooofoooooffoofffooofff', '*(*(f)*(o))', { windows: true }));
       assert(isMatch('ffo', '*(f*(o))', { windows: true }));
       assert(isMatch('fofo', '*(f*(o))', { windows: true }));
       assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { windows: true }));
@@ -1412,17 +1177,9 @@ describe('extglobs', () => {
       assert(isMatch('ofoofo', '*(of+(o))', { windows: true }));
       assert(isMatch('ofoofo', '*(of+(o)|f)', { windows: true }));
       assert(isMatch('ofoooxoofxo', '*(*(of*(o)x)o)', { windows: true }));
-      assert(
-        isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', { windows: true })
-      );
-      assert(
-        isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', { windows: true })
-      );
-      assert(
-        isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', {
-          windows: true
-        })
-      );
+      assert(isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', { windows: true }));
+      assert(isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', { windows: true }));
+      assert(isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', { windows: true }));
       assert(isMatch('ofxoofxo', '*(*(of*(o)x)o)', { windows: true }));
       assert(isMatch('oofooofo', '*(of|oof+(o))', { windows: true }));
       assert(isMatch('oxfoxoxfox', '*(oxf+(ox))', { windows: true }));
@@ -1435,9 +1192,7 @@ describe('extglobs', () => {
       assert(!isMatch('foo', '!(foo)', { windows: true }));
       assert(!isMatch('foob', '!(foo)b*', { windows: true }));
       assert(!isMatch('mad.moo.cow', '!(*.*).!(*.*)', { windows: true }));
-      assert(
-        !isMatch('mucca.pazza', 'mu!(*(c))?.pa!(*(z))?', { windows: true })
-      );
+      assert(!isMatch('mucca.pazza', 'mu!(*(c))?.pa!(*(z))?', { windows: true }));
       assert(!isMatch('zoot', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('fff', '!(f)', { windows: true }));
       assert(isMatch('fff', '*(!(f))', { windows: true }));
@@ -1457,3 +1212,4 @@ describe('extglobs', () => {
     });
   });
 });
+

@@ -14,33 +14,7 @@ describe('stars', () => {
     });
 
     it('should regard non-exclusive double-stars as single stars', () => {
-      const fixtures = [
-        'a',
-        'a/',
-        'a/a',
-        'a/a/',
-        'a/a/a',
-        'a/a/a/',
-        'a/a/a/a',
-        'a/a/a/a/',
-        'a/a/a/a/a',
-        'a/a/a/a/a/',
-        'a/a/b',
-        'a/a/b/',
-        'a/b',
-        'a/b/',
-        'a/b/c/.d/e/',
-        'a/c',
-        'a/c/',
-        'a/b',
-        'a/x/',
-        'b',
-        'b/',
-        'x/y',
-        'x/y/',
-        'z/z',
-        'z/z/'
-      ];
+      const fixtures = ['a', 'a/', 'a/a', 'a/a/', 'a/a/a', 'a/a/a/', 'a/a/a/a', 'a/a/a/a/', 'a/a/a/a/a', 'a/a/a/a/a/', 'a/a/b', 'a/a/b/', 'a/b', 'a/b/', 'a/b/c/.d/e/', 'a/c', 'a/c/', 'a/b', 'a/x/', 'b', 'b/', 'x/y', 'x/y/', 'z/z', 'z/z/'];
 
       assert.deepStrictEqual(match(fixtures, '**a/a/*/'), ['a/a/a/', 'a/a/b/']);
       assert(!isMatch('aaa/bba/ccc', 'aaa/**ccc'));
@@ -78,97 +52,31 @@ describe('stars', () => {
     });
 
     it('should match file extensions:', () => {
-      assert.deepStrictEqual(
-        match(['.md', 'a.md', 'a/b/c.md', '.txt'], '**/*.md'),
-        ['a.md', 'a/b/c.md']
-      );
-      assert.deepStrictEqual(
-        match(['.md/.md', '.md', 'a/.md', 'a/b/.md'], '**/.md'),
-        ['.md', 'a/.md', 'a/b/.md']
-      );
-      assert.deepStrictEqual(
-        match(
-          ['.md/.md', '.md/foo/.md', '.md', 'a/.md', 'a/b/.md'],
-          '.md/**/.md'
-        ),
-        ['.md/.md', '.md/foo/.md']
-      );
+      assert.deepStrictEqual(match(['.md', 'a.md', 'a/b/c.md', '.txt'], '**/*.md'), ['a.md', 'a/b/c.md']);
+      assert.deepStrictEqual(match(['.md/.md', '.md', 'a/.md', 'a/b/.md'], '**/.md'), ['.md', 'a/.md', 'a/b/.md']);
+      assert.deepStrictEqual(match(['.md/.md', '.md/foo/.md', '.md', 'a/.md', 'a/b/.md'], '.md/**/.md'), ['.md/.md', '.md/foo/.md']);
     });
 
     it('should respect trailing slashes on paterns', () => {
-      const fixtures = [
-        'a',
-        'a/',
-        'a/a',
-        'a/a/',
-        'a/a/a',
-        'a/a/a/',
-        'a/a/a/a',
-        'a/a/a/a/',
-        'a/a/a/a/a',
-        'a/a/a/a/a/',
-        'a/a/b',
-        'a/a/b/',
-        'a/b',
-        'a/b/',
-        'a/b/c/.d/e/',
-        'a/c',
-        'a/c/',
-        'a/b',
-        'a/x/',
-        'b',
-        'b/',
-        'x/y',
-        'x/y/',
-        'z/z',
-        'z/z/'
-      ];
+      const fixtures = ['a', 'a/', 'a/a', 'a/a/', 'a/a/a', 'a/a/a/', 'a/a/a/a', 'a/a/a/a/', 'a/a/a/a/a', 'a/a/a/a/a/', 'a/a/b', 'a/a/b/', 'a/b', 'a/b/', 'a/b/c/.d/e/', 'a/c', 'a/c/', 'a/b', 'a/x/', 'b', 'b/', 'x/y', 'x/y/', 'z/z', 'z/z/'];
 
-      assert.deepStrictEqual(match(fixtures, '**/*/a/'), [
-        'a/a/',
-        'a/a/a/',
-        'a/a/a/a/',
-        'a/a/a/a/a/'
-      ]);
-      assert.deepStrictEqual(match(fixtures, '**/*/a/*/'), [
-        'a/a/a/',
-        'a/a/a/a/',
-        'a/a/a/a/a/',
-        'a/a/b/'
-      ]);
+      assert.deepStrictEqual(match(fixtures, '**/*/a/'), ['a/a/', 'a/a/a/', 'a/a/a/a/', 'a/a/a/a/a/']);
+      assert.deepStrictEqual(match(fixtures, '**/*/a/*/'), ['a/a/a/', 'a/a/a/a/', 'a/a/a/a/a/', 'a/a/b/']);
       assert.deepStrictEqual(match(fixtures, '**/*/x/'), ['a/x/']);
-      assert.deepStrictEqual(match(fixtures, '**/*/*/*/*/'), [
-        'a/a/a/a/',
-        'a/a/a/a/a/'
-      ]);
+      assert.deepStrictEqual(match(fixtures, '**/*/*/*/*/'), ['a/a/a/a/', 'a/a/a/a/a/']);
       assert.deepStrictEqual(match(fixtures, '**/*/*/*/*/*/'), ['a/a/a/a/a/']);
       assert.deepStrictEqual(match(fixtures, '*a/a/*/'), ['a/a/a/', 'a/a/b/']);
       assert.deepStrictEqual(match(fixtures, '**a/a/*/'), ['a/a/a/', 'a/a/b/']);
-      assert.deepStrictEqual(match(fixtures, '**/a/*/*/'), [
-        'a/a/a/',
-        'a/a/a/a/',
-        'a/a/a/a/a/',
-        'a/a/b/'
-      ]);
-      assert.deepStrictEqual(match(fixtures, '**/a/*/*/*/'), [
-        'a/a/a/a/',
-        'a/a/a/a/a/'
-      ]);
+      assert.deepStrictEqual(match(fixtures, '**/a/*/*/'), ['a/a/a/', 'a/a/a/a/', 'a/a/a/a/a/', 'a/a/b/']);
+      assert.deepStrictEqual(match(fixtures, '**/a/*/*/*/'), ['a/a/a/a/', 'a/a/a/a/a/']);
       assert.deepStrictEqual(match(fixtures, '**/a/*/*/*/*/'), ['a/a/a/a/a/']);
-      assert.deepStrictEqual(match(fixtures, '**/a/*/a/'), [
-        'a/a/a/',
-        'a/a/a/a/',
-        'a/a/a/a/a/'
-      ]);
+      assert.deepStrictEqual(match(fixtures, '**/a/*/a/'), ['a/a/a/', 'a/a/a/a/', 'a/a/a/a/a/']);
       assert.deepStrictEqual(match(fixtures, '**/a/*/b/'), ['a/a/b/']);
     });
 
     it('should match literal globstars when stars are escaped', () => {
       const fixtures = ['.md', '**a.md', '**.md', '.md', '**'];
-      assert.deepStrictEqual(match(fixtures, '\\*\\**.md'), [
-        '**a.md',
-        '**.md'
-      ]);
+      assert.deepStrictEqual(match(fixtures, '\\*\\**.md'), ['**a.md', '**.md']);
       assert.deepStrictEqual(match(fixtures, '\\*\\*.md'), ['**.md']);
     });
 
@@ -401,13 +309,7 @@ describe('stars', () => {
     });
 
     it('should match leading dots when defined in pattern', () => {
-      const fixtures = [
-        '.gitignore',
-        'a/b/z/.dotfile',
-        'a/b/z/.dotfile.md',
-        'a/b/z/.dotfile.md',
-        'a/b/z/.dotfile.md'
-      ];
+      const fixtures = ['.gitignore', 'a/b/z/.dotfile', 'a/b/z/.dotfile.md', 'a/b/z/.dotfile.md', 'a/b/z/.dotfile.md'];
       assert(!isMatch('.gitignore', 'a/**/z/*.md'));
       assert(!isMatch('a/b/z/.dotfile', 'a/**/z/*.md'));
       assert(!isMatch('a/b/z/.dotfile.md', '**/c/.*.md'));
@@ -415,32 +317,16 @@ describe('stars', () => {
       assert(isMatch('a/b/z/.a', 'a/*/z/.a'));
       assert(isMatch('a/b/z/.dotfile.md', '**/.*.md'));
       assert(isMatch('a/b/z/.dotfile.md', 'a/**/z/.*.md'));
-      assert.deepStrictEqual(
-        match(['.md', 'a.md', 'a/b/c.md', '.txt'], '**/*.md'),
-        ['a.md', 'a/b/c.md']
-      );
-      assert.deepStrictEqual(
-        match(['.md/.md', '.md', 'a/.md', 'a/b/.md'], '**/.md'),
-        ['.md', 'a/.md', 'a/b/.md']
-      );
-      assert.deepStrictEqual(
-        match(
-          ['.md/.md', '.md/foo/.md', '.md', 'a/.md', 'a/b/.md'],
-          '.md/**/.md'
-        ),
-        ['.md/.md', '.md/foo/.md']
-      );
-      assert.deepStrictEqual(match(fixtures, 'a/**/z/.*.md'), [
-        'a/b/z/.dotfile.md'
-      ]);
+      assert.deepStrictEqual(match(['.md', 'a.md', 'a/b/c.md', '.txt'], '**/*.md'), ['a.md', 'a/b/c.md']);
+      assert.deepStrictEqual(match(['.md/.md', '.md', 'a/.md', 'a/b/.md'], '**/.md'), ['.md', 'a/.md', 'a/b/.md']);
+      assert.deepStrictEqual(match(['.md/.md', '.md/foo/.md', '.md', 'a/.md', 'a/b/.md'], '.md/**/.md'), ['.md/.md', '.md/foo/.md']);
+      assert.deepStrictEqual(match(fixtures, 'a/**/z/.*.md'), ['a/b/z/.dotfile.md']);
     });
 
     it('todo... (micromatch/#24)', () => {
       assert(isMatch('foo/bar/baz/one/image.png', 'foo/bar/**/one/**/*.*'));
       assert(isMatch('foo/bar/baz/one/two/image.png', 'foo/bar/**/one/**/*.*'));
-      assert(
-        isMatch('foo/bar/baz/one/two/three/image.png', 'foo/bar/**/one/**/*.*')
-      );
+      assert(isMatch('foo/bar/baz/one/two/three/image.png', 'foo/bar/**/one/**/*.*'));
       assert(!isMatch('a/b/c/d/', 'a/b/**/f'));
       assert(isMatch('a', 'a/**'));
       assert(isMatch('a', '**'));

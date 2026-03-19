@@ -28,16 +28,7 @@ const match = (list, pattern, options = {}) => {
   return [...matches];
 };
 
-const fixtures = [
-  'a.md',
-  'a/b.md',
-  './a.md',
-  './a/b.md',
-  'a/b/c.md',
-  './a/b/c.md',
-  '.\\a\\b\\c.md',
-  'a\\b\\c.md'
-];
+const fixtures = ['a.md', 'a/b.md', './a.md', './a/b.md', 'a/b/c.md', './a/b/c.md', '.\\a\\b\\c.md', 'a\\b\\c.md'];
 
 console.log(path.posix.normalize('./{a,b,c}/*.md'));
 console.log(match(fixtures, './**/*.md'));

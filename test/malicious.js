@@ -11,30 +11,15 @@ const repeat = n => '\\'.repeat(n);
 describe('handling of potential regex exploits', () => {
   it('should support long escape sequences', () => {
     if (process.platform !== 'win32') {
-      assert(
-        isMatch('\\A', `${repeat(65500)}A`),
-        'within the limits, and valid match'
-      );
+      assert(isMatch('\\A', `${repeat(65500)}A`), 'within the limits, and valid match');
     }
-    assert(
-      isMatch('A', `!${repeat(65500)}A`),
-      'within the limits, and valid match'
-    );
-    assert(
-      isMatch('A', `!(${repeat(65500)}A)`),
-      'within the limits, and valid match'
-    );
-    assert(
-      !isMatch('A', `[!(${repeat(65500)}A`),
-      'within the limits, but invalid regex'
-    );
+    assert(isMatch('A', `!${repeat(65500)}A`), 'within the limits, and valid match');
+    assert(isMatch('A', `!(${repeat(65500)}A)`), 'within the limits, and valid match');
+    assert(!isMatch('A', `[!(${repeat(65500)}A`), 'within the limits, but invalid regex');
   });
 
   it('should throw an error when the pattern is too long', () => {
-    assert.throws(
-      () => isMatch('foo', '*'.repeat(65537)),
-      /exceeds maximum allowed/
-    );
+    assert.throws(() => isMatch('foo', '*'.repeat(65537)), /exceeds maximum allowed/);
     assert.throws(() => {
       assert(!isMatch('A', `!(${repeat(65536)}A)`));
     }, /Input length: 65540, exceeds maximum allowed length: 65536/);

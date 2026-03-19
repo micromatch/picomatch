@@ -6,11 +6,7 @@ const { isMatch, makeRe } = require('..');
 describe('slash handling - windows', () => {
   it('should match absolute windows paths with regex from makeRe', () => {
     const regex = makeRe('**/path/**', { windows: true });
-    assert(
-      regex.test('C:\\Users\\user\\Projects\\project\\path\\image.jpg', {
-        windows: true
-      })
-    );
+    assert(regex.test('C:\\Users\\user\\Projects\\project\\path\\image.jpg', { windows: true }));
   });
 
   it('should match windows path separators with a string literal', () => {
