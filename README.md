@@ -634,44 +634,42 @@ The following table shows which features are supported by [minimatch](https://gi
 
 Performance comparison of picomatch and minimatch.
 
-_(Pay special attention to the last three benchmarks. Minimatch freezes on long ranges.)_
-
 ```
 # .makeRe star (*)
-  picomatch x 4,449,159 ops/sec ±0.24% (97 runs sampled)
-  minimatch x 632,772 ops/sec ±0.14% (98 runs sampled)
+  picomatch x 3,251,247 ops/sec ±0.25% (95 runs sampled)
+  minimatch x 497,224 ops/sec ±0.11% (100 runs sampled)
 
 # .makeRe star; dot=true (*)
-  picomatch x 3,500,079 ops/sec ±0.26% (99 runs sampled)
-  minimatch x 564,916 ops/sec ±0.23% (96 runs sampled)
+  picomatch x 2,624,035 ops/sec ±0.16% (98 runs sampled)
+  minimatch x 446,244 ops/sec ±0.63% (99 runs sampled)
 
 # .makeRe globstar (**)
-  picomatch x 3,261,000 ops/sec ±0.27% (98 runs sampled)
-  minimatch x 1,664,766 ops/sec ±0.20% (100 runs sampled)
+  picomatch x 2,524,465 ops/sec ±0.13% (99 runs sampled)
+  minimatch x 1,396,257 ops/sec ±0.58% (96 runs sampled)
 
 # .makeRe globstars (**/**/**)
-  picomatch x 3,284,469 ops/sec ±0.18% (97 runs sampled)
-  minimatch x 1,435,880 ops/sec ±0.34% (95 runs sampled)
+  picomatch x 2,545,674 ops/sec ±0.10% (99 runs sampled)
+  minimatch x 1,196,835 ops/sec ±0.63% (98 runs sampled)
 
 # .makeRe with leading star (*.txt)
-  picomatch x 3,100,197 ops/sec ±0.35% (99 runs sampled)
-  minimatch x 428,347 ops/sec ±0.42% (94 runs sampled)
+  picomatch x 2,537,708 ops/sec ±0.11% (100 runs sampled)
+  minimatch x 345,284 ops/sec ±0.64% (96 runs sampled)
 
 # .makeRe - basic braces ({a,b,c}*.txt)
-  picomatch x 443,578 ops/sec ±1.33% (89 runs sampled)
-  minimatch x 107,143 ops/sec ±0.35% (94 runs sampled)
+  picomatch x 505,430 ops/sec ±1.04% (94 runs sampled)
+  minimatch x 107,991 ops/sec ±0.54% (99 runs sampled)
 
 # .makeRe - short ranges ({a..z}*.txt)
-  picomatch x 415,484 ops/sec ±0.76% (96 runs sampled)
-  minimatch x 14,299 ops/sec ±0.26% (96 runs sampled)
+  picomatch x 371,179 ops/sec ±2.91% (77 runs sampled)
+  minimatch x 14,104 ops/sec ±0.61% (99 runs sampled)
 
 # .makeRe - medium ranges ({1..100000}*.txt)
-  picomatch x 395,020 ops/sec ±0.87% (89 runs sampled)
-  minimatch x 2 ops/sec ±4.59% (10 runs sampled)
+  picomatch x 384,958 ops/sec ±1.70% (82 runs sampled)
+  minimatch x 2.55 ops/sec ±3.22% (11 runs sampled)
 
 # .makeRe - long ranges ({1..10000000}*.txt)
-  picomatch x 400,036 ops/sec ±0.83% (90 runs sampled)
-  minimatch (FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory)
+  picomatch x 382,552 ops/sec ±1.52% (71 runs sampled)
+  minimatch x 0.83 ops/sec ±5.67% (7 runs sampled))
 ```
 
 <br>
