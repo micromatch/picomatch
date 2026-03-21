@@ -38,6 +38,10 @@ jobs:
           cache: npm
           cache-dependency-path: package.json
 
+      - name: Update npm
+        if: matrix.node == 12 || matrix.node == 14
+        run: npm install -g npm@8
+
       - name: Install npm dependencies
         run: npm install
 
