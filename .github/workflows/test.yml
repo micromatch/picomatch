@@ -5,6 +5,8 @@ on: [push, pull_request]
 env:
   FORCE_COLOR: 2
 
+permissions: {}
+
 jobs:
   run:
     name: Node.js ${{ matrix.node }} @ ${{ matrix.os }}
@@ -37,8 +39,5 @@ jobs:
         run: npm run test:ci
 
       - name: Run Coveralls
-        # `master` should be a tag but they don't have one
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         if: startsWith(matrix.os, 'ubuntu') && matrix.node == 14
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
