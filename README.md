@@ -265,6 +265,17 @@ Compile a regular expression from the `state` object returned by the
 * `returnState` **{Boolean}**: Adds the state to a `state` property on the returned regex. Useful for implementors and debugging.
 * `returns` **{RegExp}**
 
+**Example**
+
+```js
+const picomatch = require('picomatch');
+const state = picomatch.parse('*.js');
+// picomatch.compileRe(state[, options]);
+
+console.log(picomatch.compileRe(state));
+//=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
+```
+
 ### [.makeRe](lib/picomatch.js#L285)
 
 Create a regular expression from a parsed glob pattern.
@@ -281,10 +292,10 @@ Create a regular expression from a parsed glob pattern.
 
 ```js
 const picomatch = require('picomatch');
-const state = picomatch.parse('*.js');
-// picomatch.compileRe(state[, options]);
+// picomatch.makeRe(state[, options]);
 
-console.log(picomatch.compileRe(state));
+const result = picomatch.makeRe('*.js');
+console.log(result);
 //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
 ```
 
