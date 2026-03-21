@@ -1,9 +1,15 @@
 name: Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 env:
   FORCE_COLOR: 2
+
+permissions: {}
 
 jobs:
   run:
@@ -29,6 +35,12 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: package.json
+
+      - name: Update npm
+        if: matrix.node == 12 || matrix.node == 14
+        run: npm install -g npm@8
 
       - name: Install npm dependencies
         run: npm install
@@ -37,8 +49,5 @@ jobs:
         run: npm run test:ci
 
       - name: Run Coveralls
-        # `master` should be a tag but they don't have one
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@v2
         if: startsWith(matrix.os, 'ubuntu') && matrix.node == 14
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
