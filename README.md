@@ -4,8 +4,8 @@
 <a href="https://npmjs.org/package/picomatch">
 <img src="https://img.shields.io/npm/v/picomatch.svg" alt="version">
 </a>
-<a href="https://github.com/micromatch/picomatch/actions?workflow=Tests">
-<img src="https://github.com/micromatch/picomatch/workflows/Tests/badge.svg" alt="test status">
+<a href="https://github.com/micromatch/picomatch/actions/workflows/test.yml">
+<img src="https://github.com/micromatch/picomatch/actions/workflows/test.yml/badge.svg?branch=master" alt="test status">
 </a>
 <a href="https://coveralls.io/github/micromatch/picomatch">
 <img src="https://img.shields.io/coveralls/github/micromatch/picomatch/master.svg" alt="coverage status">
