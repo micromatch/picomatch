@@ -11,7 +11,7 @@
 <img src="https://img.shields.io/coveralls/github/micromatch/picomatch/master.svg" alt="coverage status">
 </a>
 <a href="https://npmjs.org/package/picomatch">
-<img src="https://img.shields.io/npm/dm/picomatch.svg" alt="downloads">
+<img src="https://img.shields.io/npm/dw/picomatch" alt="downloads">
 </a>
 </p>
 
