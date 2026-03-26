@@ -146,6 +146,17 @@ describe('braces', () => {
     assert(isMatch('a/b/bar/baz.qux', 'a/b{,/**}/bar{,/**}/*.*'));
   });
 
+  it('should support braces with globstars at the start of pattern', () => {
+    assert(isMatch('a.json', '{**/*.json,**/*.js}'));
+    assert(isMatch('a.js', '{**/*.json,**/*.js}'));
+    assert(isMatch('a/b.json', '{**/*.json,**/*.js}'));
+    assert(isMatch('a/b.js', '{**/*.json,**/*.js}'));
+    assert(isMatch('foo.md', '{**/foo.md,bar.md}'));
+    assert(isMatch('a/foo.md', '{**/foo.md,bar.md}'));
+    assert(isMatch('foo.md', '{bar.md,**/foo.md}'));
+    assert(isMatch('a/foo.md', '{**/foo.md,bar.md}'));
+  });
+
   it('should support Kleene plus', () => {
     assert(isMatch('ab', '{ab,c}+'));
     assert(isMatch('abab', '{ab,c}+'));
