@@ -2,7 +2,7 @@
 
 const assert = require('assert');
 const match = require('./support/match');
-const { isMatch } = require('..');
+const { isMatch, matchBase } = require('..');
 
 describe('options', () => {
   describe('options.matchBase', () => {
@@ -13,6 +13,19 @@ describe('options', () => {
       assert.deepStrictEqual(match(['a/b/c/d.md'], '*.md', { matchBase: true, windows: true }), ['a/b/c/d.md']);
       assert.deepStrictEqual(match(['a/b/c/foo.md'], '*.md', { matchBase: true, windows: true }), ['a/b/c/foo.md']);
       assert.deepStrictEqual(match(['x/y/acb', 'acb/', 'acb/d/e', 'x/y/acb/d'], 'a?b', { matchBase: true, windows: true }), ['x/y/acb', 'acb/']);
+    });
+
+    it('should match the basename of backslash-separated paths when `options.windows` is true', () => {
+      assert(isMatch('foo\\bar.js', '*.js', { matchBase: true, windows: true }));
+      assert(isMatch('a\\b\\c\\d.md', '*.md', { matchBase: true, windows: true }));
+      assert(isMatch('a\\b\\c\\foo.md', '*.md', { matchBase: true, windows: true }));
+      assert(isMatch('x\\y\\acb', 'a?b', { matchBase: true, windows: true }));
+      assert(!isMatch('a\\b\\c\\d.md', '*.js', { matchBase: true, windows: true }));
+    });
+
+    it('should pass the `windows` option through `matchBase`', () => {
+      assert(matchBase('foo\\bar.js', '*.js', { windows: true }));
+      assert(matchBase('a\\b\\c\\d.md', '*.md', { windows: true }));
     });
 
     it('should work with negation patterns', () => {
