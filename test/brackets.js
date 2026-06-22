@@ -4,6 +4,23 @@ const assert = require('assert');
 const { isMatch } = require('..');
 
 describe('brackets', () => {
+  describe('POSIX `[!...]` negation', () => {
+    it('should negate a bracket expression with a leading `!`, like `[^...]`', () => {
+      assert(!isMatch('a', '[!a]'));
+      assert(isMatch('b', '[!a]'));
+      assert(!isMatch('b', '[!a-c]'));
+      assert(isMatch('d', '[!a-c]'));
+      assert(!isMatch('a', '[!abc]'));
+      assert(isMatch('aXc', 'a[!b]c'));
+      assert(!isMatch('abc', 'a[!b]c'));
+    });
+
+    it('should treat `!` as a literal when it is not the first bracket character', () => {
+      assert(isMatch('!', '[a!]'));
+      assert(isMatch('a', '[a!]'));
+    });
+  });
+
   describe('trailing stars', () => {
     it('should support stars following brackets', () => {
       assert(isMatch('a', '[a]*'));
