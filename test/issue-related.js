@@ -61,4 +61,16 @@ describe('issue-related tests', () => {
     assert(isMatch('a/foo.js', '**/foo.js', { dot: true }));
     assert(isMatch('foo.js', '**/foo.js', { dot: true }));
   });
+
+  it('should treat a leading `**` followed by a literal as a single star (picomatch/issues#99)', () => {
+    // `**` only acts as a globstar when it is the sole content of a path segment.
+    // When it is adjacent to other characters in the same segment (here `.thing.js`),
+    // it must behave like a single star and not match across path separators.
+    assert(!isMatch('somepath/test.thing.js', '**.thing.js'));
+    assert(!isMatch('a/b/c.js', '**.js'));
+    // these sibling cases already behaved correctly and must keep working
+    assert(!isMatch('somepath/test.dash-thing.js', '**.dash-thing.js'));
+    assert(isMatch('test.thing.js', '**.thing.js'));
+    assert(isMatch('somepath/test.thing.js', '**/*.thing.js'));
+  });
 });
