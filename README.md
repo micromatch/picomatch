@@ -11,7 +11,7 @@
 <img src="https://img.shields.io/coveralls/github/micromatch/picomatch/master.svg" alt="coverage status">
 </a>
 <a href="https://npmjs.org/package/picomatch">
-<img src="https://img.shields.io/npm/dw/picomatch" alt="downloads">
+<img src="https://img.shields.io/npm/dm/picomatch" alt="downloads">
 </a>
 </p>
 
@@ -107,7 +107,7 @@ console.log(isMatch('a/b.js')); //=> false
 
 ## API
 
-### [picomatch](lib/picomatch.js#L31)
+### [picomatch](lib/picomatch.js#L43)
 
 Creates a matcher function from one or more glob patterns. The returned function takes a string to match as its first argument, and returns true if the string is a match. The returned matcher function also takes a boolean as the second argument that, when true, returns an object with additional information.
 
@@ -126,13 +126,8 @@ const picomatch = require('picomatch');
 const isMatch = picomatch('*.!(*a)');
 console.log(isMatch('a.a')); //=> false
 console.log(isMatch('a.b')); //=> true
-```
 
-**Example without node.js**
-
-For environments without `node.js`, `picomatch/posix` provides you a dependency-free matcher, without automatic OS detection.
-
-```js
+// For environments without `node.js`, `picomatch/posix` provides you a dependency-free matcher, without automatic OS detection.
 const picomatch = require('picomatch/posix');
 // the same API, defaulting to posix paths
 const isMatch = picomatch('a/*');
@@ -145,7 +140,7 @@ console.log(isMatch('a\\b')); //=> true
 console.log(isMatch('a/b')); //=> true
 ```
 
-### [.test](lib/picomatch.js#L116)
+### [.test](lib/picomatch.js#L128)
 
 Test `input` with the given `regex`. This is used by the main `picomatch()` function to test the input string.
 
@@ -165,7 +160,7 @@ console.log(picomatch.test('foo/bar', /^(?:([^/]*?)\/([^/]*?))$/));
 // { isMatch: true, match: [ 'foo/', 'foo', 'bar' ], output: 'foo/bar' }
 ```
 
-### [.matchBase](lib/picomatch.js#L160)
+### [.matchBase](lib/picomatch.js#L172)
 
 Match the basename of a filepath.
 
@@ -183,7 +178,7 @@ const picomatch = require('picomatch');
 console.log(picomatch.matchBase('foo/bar.js', '*.js'); // true
 ```
 
-### [.isMatch](lib/picomatch.js#L182)
+### [.isMatch](lib/picomatch.js#L194)
 
 Returns true if **any** of the given glob `patterns` match the specified `string`.
 
@@ -204,7 +199,7 @@ console.log(picomatch.isMatch('a.a', ['b.*', '*.a'])); //=> true
 console.log(picomatch.isMatch('a.a', 'b.*')); //=> false
 ```
 
-### [.parse](lib/picomatch.js#L198)
+### [.parse](lib/picomatch.js#L210)
 
 Parse a glob pattern to create the source string for a regular expression.
 
@@ -221,7 +216,7 @@ const picomatch = require('picomatch');
 const result = picomatch.parse(pattern[, options]);
 ```
 
-### [.scan](lib/picomatch.js#L230)
+### [.scan](lib/picomatch.js#L242)
 
 Scan a glob pattern to separate the pattern into segments.
 
@@ -252,10 +247,9 @@ console.log(result);
   negated: true }
 ```
 
-### [.compileRe](lib/picomatch.js#L244)
+### [.compileRe](lib/picomatch.js#L264)
 
-Compile a regular expression from the `state` object returned by the
-[parse()](#parse) method.
+Compile a regular expression from the `state` object returned by the [parse()](#parse) method.
 
 **Params**
 
@@ -276,7 +270,7 @@ console.log(picomatch.compileRe(state));
 //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
 ```
 
-### [.makeRe](lib/picomatch.js#L285)
+### [.makeRe](lib/picomatch.js#L305)
 
 Create a regular expression from a parsed glob pattern.
 
@@ -299,7 +293,7 @@ console.log(result);
 //=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
 ```
 
-### [.toRegex](lib/picomatch.js#L320)
+### [.toRegex](lib/picomatch.js#L340)
 
 Create a regular expression from the given regex source string.
 
