@@ -21,6 +21,16 @@ describe('options', () => {
       assert(isMatch('./x/y.js', '**/*.js', { matchBase: true, windows: true }));
       assert(!isMatch('./x/y.js', '!**/*.js', { matchBase: true, windows: true }));
     });
+
+    it('should split the basename on backslashes when the windows option is enabled', () => {
+      // Regression: matchBase/basename ignored the `windows` option and split
+      // only on `/`, so a backslash-separated path yielded the wrong basename.
+      assert(isMatch('foo\\bar.js', 'bar.js', { basename: true, windows: true }));
+      assert(isMatch('a\\b\\c\\d.md', '*.md', { matchBase: true, windows: true }));
+      assert(isMatch('x\\y\\acb', 'a?b', { matchBase: true, windows: true }));
+      assert(!isMatch('x\\y\\acb', 'a?z', { matchBase: true, windows: true }));
+      assert(isMatch('a/b\\c.js', '*.js', { matchBase: true, windows: true }));
+    });
   });
 
   describe('options.flags', () => {
