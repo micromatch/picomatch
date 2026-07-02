@@ -93,6 +93,30 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('fff', '*(*(f))'));
   });
 
+  it('should rewrite multi-branch star-only repeated extglobs without dropping branches', () => {
+    // Regression: the risky-extglob rewrite previously emitted only the first
+    // branch, so `+(*(a)|*(b))` collapsed to `a*` and silently stopped matching
+    // any string containing `b`. The safe rewrite must preserve every branch.
+    assert.strictEqual(
+      makeRe('+(*(a)|*(b))').source,
+      '^(?:(?=.)[ab]*)$'
+    );
+    assert.strictEqual(
+      makeRe('*(*(a)|c)').source,
+      '^(?:(?=.)[ac]*)$'
+    );
+
+    for (const str of ['a', 'b', 'ab', 'ba', 'aabb']) {
+      assert(isMatch(str, '+(*(a)|*(b))'), `expected to match ${str}`);
+    }
+    assert(!isMatch('c', '+(*(a)|*(b))'));
+
+    for (const str of ['c', 'a', 'aca', 'cac']) {
+      assert(isMatch(str, '*(*(a)|c)'), `expected to match ${str}`);
+    }
+    assert(!isMatch('d', '*(*(a)|c)'));
+  });
+
   it('should preserve capture behavior for rewritten repeated extglobs', () => {
     const embedded = makeRe('foo/+(a|aa)/bar', { capture: true });
     assert.strictEqual(embedded.source, '^(?:foo\\/\\+\\(a\\|aa\\)\\/bar)$');
