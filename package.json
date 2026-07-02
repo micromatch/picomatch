@@ -43,7 +43,8 @@
     "reporter": [
       "html",
       "lcov",
-      "text-summary"
+      "text-summary",
+      "cobertura"
     ]
   },
   "verb": {
