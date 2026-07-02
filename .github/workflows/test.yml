@@ -9,7 +9,9 @@ on:
 env:
   FORCE_COLOR: 2
 
-permissions: {}
+permissions:
+  contents: read
+  code-quality: write
 
 jobs:
   run:
@@ -51,7 +53,9 @@ jobs:
       - name: Upload coverage report
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/upload-code-coverage@v1
+        continue-on-error: true
         with:
           file: coverage/cobertura-coverage.xml
           language: JavaScript
           label: code-coverage/nyc
+          fail-on-error: false
