@@ -51,7 +51,8 @@ jobs:
         run: npm run test:ci
 
       - name: Upload coverage report
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        # Only upload coverage report for Ubuntu and Node.js 25 (latest version), and only if the event is not a pull request or if the pull request is from the same repository.
+        if: startsWith(matrix.os, 'ubuntu') && matrix.node == 25 && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         uses: actions/upload-code-coverage@v1
         continue-on-error: true
         with:
