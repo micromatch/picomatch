@@ -30,7 +30,7 @@
 
 * **Lightweight** - No dependencies
 * **Minimal** - Tiny API surface. Main export is a function that takes a glob pattern and returns a matcher function.
-* **Fast** - Loads in about 2ms (that's several times faster than a [single frame of a HD movie](http://www.endmemo.com/sconvert/framespersecondframespermillisecond.php) at 60fps)
+* **Fast** - Loads in about 2ms (that's several times faster than a [single frame of a HD movie](https://fpstoms.com/) at 60fps)
 * **Performant** - Use the returned matcher function to speed up repeat matching (like when watching files)
 * **Accurate matching** - Using wildcards (`*` and `?`), globstars (`**`) for nested directories, [advanced globbing](#advanced-globbing) with extglobs, braces, and POSIX brackets, and support for escaping special characters with `\` or quotes.
 * **Well tested** - Thousands of unit tests
