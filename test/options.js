@@ -22,6 +22,15 @@ describe('options', () => {
       assert(!isMatch('./x/y.js', '!**/*.js', { matchBase: true, windows: true }));
     });
 
+    it('should correctly negate patterns with slashes when matchBase is true (issue #136)', () => {
+      const opts = { matchBase: true, dot: true };
+      assert(!isMatch('packages/pkg-2/examples/.eslintrc.yaml', '!**/examples/**', opts));
+      assert(!isMatch('packages/pkg-2/examples/do-a-thing/index.js', '!**/examples/**', opts));
+      assert(!isMatch('packages/pkg-2/examples/and-another-thing/package.json', '!**/examples/**', opts));
+      // Non-matching paths should still pass the negation
+      assert(isMatch('packages/pkg-2/src/index.js', '!**/examples/**', opts));
+    });
+
     it('should split the basename on backslashes when the windows option is enabled', () => {
       // Regression: matchBase/basename ignored the `windows` option and split
       // only on `/`, so a backslash-separated path yielded the wrong basename.
