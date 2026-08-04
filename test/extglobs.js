@@ -338,6 +338,90 @@ describe('extglobs', () => {
     });
   });
 
+  describe('metacharacters following a closing paren', () => {
+    // A `?` or `+` after a closing extglob is a glob token, not a regex quantifier.
+    // Expectations below match `bash 3.2` with `shopt -s extglob`.
+
+    it('should treat `?` after an extglob as a single character wildcard', () => {
+      assert(isMatch('ab', '@(a|b)?'));
+      assert(isMatch('ax', '@(a|b)?'));
+      assert(!isMatch('a', '@(a|b)?'));
+      assert(!isMatch('b', '@(a|b)?'));
+
+      assert(isMatch('b', '*(a)?'));
+      assert(isMatch('aa', '*(a)?'));
+      assert(isMatch('+', '*(a)?'));
+      assert(!isMatch('abc', '*(a)?'));
+
+      assert(isMatch('aa', '+(a)?'));
+      assert(isMatch('aaa', '+(a)?'));
+      assert(!isMatch('a', '+(a)?'));
+
+      assert(isMatch('a', '?(a)?'));
+      assert(isMatch('aa', '?(a)?'));
+      assert(!isMatch('aaa', '?(a)?'));
+    });
+
+    it('should treat `?` after an extglob as a wildcard mid-pattern', () => {
+      assert(isMatch('abz', '@(a)?z'));
+      assert(!isMatch('az', '@(a)?z'));
+      assert(isMatch('abbc', 'a@(b)?c'));
+      assert(!isMatch('abc', 'a@(b)?c'));
+    });
+
+    it('should treat `+` after an extglob as a literal plus', () => {
+      assert(isMatch('a+', '@(a|b)+'));
+      assert(!isMatch('aa', '@(a|b)+'));
+
+      assert(isMatch('a+', '*(a)+'));
+      assert(isMatch('+', '*(a)+'));
+      assert(!isMatch('aa', '*(a)+'));
+
+      assert(isMatch('a+', '+(a)+'));
+      assert(!isMatch('+', '+(a)+'));
+
+      assert(isMatch('a+', '?(a)+'));
+      assert(isMatch('+', '?(a)+'));
+      assert(!isMatch('aa', '?(a)+'));
+    });
+
+    it('should not compile an extglob followed by `+` to an empty regex', () => {
+      // `(?:a)?+` and friends are invalid in JavaScript, and compileRe swallowed
+      // the SyntaxError into /$^/, a regex that matches nothing at all.
+      for (const pattern of ['*(a)+', '+(a)+', '?(a)+']) {
+        assert.notStrictEqual(makeRe(pattern).source, '$^', pattern);
+      }
+    });
+
+    it('should still expand `*` after an extglob', () => {
+      assert(isMatch('a', '@(a|b)*'));
+      assert(isMatch('abc', '@(a|b)*'));
+      assert(!isMatch('c', '@(a|b)*'));
+    });
+
+    it('should start a new extglob when `(` follows', () => {
+      assert(isMatch('ac', '@(a|b)?(c)'));
+      assert(isMatch('a', '@(a|b)?(c)'));
+      assert(isMatch('ac', '@(a|b)+(c)'));
+      assert(!isMatch('a', '@(a|b)+(c)'));
+    });
+
+    it('should use regex quantifiers when the `regex` option is true', () => {
+      const opts = { regex: true };
+      assert(isMatch('a', '@(a|b)?', opts));
+      assert(isMatch('aa', '@(a|b)+', opts));
+      assert(!isMatch('a+', '@(a|b)+', opts));
+    });
+
+    it('should not change quantifiers on plain regex groups', () => {
+      // `(a|b)` is a capture group, not an extglob, so `?` and `+` stay quantifiers.
+      assert.strictEqual(makeRe('(a|b)?').source, '^(?:(a|b)?)$');
+      assert.strictEqual(makeRe('(a|b)+').source, '^(?:(a|b)+)$');
+      assert(isMatch('a', '(a|b)?'));
+      assert(isMatch('aa', '(a|b)+'));
+    });
+  });
+
   it('should match nested directories with negation extglobs', () => {
     assert(isMatch('a', '!(a/**)'));
     assert(!isMatch('a/', '!(a/**)'));
