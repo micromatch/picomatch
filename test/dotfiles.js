@@ -13,6 +13,19 @@ describe('dotfiles', () => {
       assert.deepStrictEqual(match(['a/b', 'a/.b', '.a/b', '.a/.b'], '**'), ['a/b']);
       assert.deepStrictEqual(match(['a/b/c/.dotfile'], '*.*'), []);
     });
+
+    it('should not match dotfiles with a star that opens a brace at a segment start:', () => {
+      // Brace expansion happens before globbing, so `{*.js,x}` behaves like
+      // `*.js` and must not match a leading-dot file.
+      assert.deepStrictEqual(match(['.js', 'a.js'], '{*.js,x}'), ['a.js']);
+      assert.deepStrictEqual(match(['.foo', 'foo'], '{*,x}'), ['foo']);
+      assert.deepStrictEqual(match(['.foo', 'bar'], '{a,*}'), ['bar']);
+      assert.deepStrictEqual(match(['foo/.js', 'foo/a.js'], 'foo/{*.js,x}'), ['foo/a.js']);
+      assert.deepStrictEqual(match(['.js', 'a.js'], '{a,{*.js,b}}'), ['a.js']);
+      // A star that is mid-segment (not at the brace's segment start) still
+      // matches dotfiles, e.g. `a{*,b}`.
+      assert.deepStrictEqual(match(['a.foo'], 'a{*,b}'), ['a.foo']);
+    });
   });
 
   describe('leading dot', () => {
