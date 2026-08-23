@@ -375,6 +375,11 @@ describe('picomatch', () => {
       assertParts('foo/[0-9]/[0-9]', ['foo', '[0-9]', '[0-9]']);
       assertParts('foo[0-9]/bar[0-9]', ['foo[0-9]', 'bar[0-9]']);
     });
+
+    it('issue #62: should enable parts when tokens are requested', () => {
+      const state = scan('a/b/*/c', { tokens: true });
+      assert.deepStrictEqual(state.parts, ['a', 'b', '*', 'c']);
+    });
   });
 
   describe('.base (glob2base test patterns)', () => {
