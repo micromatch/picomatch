@@ -322,34 +322,55 @@ describe('picomatch', () => {
       });
     });
 
+    it('should return a single part for patterns without path separators', () => {
+      assertParts('', ['']);
+      assertParts('*', ['*']);
+      assertParts('.*', ['.*']);
+      assertParts('**', ['**']);
+      assertParts('foo', ['foo']);
+      assertParts('!foo', ['foo']);
+      assertParts('foo*', ['foo*']);
+      assertParts('{1..9}', ['{1..9}']);
+      assertParts('c!(.)z', ['c!(.)z']);
+      assertParts('(b|a).(a)', ['(b|a).(a)']);
+      assertParts('+(a|b\\[)*', ['+(a|b\\[)*']);
+      assertParts('@(a|b).md', ['@(a|b).md']);
+      assertParts('(a/b)', ['(a/b)']);
+      assertParts('(a\\b)', ['(a\\b)']);
+      assertParts('foo\\[a\\/]', ['foo\\[a\\/]']);
+      assertParts('foo[/]bar', ['foo[/]bar']);
+    });
+
+    it('should preserve leading and trailing empty parts', () => {
+      assertParts('/', ['', '']);
+      assertParts('/*', ['', '*']);
+      assertParts('/a', ['', 'a']);
+      assertParts('/a/b', ['', 'a', 'b']);
+      assertParts('/a/b/', ['', 'a', 'b', '']);
+      assertParts('*/', ['*', '']);
+      assertParts('./', ['']);
+    });
+
+    it('should return parts when tokens are requested', () => {
+      assert.deepStrictEqual(scan('/', { tokens: true }).parts, ['', '']);
+      assert.deepStrictEqual(scan('/a/b', { tokens: true }).parts, ['', 'a', 'b']);
+      assert.deepStrictEqual(scan('!foo', { tokens: true }).parts, ['foo']);
+      assert.deepStrictEqual(scan('./!a/b', { tokens: true }).parts, ['a', 'b']);
+      assert.deepStrictEqual(scan('a/b/*/c', { tokens: true }).parts, ['a', 'b', '*', 'c']);
+    });
+
+    it('should split only on unnested and unescaped path separators', () => {
+      assertParts('/dev\\/@(tcp|udp)\\/*\\/*', ['', 'dev\\/@(tcp|udp)\\/*\\/*']);
+      assertParts('!(!(bar)/baz)', ['!(!(bar)/baz)']);
+      assertParts('(!(b/a))', ['(!(b/a))']);
+      assertParts('a/((b)/c)/d', ['a', '((b)/c)', 'd']);
+      assertParts('a/(b\\)/c)/d', ['a', '(b\\)/c)', 'd']);
+      assertParts('(a|b)/c', ['(a|b)', 'c']);
+      assertParts('./directory/(a|b)/*.js', ['directory', '(a|b)', '*.js']);
+      assertParts('a/@(!(b)/c)/*.js', ['a', '@(!(b)/c)', '*.js']);
+    });
+
     it('should return parts of the pattern', () => {
-      // Right now it returns []
-      // assertParts('', ['']);
-      // assertParts('*', ['*']);
-      // assertParts('.*', ['.*']);
-      // assertParts('**', ['**']);
-      // assertParts('foo', ['foo']);
-      // assertParts('foo*', ['foo*']);
-      // assertParts('/', ['', '']);
-      // assertParts('/*', ['', '*']);
-      // assertParts('./', ['']);
-      // assertParts('{1..9}', ['{1..9}']);
-      // assertParts('c!(.)z', ['c!(.)z']);
-      // assertParts('(b|a).(a)', ['(b|a).(a)']);
-      // assertParts('+(a|b\\[)*', ['+(a|b\\[)*']);
-      // assertParts('@(a|b).md', ['@(a|b).md']);
-      // assertParts('(a/b)', ['(a/b)']);
-      // assertParts('(a\\b)', ['(a\\b)']);
-      // assertParts('foo\\[a\\/]', ['foo\\[a\\/]']);
-      // assertParts('foo[/]bar', ['foo[/]bar']);
-      // assertParts('/dev\\/@(tcp|udp)\\/*\\/*', ['', '/dev\\/@(tcp|udp)\\/*\\/*']);
-
-      // Right now it returns ['*']
-      // assertParts('*/', ['*', '']);
-
-      // Right now it returns ['!(!(bar)', 'baz)']
-      // assertParts('!(!(bar)/baz)', ['!(!(bar)/baz)']);
-
       assertParts('./foo', ['foo']);
       assertParts('../foo', ['..', 'foo']);
 
