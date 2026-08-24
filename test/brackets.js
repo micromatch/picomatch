@@ -24,41 +24,82 @@ describe('brackets', () => {
     });
   });
 
-  describe('POSIX negation', () => {
-    it('should support [!...] like [^...]', () => {
+  describe('bracket negation', () => {
+    it('should negate a bracket expression with a leading "!"', () => {
       assert(!isMatch('a', '[!abc]'));
       assert(!isMatch('b', '[!abc]'));
       assert(!isMatch('c', '[!abc]'));
       assert(isMatch('d', '[!abc]'));
-      assert(isMatch('a!b', 'a[!c]b'));
-      assert(!isMatch('acb', 'a[!c]b'));
+      assert(isMatch('x', '[!abc]'));
     });
 
-    it('should produce the same regex as [^...]', () => {
-      const pm = require('..');
-      assert.strictEqual(pm.makeRe('[!abc]').source, pm.makeRe('[^abc]').source);
-      assert.strictEqual(
-        pm.makeRe('[!abc]').source,
-        pm.makeRe('[!abc]', { posix: true }).source
-      );
+    it('should negate ranges with a leading "!"', () => {
+      assert(!isMatch('a', '[!a-c]'));
+      assert(!isMatch('c', '[!a-c]'));
+      assert(isMatch('d', '[!a-c]'));
     });
 
-    it('should not match slashes with [!...]', () => {
-      assert(!isMatch('a/b', '[!c]/b'.replace('/b', ']b')) || true);
-      assert(!isMatch('a/b', '[!a]/b') === isMatch('x/b', '[!a]/b') || true);
+    it('should support "^" as an alternative to "!"', () => {
+      assert(!isMatch('a', '[^abc]'));
+      assert(isMatch('d', '[^abc]'));
+      assert(!isMatch('a', '[^a-c]'));
+      assert(isMatch('d', '[^a-c]'));
+    });
+
+    it('should support negated brackets in larger patterns', () => {
+      assert(!isMatch('abc', 'a[!b]c'));
+      assert(isMatch('axc', 'a[!b]c'));
+      assert(!isMatch('ad', '[!abc]d'));
+      assert(isMatch('xd', '[!abc]d'));
+    });
+
+    it('should not match slashes with negated brackets', () => {
       assert(!isMatch('/', '[!a]'));
+      assert(!isMatch('a/b', 'a[!x]b'));
     });
 
-    it('should keep escaped "!" literal inside brackets', () => {
+    it('should treat escaped "!" as a literal character', () => {
       assert(isMatch('!', '[\\!a]'));
       assert(isMatch('a', '[\\!a]'));
       assert(!isMatch('b', '[\\!a]'));
     });
 
-    it('should keep "!" literal when not first in the class', () => {
+    it('should treat non-leading "!" as literal characters', () => {
       assert(isMatch('!', '[a!]'));
       assert(isMatch('a', '[a!]'));
       assert(!isMatch('b', '[a!]'));
+    });
+
+    it('should negate a literal "!"', () => {
+      assert(!isMatch('!', '[!!]'));
+      assert(isMatch('a', '[!!]'));
+    });
+
+    it('should preserve incomplete bracket expressions', () => {
+      assert(isMatch('zx[!]y', '*x[!]y'));
+      assert(isMatch('zx!y', '*x[!]y'));
+    });
+
+    it('should negate a closing bracket when it is first in the class', () => {
+      assert(!isMatch(']', '[!]]'));
+      assert(isMatch('a', '[!]]'));
+    });
+
+    it('should negate brackets when `options.posix` is false', () => {
+      assert(!isMatch('a', '[!abc]', { posix: false }));
+      assert(isMatch('d', '[!abc]', { posix: false }));
+    });
+
+    it('should respect `options.literalBrackets`', () => {
+      const options = { literalBrackets: true };
+      assert(isMatch('zx[!a]y', '*x[!a]y', options));
+      assert(!isMatch('xby', 'x[!a]y', options));
+    });
+
+    it('should respect `options.nobracket`', () => {
+      const options = { nobracket: true };
+      assert(isMatch('zx[!a]y', '*x[!a]y', options));
+      assert(!isMatch('xby', 'x[!a]y', options));
     });
   });
 });
