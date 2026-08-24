@@ -32,24 +32,111 @@ Changelog entries are classified using the following labels _(from [keep-a-chang
 
 </details>
 
-## 4.0.0 (2024-02-07)
+## 4.0.7 (2026-08-24)
 
-### Fixes
+### Fixed
 
-* Fix bad text values in parse #126, thanks to @connor4312
+* Fixed terminal globstars in parenthesized patterns ([#142](https://github.com/micromatch/picomatch/issues/142), [e279bd7](https://github.com/micromatch/picomatch/commit/e279bd7)).
+
+## 4.0.6 (2026-08-24)
+
+### Fixed
+
+* `scan()` now scans the full pattern when tokens are requested, instead of merging the remaining path segments into the final token ([#62](https://github.com/micromatch/picomatch/issues/62), [5f5819d](https://github.com/micromatch/picomatch/commit/5f5819d)).
+* `scan()` now returns complete pattern parts, including leading and trailing empty segments, and handles nested and escaped parentheses correctly ([#58](https://github.com/micromatch/picomatch/issues/58), [f201165](https://github.com/micromatch/picomatch/commit/f201165)).
+
+## 4.0.5 (2026-07-02)
+
+### Fixed
+
+* Preserved every branch when safely rewriting repeated extglobs ([#182](https://github.com/micromatch/picomatch/pull/182), [6289307](https://github.com/micromatch/picomatch/commit/6289307)).
+* Honored the `windows` option when matching basenames ([#183](https://github.com/micromatch/picomatch/pull/183), [ab8bc4d](https://github.com/micromatch/picomatch/commit/ab8bc4d)).
+
+## 4.0.4 (2026-03-23)
+
+### Security
+
+* Prevented regular expression denial of service (ReDoS) from crafted repeated or nested extglob quantifiers by safely rewriting or treating risky patterns as literals. The new `maxExtglobRecursion` option defaults to `0`; positive numeric values allow limited nesting, while `false` disables the safeguard ([CVE-2026-33671](https://github.com/advisories/GHSA-c2c7-rcm5-vvqj), [5eceecd](https://github.com/micromatch/picomatch/commit/5eceecd)).
+* Prevented inherited object properties from being interpreted as POSIX character classes ([CVE-2026-33672](https://github.com/advisories/GHSA-3v7f-55p6-f55p), [4516eb5](https://github.com/micromatch/picomatch/commit/4516eb5)).
+
+## 4.0.3 (2025-07-15)
+
+### Fixed
+
+* Avoided an exception when a glob pattern contains `constructor` ([#144](https://github.com/micromatch/picomatch/pull/144), [a9e2dd2](https://github.com/micromatch/picomatch/commit/a9e2dd2)).
+
+## 4.0.2 (2024-03-27)
 
 ### Changed
 
-* Remove process global to work outside of node #129, thanks to @styfle
-* Add sideEffects to package.json #128, thanks to @frandiox
-* Removed `os`, make compatible browser environment. See #124, thanks to @gwsbhqt
+* Moved Windows platform detection to the shared utilities ([f7751de](https://github.com/micromatch/picomatch/commit/f7751de)).
+* Updated development dependencies ([d958901](https://github.com/micromatch/picomatch/commit/d958901)).
 
-## 3.0.1
+## 4.0.1 (2024-02-07)
 
-### Fixes
+### Breaking changes
 
-* Support stars in negation extglobs with expression after closing parenthesis #102, thanks to @mrmlnc
+* Raised the minimum supported Node.js version from 10 to 12 ([6ce95f5](https://github.com/micromatch/picomatch/commit/6ce95f5)).
 
+## 4.0.0 (2024-02-07)
+
+### Breaking changes
+
+* On supported Node.js versions, 4.0.0 does not remove any public matcher API or change matching semantics. Its compatibility change is the removal of Picomatch's Node.js version check for regular expression lookbehinds. Runtimes without native lookbehind support, which are outside the supported Node.js range, now use the standard `toRegex()` behavior: a non-matching fallback by default and the native `RegExp` error when `debug: true` ([#129](https://github.com/micromatch/picomatch/pull/129), [907d706](https://github.com/micromatch/picomatch/commit/907d706)).
+
+### Fixed
+
+* Preserved complete `text` values when `parse()` combines adjacent text tokens ([#100](https://github.com/micromatch/picomatch/issues/100), [#125](https://github.com/micromatch/picomatch/issues/125), [#126](https://github.com/micromatch/picomatch/pull/126), [563f534](https://github.com/micromatch/picomatch/commit/563f534)). Thanks to @connor4312.
+
+### Changed
+
+* Removed the Node.js `os` dependency from the main entry point to support browser environments ([#124](https://github.com/micromatch/picomatch/pull/124), [b0ff9b1](https://github.com/micromatch/picomatch/commit/b0ff9b1)). Thanks to @gwsbhqt.
+* Added `sideEffects: false` to `package.json` ([#128](https://github.com/micromatch/picomatch/pull/128), [8f18eb6](https://github.com/micromatch/picomatch/commit/8f18eb6)). Thanks to @frandiox.
+* Restored all properties from the core matcher, including the undocumented `picomatch.constants`, on the package's main export ([335eac6](https://github.com/micromatch/picomatch/commit/335eac6)).
+
+## 3.0.2 (2026-03-23)
+
+### Fixed
+
+* Avoided an exception when a glob pattern contains `constructor` ([#144](https://github.com/micromatch/picomatch/pull/144), [8c08b94](https://github.com/micromatch/picomatch/commit/8c08b94)).
+
+### Security
+
+* Backported the extglob-quantifier ReDoS fix from 4.0.4. Risky repeated extglobs are now safely rewritten or treated as literals by default; positive numeric `maxExtglobRecursion` values allow limited nesting, while `false` disables the safeguard ([CVE-2026-33671](https://github.com/advisories/GHSA-c2c7-rcm5-vvqj), [05c0743](https://github.com/micromatch/picomatch/commit/05c0743)).
+* Prevented inherited object properties from being interpreted as POSIX character classes ([CVE-2026-33672](https://github.com/advisories/GHSA-3v7f-55p6-f55p), [0bdde35](https://github.com/micromatch/picomatch/commit/0bdde35)).
+
+## 3.0.1 (2023-10-29)
+
+### Breaking changes
+
+* Raised the minimum supported Node.js version from 8.6 to 10 ([5214db4](https://github.com/micromatch/picomatch/commit/5214db4)).
+
+## 3.0.0 (2023-10-28)
+
+### Breaking changes
+
+* Windows path-separator handling in the core and static APIs is now controlled by the `windows` option instead of automatic platform detection. Calls without an options object use POSIX behavior; pass `windows: true` when backslashes should be treated as path separators. The main `picomatch()` entry point applies platform detection only when an options object is provided ([#73](https://github.com/micromatch/picomatch/pull/73), [49d10c4](https://github.com/micromatch/picomatch/commit/49d10c4)).
+* The undocumented `picomatch.constants` property is no longer copied to the package's main export ([7e120bb](https://github.com/micromatch/picomatch/commit/7e120bb)). It is restored in 4.0.0 ([335eac6](https://github.com/micromatch/picomatch/commit/335eac6)).
+* The v3 `matchBase()` implementation did not forward Windows mode to its platform-independent basename helper. As a result, backslash-separated inputs did not match by basename, even with `windows: true`. This is fixed in 4.0.5 ([#183](https://github.com/micromatch/picomatch/pull/183), [ab8bc4d](https://github.com/micromatch/picomatch/commit/ab8bc4d)).
+
+### Added
+
+* Added the dependency-free `picomatch/posix` entry point for browser and other non-Node.js environments. It uses POSIX path semantics unless `windows: true` is passed ([7e120bb](https://github.com/micromatch/picomatch/commit/7e120bb)).
+
+### Changed
+
+* Removed the Node.js `path` dependency and automatic `process.platform` detection from the core matcher, and documented the existing `windows` option ([#73](https://github.com/micromatch/picomatch/pull/73)).
+
+## 2.3.2 (2026-03-23)
+
+### Fixed
+
+* Avoided an exception when a glob pattern contains `constructor` ([#144](https://github.com/micromatch/picomatch/pull/144), [3f4f10e](https://github.com/micromatch/picomatch/commit/3f4f10e)).
+
+### Security
+
+* Backported the extglob-quantifier ReDoS fix from 4.0.4. Risky repeated extglobs are now safely rewritten or treated as literals by default; positive numeric `maxExtglobRecursion` values allow limited nesting, while `false` disables the safeguard ([CVE-2026-33671](https://github.com/advisories/GHSA-c2c7-rcm5-vvqj), [eec17ae](https://github.com/micromatch/picomatch/commit/eec17ae)).
+* Prevented inherited object properties from being interpreted as POSIX character classes ([CVE-2026-33672](https://github.com/advisories/GHSA-3v7f-55p6-f55p), [fc1f6b6](https://github.com/micromatch/picomatch/commit/fc1f6b6)).
 
 ## 2.3.1 (2022-01-02)
 
