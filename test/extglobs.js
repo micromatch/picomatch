@@ -86,6 +86,81 @@ describe('extglobs', () => {
       assert(isMatch('/file.dhello.ts', '/!(*.d).@(ts)'));
     });
 
+    it('should apply dotfile rules to brace alternatives at segment starts', () => {
+      const pattern = '**/{!(*.d).mts,!(*.d).cts,*.{mjs,cjs,js}}';
+      const opts = { dot: false };
+      const dotOpts = { dot: true };
+
+      assert(!isMatch('.cjs', pattern, opts));
+      assert(!isMatch('.cts', pattern, opts));
+      assert(!isMatch('.js', pattern, opts));
+      assert(!isMatch('.mjs', pattern, opts));
+      assert(!isMatch('.mts', pattern, opts));
+      assert(isMatch('a.mjs', pattern, opts));
+      assert(isMatch('ad.cts', pattern, opts));
+      assert(isMatch('ad.mts', pattern, opts));
+      assert(!isMatch('a/.cjs', pattern, opts));
+      assert(!isMatch('a/.cts', pattern, opts));
+      assert(!isMatch('a/.js', pattern, opts));
+      assert(!isMatch('a/.mjs', pattern, opts));
+      assert(!isMatch('a/.mts', pattern, opts));
+      assert(isMatch('a/a.mjs', pattern, opts));
+      assert(isMatch('a/ad.cts', pattern, opts));
+      assert(isMatch('a/ad.mts', pattern, opts));
+
+      assert(isMatch('.cjs', pattern, dotOpts));
+      assert(isMatch('.cts', pattern, dotOpts));
+      assert(isMatch('.js', pattern, dotOpts));
+      assert(isMatch('.mjs', pattern, dotOpts));
+      assert(isMatch('.mts', pattern, dotOpts));
+      assert(isMatch('a.mjs', pattern, dotOpts));
+      assert(isMatch('ad.cts', pattern, dotOpts));
+      assert(isMatch('ad.mts', pattern, dotOpts));
+      assert(isMatch('a/.cjs', pattern, dotOpts));
+      assert(isMatch('a/.cts', pattern, dotOpts));
+      assert(isMatch('a/.js', pattern, dotOpts));
+      assert(isMatch('a/.mjs', pattern, dotOpts));
+      assert(isMatch('a/.mts', pattern, dotOpts));
+      assert(isMatch('a/a.mjs', pattern, dotOpts));
+      assert(isMatch('a/ad.cts', pattern, dotOpts));
+      assert(isMatch('a/ad.mts', pattern, dotOpts));
+    });
+
+    it('should apply dotfile rules only at segment starts', () => {
+      assert(isMatch('.foo', '**/{.foo,*}'));
+      assert(!isMatch('.bar', '**/{.foo,*}'));
+      assert(isMatch('a.foo', 'a{*,b}'));
+    });
+
+    it('should apply dotfile rules to first and subsequent brace alternatives', () => {
+      assert(!isMatch('.js', '**/{*.js,x}', { dot: false }));
+      assert(!isMatch('a/.js', '**/{*.js,x}', { dot: false }));
+      assert(isMatch('.js', '**/{*.js,x}', { dot: true }));
+      assert(isMatch('a/.js', '**/{*.js,x}', { dot: true }));
+
+      assert(!isMatch('.js', '**/{x,*.js}', { dot: false }));
+      assert(!isMatch('a/.js', '**/{x,*.js}', { dot: false }));
+      assert(isMatch('.js', '**/{x,*.js}', { dot: true }));
+      assert(isMatch('a/.js', '**/{x,*.js}', { dot: true }));
+
+      assert(!isMatch('.mts', '**/{!(*.d).mts,x}', { dot: false }));
+      assert(!isMatch('a/.mts', '**/{!(*.d).mts,x}', { dot: false }));
+      assert(isMatch('.mts', '**/{!(*.d).mts,x}', { dot: true }));
+      assert(isMatch('a/.mts', '**/{!(*.d).mts,x}', { dot: true }));
+
+      assert(!isMatch('.mts', '**/{x,!(*.d).mts}', { dot: false }));
+      assert(!isMatch('a/.mts', '**/{x,!(*.d).mts}', { dot: false }));
+      assert(isMatch('.mts', '**/{x,!(*.d).mts}', { dot: true }));
+      assert(isMatch('a/.mts', '**/{x,!(*.d).mts}', { dot: true }));
+
+      assert(!isMatch('.js', '{*.js,x}', { bash: true }));
+      assert(isMatch('a.js', '{*.js,x}', { bash: true }));
+      assert(!isMatch('.js', '{x,*.js}', { bash: true }));
+      assert(isMatch('a.js', '{x,*.js}', { bash: true }));
+      assert(isMatch('a,.js', '{x,@(a,*.js)}'));
+      assert(isMatch('a,.mts', '{x,@(a,!(*.d).mts)}'));
+    });
+
     it('should support negation extglobs in patterns with slashes', () => {
       assert(!isMatch('foo/abc', 'foo/!(abc)'));
       assert(isMatch('foo/bar', 'foo/!(abc)'));
@@ -290,6 +365,13 @@ describe('extglobs', () => {
       assert(isMatch('ab.md', '*(a|b).md'));
       assert(isMatch('b.md', '*(a|b).md'));
       assert(isMatch('bb.md', '*(a|b).md'));
+    });
+
+    it('should preserve zero-length *(...) matches in brace alternatives', () => {
+      assert(isMatch('.md', '{*(a|b).md,x}'));
+      assert(isMatch('a/.md', 'a/{x,*(a|b).md}'));
+      assert(!isMatch('.a.md', '{*(a|b).md,x}', { noextglob: true }));
+      assert(isMatch('a.md', '{*(a|b).md,x}', { noextglob: true }));
     });
 
     it('should support matching file extensions with ?(...)', () => {
@@ -770,4 +852,3 @@ describe('extglobs', () => {
     assert.deepStrictEqual(match(['foo', ' foo '], '(f|o)+\\b'), ['foo'], 'Should match word boundaries');
   });
 });
-

@@ -25,6 +25,9 @@ describe('braces', () => {
     assert(isMatch('a {abc} b', 'a {abc} b'));
     assert(isMatch('a {a-b-c} b', 'a {a-b-c} b'));
     assert(isMatch('a {a.c} b', 'a {a.c} b'));
+    assert(isMatch('{.foo}', '{*}'));
+    assert(isMatch('{.foo}', '{*}', { bash: true }));
+    assert(isMatch('{!.foo}', '{!(x)}'));
   });
 
   it('should match literal braces when escaped', () => {
