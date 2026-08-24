@@ -61,4 +61,15 @@ describe('issue-related tests', () => {
     assert(isMatch('a/foo.js', '**/foo.js', { dot: true }));
     assert(isMatch('foo.js', '**/foo.js', { dot: true }));
   });
+
+  it('picomatch issue#142 - should match trailing globstars in parens', () => {
+    assert(isMatch('test/utils', 'test(/utils/**)'));
+    assert(isMatch('test/utils', 'test?(/utils/**)'));
+    assert(isMatch('test/utils/file', 'test(/utils/**)'));
+    assert(isMatch('test/utils/file', 'test?(/utils/**)'));
+    assert(!isMatch('test', 'test(/utils/**)'));
+    assert(isMatch('test', 'test?(/utils/**)'));
+    assert(!isMatch('test/utils', 'test(/utils/**)', { strictSlashes: true }));
+    assert(!isMatch('test/utils', 'test(/utils/**)/file'));
+  });
 });
