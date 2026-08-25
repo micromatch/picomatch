@@ -433,5 +433,12 @@ describe('stars', () => {
       assert(isMatch('a/bb/c/ddd.md', 'a/*/c/*.md'));
       assert(isMatch('a/bbbb/c/ddd.md', 'a/*/c/*.md'));
     });
+
+    it('should match paths containing newlines', () => {
+      assert(isMatch('hello\nworld', '**'));
+      assert(isMatch('foo/hello\nworld', '**/*'));
+      assert(isMatch('foo\nbar/bar', '**/bar'));
+      assert(isMatch('foo\nbar/baz\nqux', '**/**'));
+    });
   });
 });
