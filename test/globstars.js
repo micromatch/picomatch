@@ -439,6 +439,9 @@ describe('stars', () => {
       assert(isMatch('foo/hello\nworld', '**/*'));
       assert(isMatch('foo\nbar/bar', '**/bar'));
       assert(isMatch('foo\nbar/baz\nqux', '**/**'));
+      assert(isMatch('hello\rworld', '**'));
+      assert(isMatch('foo/hello\r\nworld', '**/*'));
+      assert(isMatch('foo\rbar/bar', '**/bar'));
     });
   });
 });
