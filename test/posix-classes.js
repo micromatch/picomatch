@@ -21,7 +21,7 @@ describe('posix classes', () => {
       assert.strictEqual(convert('[![:lower:]]'), '(?=.)[^a-z]');
       assert.strictEqual(convert('[[:digit:][:upper:][:space:]]'), '(?=.)[0-9A-Z \\t\\r\\n\\v\\f]');
       assert.strictEqual(convert('[[:xdigit:]]'), '(?=.)[A-Fa-f0-9]');
-      assert.strictEqual(convert('[[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:graph:][:lower:][:print:][:punct:][:space:][:upper:][:xdigit:]]'), '(?=.)[a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9\\x21-\\x7Ea-z\\x20-\\x7E \\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~ \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
+      assert.strictEqual(convert('[[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:graph:][:lower:][:print:][:punct:][:space:][:upper:][:xdigit:]]'), '(?=.)[a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9\\x21-\\x7Ea-z\\x20-\\x7E \\-!"#$%&\'()\\*+,./:;<=>?@[\\\\\\]^_`{|}~ \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
       assert.strictEqual(convert('[^[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:lower:][:space:][:upper:][:xdigit:]]'), '(?=.)[^a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9a-z \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
       assert.strictEqual(convert('[a-c[:digit:]x-z]'), '(?=.)[a-c0-9x-z]');
       assert.strictEqual(convert('[_[:alpha:]][_[:alnum:]][_[:alnum:]]*'), '(?=.)[_a-zA-Z][_a-zA-Z0-9][_a-zA-Z0-9]*', []);
@@ -133,7 +133,7 @@ describe('posix classes', () => {
 
     it('should not create an invalid posix character class:', () => {
       assert.strictEqual(convert('[:al:]'), '(?:\\[:al:\\]|[:al:])');
-      assert.strictEqual(convert('[abc[:punct:][0-9]'), '(?=.)[abc\\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~\\[0-9]');
+      assert.strictEqual(convert('[abc[:punct:][0-9]'), '(?=.)[abc\\-!"#$%&\'()\\*+,./:;<=>?@[\\\\\\]^_`{|}~\\[0-9]');
     });
 
     it('should return `true` when the pattern matches:', () => {
@@ -262,8 +262,9 @@ describe('posix classes', () => {
       assert(isMatch('900', '[[:xdigit:]]*'));
     });
 
-    it('should match punctuation characters (\\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~)', () => {
+    it('should match punctuation characters (\\-!"#$%&\'()\\*+,./:;<=>?@[\\\\\\]^_`{|}~)', () => {
       assert(isMatch('!', '[[:punct:]]'));
+      assert(isMatch('\\', '[[:punct:]]'));
       assert(isMatch('?', '[[:punct:]]'));
       assert(isMatch('#', '[[:punct:]]'));
       assert(isMatch('&', '[[:punct:]]'));
