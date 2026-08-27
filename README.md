@@ -582,7 +582,7 @@ The following named POSIX bracket expressions are supported:
 * `[:graph:]` - Graph characters, equivalent to `[\\x21-\\x7E]`.
 * `[:lower:]` - Lowercase letters, equivalent to `[a-z]`.
 * `[:print:]` - Print characters, equivalent to `[\\x20-\\x7E ]`.
-* `[:punct:]` - Punctuation and symbols, equivalent to `[\\-!"#$%&\'()\\*+,./:;<=>?@[\\]^_`{|}~]`.
+* `[:punct:]` - Punctuation and symbols, equivalent to `[\\-!"#$%&\'()\\*+,./:;<=>?@[\\\\\\]^_`{|}~]`.
 * `[:space:]` - Extended space characters, equivalent to `[ \\t\\r\\n\\v\\f]`.
 * `[:upper:]` - Uppercase letters, equivalent to `[A-Z]`.
 * `[:word:]` -  Word characters (letters, numbers and underscores), equivalent to `[A-Za-z0-9_]`.
