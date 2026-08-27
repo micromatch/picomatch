@@ -265,6 +265,7 @@ describe('posix classes', () => {
     it('should match punctuation characters (\\-!"#$%&\'()\\*+,./:;<=>?@[\\\\\\]^_`{|}~)', () => {
       assert(isMatch('!', '[[:punct:]]'));
       assert(isMatch('\\', '[[:punct:]]'));
+      assert(!isMatch('\\', '[![:punct:]]'));
       assert(isMatch('?', '[[:punct:]]'));
       assert(isMatch('#', '[[:punct:]]'));
       assert(isMatch('&', '[[:punct:]]'));
