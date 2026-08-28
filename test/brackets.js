@@ -4,6 +4,19 @@ const assert = require('assert');
 const { isMatch } = require('..');
 
 describe('brackets', () => {
+  describe('character classes', () => {
+    it('should not let exact string matching bypass character classes', () => {
+      assert(!isMatch('[1-5]', '[1-5]'));
+      assert(!isMatch('[1-5]', '[1-5]', { literalBrackets: false }));
+      assert(isMatch('3', '[1-5]'));
+    });
+
+    it('should still match literal brackets when requested', () => {
+      assert(isMatch('[1-5]', '\\[1-5\\]'));
+      assert(isMatch('[1-5]', '[1-5]', { literalBrackets: true }));
+    });
+  });
+
   describe('trailing stars', () => {
     it('should support stars following brackets', () => {
       assert(isMatch('a', '[a]*'));
