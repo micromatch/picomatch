@@ -769,5 +769,23 @@ describe('extglobs', () => {
     assert.deepStrictEqual(match(['a123c', 'abbbc'], 'a[\\D]+c'), ['abbbc'], 'Should match non-numbers');
     assert.deepStrictEqual(match(['foo', ' foo '], '(f|o)+\\b'), ['foo'], 'Should match word boundaries');
   });
+
+  it('should keep globstar semantics for non-final extglob alternatives (issue #154)', () => {
+    const opts = { dot: true };
+
+    // The result of a negation extglob must not depend on the order of the
+    // alternatives: every alternative's `**` must match deep paths, not only
+    // the last one.
+    assert(!isMatch('a/x/y', '!(a/**|b/**)**', opts));
+    assert(!isMatch('a/x/y', '!(b/**|a/**)**', opts));
+
+    assert(!isMatch('amplify/backend/fn/jest.config.ts', '!(amplify/**|data/**)**', opts));
+    assert(!isMatch('amplify/backend/fn/jest.config.ts', '!(data/**|amplify/**)**', opts));
+
+    // The last alternative still excludes deep paths as before...
+    assert(!isMatch('b/x/y', '!(a/**|b/**)**', opts));
+    // ...and unrelated paths are still matched (the negation does not over-exclude).
+    assert(isMatch('c/x/y', '!(a/**|b/**)**', opts));
+  });
 });
 
