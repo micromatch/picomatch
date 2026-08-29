@@ -2,7 +2,9 @@
 
 const assert = require('assert');
 const match = require('./support/match');
-const { isMatch } = require('..');
+const picomatch = require('..');
+const { isMatch } = picomatch;
+const utils = require('../lib/utils');
 
 describe('options', () => {
   describe('options.matchBase', () => {
@@ -111,6 +113,33 @@ describe('options', () => {
   });
 
   describe('options.windows', () => {
+    const isWindows = utils.isWindows;
+
+    afterEach(() => {
+      utils.isWindows = isWindows;
+    });
+
+    it('should auto-detect the platform whether or not an options object is passed', () => {
+      // Regression (#133): OS detection was skipped entirely when no options
+      // object was passed, so `picomatch(glob)` and `picomatch(glob, {})`
+      // disagreed about backslash handling on Windows.
+      utils.isWindows = () => true;
+      assert(picomatch('foo/*.js')('foo\\bar.js'), 'no options object should detect windows');
+      assert(picomatch('foo/*.js', {})('foo\\bar.js'), 'empty options object should detect windows');
+
+      utils.isWindows = () => false;
+      assert(!picomatch('foo/*.js')('foo\\bar.js'), 'no options object should detect posix');
+      assert(!picomatch('foo/*.js', {})('foo\\bar.js'), 'empty options object should detect posix');
+    });
+
+    it('should not override an explicitly defined windows option', () => {
+      utils.isWindows = () => false;
+      assert(picomatch('foo/*.js', { windows: true })('foo\\bar.js'), 'windows: true should be respected');
+
+      utils.isWindows = () => true;
+      assert(!picomatch('foo/*.js', { windows: false })('foo\\bar.js'), 'windows: false should be respected');
+    });
+
     it('should windows file paths by default', () => {
       assert.deepStrictEqual(match(['a\\b\\c.md'], '**/*.md', { windows: true }), ['a/b/c.md']);
       assert.deepStrictEqual(match(['a\\b\\c.md'], '**/*.md', { windows: false }), ['a\\b\\c.md']);
