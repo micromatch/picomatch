@@ -20,7 +20,9 @@ describe('extglobs', () => {
     assert(!isMatch('cbz', 'c!(*)z'));
     assert(isMatch('cccz', 'c!(b*)z'));
     assert(isMatch('cbz', 'c!(+)z'));
-    assert(isMatch('cbz', 'c!(?)z'));
+    // `?` is a wildcard here, not a literal, so `c!(?)z` excludes every
+    // one-character middle. `[[ cbz == c!(?)z ]]` is not a match in bash.
+    assert(!isMatch('cbz', 'c!(?)z'));
     assert(isMatch('cbz', 'c!(@)z'));
   });
 
@@ -29,6 +31,47 @@ describe('extglobs', () => {
     assert(!isMatch('c/z', 'c!(?:foo)?z'));
     assert(isMatch('c!fooz', 'c!(?:foo)?z'));
     assert(isMatch('c!z', 'c!(?:foo)?z'));
+  });
+
+  describe('extglob bodies that begin with `?`', () => {
+    // A `?` that opens an extglob body is a single character wildcard, not a
+    // literal. Match expectations follow `bash 3.2` with `shopt -s extglob`,
+    // except where a test is explicitly about picomatch's regex group support.
+
+    it('should treat a leading `?` in an extglob body as a wildcard', () => {
+      assert(isMatch('a', '@(?)'));
+      assert(!isMatch('ab', '@(?)'));
+      assert(isMatch('ab', '@(??)'));
+      assert(isMatch('a', '?(?)'));
+      assert(isMatch('abc', '+(?)'));
+      assert(isMatch('bb', '*(?)'));
+      assert(!isMatch('a', '!(?)'));
+      assert(isMatch('ab', '!(?)'));
+    });
+
+    it('should treat a leading `?` in any extglob alternative as a wildcard', () => {
+      assert(isMatch('ba', '@(?a|b)'));
+      assert(isMatch('b', '@(?a|b)'));
+      assert(!isMatch('bb', '@(?a|b)'));
+      assert(isMatch('file.jar', 'file.@(?ar|zip)'));
+      assert(isMatch('file.zip', 'file.@(?ar|zip)'));
+      assert(!isMatch('file.tar.gz', 'file.@(?ar|zip)'));
+    });
+
+    // `(?:`, `(?=`, `(?!` and `(?<` still open a regex group, which picomatch
+    // supports on purpose and bash does not.
+    it('should still treat a regex group after an extglob character as a group', () => {
+      assert.strictEqual(makeRe('@(?:a|b)').source, '^(?:@(?:a|b))$');
+      assert(!isMatch('a', '@(?:a|b)'));
+      assert(isMatch('@a', '@(?:a|b)'));
+      assert(isMatch('foo/cbaz', 'foo/*(?<!d)baz'));
+      assert(!isMatch('foo/cbaz', 'foo/*(?<!c)baz'));
+    });
+
+    it('should not treat `?` as a wildcard when extglobs are disabled', () => {
+      assert(!isMatch('a', '@(?)', { noextglob: true }));
+      assert(isMatch('@(?)', '@(?)', { noextglob: true }));
+    });
   });
 
   describe('negation', () => {

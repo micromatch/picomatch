@@ -26,6 +26,22 @@ describe('options.maxExtglobRecursion', () => {
     assert(!isMatch('a'.repeat(12) + '!', '+(+(a))'));
   });
 
+  it('should literalize a repeated extglob whose branch mixes `?` and `*`', () => {
+    // A `?` beside an unbounded `*` inside `+(...)`/`*(...)` nests one
+    // unbounded quantifier inside another, which backtracks catastrophically.
+    assert.strictEqual(makeRe('+(?*a)').source, '^(?:\\+\\(\\?\\*a\\))$');
+    assert.strictEqual(makeRe('*(?*a)').source, '^(?:\\*\\(\\?\\*a\\))$');
+    assert.strictEqual(makeRe('+(*?a)').source, '^(?:\\+\\(\\*\\?a\\))$');
+    assert.strictEqual(makeRe('+(?*[ab])').source, '^(?:\\+\\(\\?\\*\\[ab\\]\\))$');
+    assert.strictEqual(makeRe('+(?*a|b)').source, '^(?:\\+\\(\\?\\*a\\|b\\))$');
+
+    for (const pattern of ['+(?*a)', '*(?*a)', '+(*?a)', '+(?*a|b)']) {
+      const start = Date.now();
+      assert(!isMatch('a'.repeat(42) + '!', pattern));
+      assert(Date.now() - start < 1000, `${pattern} backtracked`);
+    }
+  });
+
   it('should preserve non-risky extglobs by default', () => {
     assert(isMatch('abcabc', '+(abc)'));
     assert(isMatch('foobar', '*(foo|bar)'));
