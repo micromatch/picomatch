@@ -351,7 +351,7 @@ The following options may be used with the main `picomatch()` function or any of
 | [onMatch](#optionsonMatch) | `function` | `undefined` | Function to be called on matched items. |
 | [onResult](#optionsonResult) | `function` | `undefined` | Function to be called on all items, regardless of whether or not they are matched or ignored. |
 | `posix`               | `boolean`      | `false`     | Support POSIX character classes ("posix brackets"). |
-| `prepend`             | `boolean`      | `undefined` | String to prepend to the generated regex used for matching. |
+| `prepend`             | `string`       | `undefined` | String to prepend to the generated regex used for matching. |
 | `regex`               | `boolean`      | `false`     | Use regular expression rules for `+` (instead of matching literal `+`), and for stars that follow closing parentheses or brackets (as in `)*` and `]*`). |
 | `strictBrackets`      | `boolean`      | `undefined` | Throw an error if brackets, braces, or parens are imbalanced. |
 | `strictSlashes`       | `boolean`      | `undefined` | When true, picomatch won't match trailing slashes with single stars. |
