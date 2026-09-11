@@ -84,4 +84,24 @@ describe('issue-related tests', () => {
     assert(isMatch('test.thing.js', '**.thing.js'));
     assert(isMatch('somepath/test.thing.js', '**/*.thing.js'));
   });
+
+  it('should match names that end in a dot with `*.*` (picomatch/issues#207)', () => {
+    // The `*.*` fast path placed `(?=.)` after the literal dot, so names like
+    // `a.` failed by default even though the full parser (and Bash) match them.
+    assert(isMatch('a.', '*.*'));
+    assert(isMatch('ab.', '*.*'));
+    assert(isMatch('foo.', '*.*'));
+    assert(isMatch('a.b', '*.*'));
+    assert(!isMatch('.', '*.*'));
+    assert(!isMatch('.ab', '*.*'));
+    assert(!isMatch('a', '*.*'));
+
+    assert(isMatch('a.', '*.*', { fastpaths: false }));
+    assert(isMatch('foo.', '*.*', { fastpaths: false }));
+
+    // The `**/*.*` fast path had the same misplaced `(?=.)`.
+    assert(isMatch('a.', '**/*.*'));
+    assert(isMatch('foo/a.', '**/*.*'));
+    assert(isMatch('foo/a.', '**/*.*', { fastpaths: false }));
+  });
 });
