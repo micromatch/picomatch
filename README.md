@@ -290,12 +290,14 @@ const picomatch = require('picomatch');
 
 const result = picomatch.makeRe('*.js');
 console.log(result);
-//=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
+//=> /^(?:(?!\.)(?=.)[^/]*?\.js\/?)$/
 ```
 
-### [.toRegex](lib/picomatch.js#L340)
+### [.toRegex](lib/picomatch.js#L342)
 
-Create a regular expression from the given regex source string.
+Create a regular expression from the given regex source string. Note that
+`.toRegex` compiles the source string as-is: unlike `.makeRe`, it does not
+anchor the pattern or wrap it in a non-capturing group.
 
 **Params**
 
@@ -311,7 +313,7 @@ const picomatch = require('picomatch');
 
 const { output } = picomatch.parse('*.js');
 console.log(picomatch.toRegex(output));
-//=> /^(?:(?!\.)(?=.)[^/]*?\.js)$/
+//=> /(?!\.)(?=.)[^/]*?\.js/
 ```
 
 <br>
