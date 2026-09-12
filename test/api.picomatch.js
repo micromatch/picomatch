@@ -378,4 +378,25 @@ describe('picomatch', () => {
       });
     });
   });
+
+  describe('documented examples', () => {
+    it('should produce the regex documented for .makeRe', () => {
+      assert.strictEqual(
+        String(picomatch.makeRe('*.js')),
+        String(/^(?:(?!\.)(?=.)[^/]*?\.js\/?)$/)
+      );
+    });
+
+    it('should produce the regex documented for .compileRe', () => {
+      assert.strictEqual(
+        String(picomatch.compileRe(picomatch.parse('*.js'))),
+        String(/^(?:(?!\.)(?=.)[^/]*?\.js)$/)
+      );
+    });
+
+    it('should produce the regex documented for .toRegex', () => {
+      const { output } = picomatch.parse('*.js');
+      assert.strictEqual(String(picomatch.toRegex(output)), String(/(?!\.)(?=.)[^/]*?\.js/));
+    });
+  });
 });
