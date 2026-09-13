@@ -86,6 +86,12 @@ describe('picomatch', () => {
       });
     });
 
+    it('should detect globstars without scanToEnd', () => {
+      assert.strictEqual(scan('**').isGlobstar, true);
+      assert.strictEqual(scan('foo/**/*.js').isGlobstar, true);
+      assert.strictEqual(scan('foo/*').isGlobstar, false);
+    });
+
     it('should detect extglobs', () => {
       assert.deepStrictEqual(scan('./foo/@(foo)/*.js'), {
         input: './foo/@(foo)/*.js',
