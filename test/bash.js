@@ -251,6 +251,17 @@ describe('from the Bash 4.3 spec/unit tests', () => {
     assert(!isMatch('de', '"*"*'));
   });
 
+  it('should treat an unmatched double quote as a literal character', () => {
+    for (const options of [{}, { fastpaths: false }, { keepQuotes: true }]) {
+      assert(isMatch('root/"dir/index.js', 'root/"dir/*.js', options));
+      assert(isMatch('root/di"r/index.js', 'root/di"r/*.js', options));
+      assert(isMatch('"index.js', '"*.js', options));
+      assert(!isMatch('root/dir/index.js', 'root/"dir/*.js', options));
+      assert(!isMatch('root/"dir/index.txt', 'root/"dir/*.js', options));
+      assert(isMatch('root/"dir"/index.js', String.raw`root/"dir\"/*.js`, options));
+    }
+  });
+
   it('should match escaped quotes', () => {
     assert(!isMatch('*', '\\"**\\"'));
     assert(!isMatch('**', '\\"**\\"'));
