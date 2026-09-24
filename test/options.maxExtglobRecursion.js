@@ -37,11 +37,11 @@ describe('options.maxExtglobRecursion', () => {
   it('should allow limited nested repeated extglobs when configured', () => {
     assert.strictEqual(
       makeRe('+(+(a))', { maxExtglobRecursion: 1 }).source,
-      '^(?:(?=.)(?:(?:a)+)+)$'
+      '^(?:(?=[\\s\\S])(?:(?:a)+)+)$'
     );
     assert.strictEqual(
       makeRe('*(+(a))', { maxExtglobRecursion: 1 }).source,
-      '^(?:(?=.)(?:(?:a)+)*)$'
+      '^(?:(?=[\\s\\S])(?:(?:a)+)*)$'
     );
 
     assert(isMatch('aaa', '+(+(a))', { maxExtglobRecursion: 1 }));
@@ -87,7 +87,7 @@ describe('options.maxExtglobRecursion', () => {
   it('should rewrite star-only repeated extglobs', () => {
     assert.strictEqual(
       makeRe('*(*(f))').source,
-      '^(?:(?=.)f*)$'
+      '^(?:(?=[\\s\\S])f*)$'
     );
 
     assert(isMatch('fff', '*(*(f))'));
@@ -99,11 +99,11 @@ describe('options.maxExtglobRecursion', () => {
     // any string containing `b`. The safe rewrite must preserve every branch.
     assert.strictEqual(
       makeRe('+(*(a)|*(b))').source,
-      '^(?:(?=.)[ab]*)$'
+      '^(?:(?=[\\s\\S])[ab]*)$'
     );
     assert.strictEqual(
       makeRe('*(*(a)|c)').source,
-      '^(?:(?=.)[ac]*)$'
+      '^(?:(?=[\\s\\S])[ac]*)$'
     );
 
     for (const str of ['a', 'b', 'ab', 'ba', 'aabb']) {
@@ -126,7 +126,7 @@ describe('options.maxExtglobRecursion', () => {
     );
 
     const simplified = makeRe('*(*(f)*(o))', { capture: true });
-    assert.strictEqual(simplified.source, '^(?:(?=.)([fo]*))$');
+    assert.strictEqual(simplified.source, '^(?:(?=[\\s\\S])([fo]*))$');
     assert.deepStrictEqual(
       Array.from(simplified.exec('fffooo')),
       ['fffooo', 'fffooo']

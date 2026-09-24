@@ -16,15 +16,15 @@ describe('posix classes', () => {
     it('should create regex character classes from POSIX bracket expressions:', () => {
       assert.strictEqual(convert('foo[[:lower:]]bar'), 'foo[a-z]bar');
       assert.strictEqual(convert('foo[[:lower:][:upper:]]bar'), 'foo[a-zA-Z]bar');
-      assert.strictEqual(convert('[[:alpha:]123]'), '(?=.)[a-zA-Z123]');
-      assert.strictEqual(convert('[[:lower:]]'), '(?=.)[a-z]');
-      assert.strictEqual(convert('[![:lower:]]'), '(?=.)[^a-z]');
-      assert.strictEqual(convert('[[:digit:][:upper:][:space:]]'), '(?=.)[0-9A-Z \\t\\r\\n\\v\\f]');
-      assert.strictEqual(convert('[[:xdigit:]]'), '(?=.)[A-Fa-f0-9]');
-      assert.strictEqual(convert('[[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:graph:][:lower:][:print:][:punct:][:space:][:upper:][:xdigit:]]'), '(?=.)[a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9\\x21-\\x7Ea-z\\x20-\\x7E \\-!"#$%&\'()\\*+,./:;<=>?@[\\\\\\]^_`{|}~ \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
-      assert.strictEqual(convert('[^[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:lower:][:space:][:upper:][:xdigit:]]'), '(?=.)[^a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9a-z \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
-      assert.strictEqual(convert('[a-c[:digit:]x-z]'), '(?=.)[a-c0-9x-z]');
-      assert.strictEqual(convert('[_[:alpha:]][_[:alnum:]][_[:alnum:]]*'), '(?=.)[_a-zA-Z][_a-zA-Z0-9][_a-zA-Z0-9]*', []);
+      assert.strictEqual(convert('[[:alpha:]123]'), '(?=[\\s\\S])[a-zA-Z123]');
+      assert.strictEqual(convert('[[:lower:]]'), '(?=[\\s\\S])[a-z]');
+      assert.strictEqual(convert('[![:lower:]]'), '(?=[\\s\\S])[^a-z]');
+      assert.strictEqual(convert('[[:digit:][:upper:][:space:]]'), '(?=[\\s\\S])[0-9A-Z \\t\\r\\n\\v\\f]');
+      assert.strictEqual(convert('[[:xdigit:]]'), '(?=[\\s\\S])[A-Fa-f0-9]');
+      assert.strictEqual(convert('[[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:graph:][:lower:][:print:][:punct:][:space:][:upper:][:xdigit:]]'), '(?=[\\s\\S])[a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9\\x21-\\x7Ea-z\\x20-\\x7E \\-!"#$%&\'()\\*+,./:;<=>?@[\\\\\\]^_`{|}~ \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
+      assert.strictEqual(convert('[^[:alnum:][:alpha:][:blank:][:cntrl:][:digit:][:lower:][:space:][:upper:][:xdigit:]]'), '(?=[\\s\\S])[^a-zA-Z0-9a-zA-Z \\t\\x00-\\x1F\\x7F0-9a-z \\t\\r\\n\\v\\fA-ZA-Fa-f0-9]');
+      assert.strictEqual(convert('[a-c[:digit:]x-z]'), '(?=[\\s\\S])[a-c0-9x-z]');
+      assert.strictEqual(convert('[_[:alpha:]][_[:alnum:]][_[:alnum:]]*'), '(?=[\\s\\S])[_a-zA-Z][_a-zA-Z0-9][_a-zA-Z0-9]*', []);
     });
   });
 
@@ -133,7 +133,7 @@ describe('posix classes', () => {
 
     it('should not create an invalid posix character class:', () => {
       assert.strictEqual(convert('[:al:]'), '(?:\\[:al:\\]|[:al:])');
-      assert.strictEqual(convert('[abc[:punct:][0-9]'), '(?=.)[abc\\-!"#$%&\'()\\*+,./:;<=>?@[\\\\\\]^_`{|}~\\[0-9]');
+      assert.strictEqual(convert('[abc[:punct:][0-9]'), '(?=[\\s\\S])[abc\\-!"#$%&\'()\\*+,./:;<=>?@[\\\\\\]^_`{|}~\\[0-9]');
     });
 
     it('should return `true` when the pattern matches:', () => {
@@ -185,8 +185,8 @@ describe('posix classes', () => {
 
   describe('.makeRe()', () => {
     it('should make a regular expression for the given pattern:', () => {
-      assert.deepStrictEqual(makeRe('[[:alpha:]123]', opts), /^(?:(?=.)[a-zA-Z123])$/);
-      assert.deepStrictEqual(makeRe('[![:lower:]]', opts), /^(?:(?=.)[^a-z])$/);
+      assert.deepStrictEqual(makeRe('[[:alpha:]123]', opts), /^(?:(?=[\s\S])[a-zA-Z123])$/);
+      assert.deepStrictEqual(makeRe('[![:lower:]]', opts), /^(?:(?=[\s\S])[^a-z])$/);
     });
   });
 
@@ -334,6 +334,15 @@ describe('posix classes', () => {
       assert(isMatch('\t', '[[:blank:]]'));
       assert(isMatch('\t', '[[:space:]]'));
       assert(isMatch(' ', '[[:space:]]'));
+    });
+
+    it('and what about a newline and a carriage return?', () => {
+      assert(isMatch('\n', '[[:space:]]'));
+      assert(isMatch('\r', '[[:space:]]'));
+      assert(isMatch('\n', '[[:cntrl:]]'));
+      assert(isMatch('\r', '[[:cntrl:]]'));
+      assert(!isMatch('\n', '[[:print:]]'));
+      assert(!isMatch('\r', '[[:print:]]'));
     });
 
     it('let\'s check out characters in the ASCII range', () => {
