@@ -259,6 +259,17 @@ describe('stars', () => {
       assert(isMatch('a/a', 'a/*'));
     });
 
+    it('should allow an optional trailing slash after a prefix star', () => {
+      for (const pattern of ['foo*', 'foo**']) {
+        assert(isMatch('foo/', pattern));
+        assert(isMatch('foobar/', pattern));
+        assert(!isMatch('foo/', pattern, { strictSlashes: true }));
+        assert(!isMatch('foo/bar/', pattern));
+      }
+
+      assert(!isMatch('foo*/', 'foo\\*'));
+    });
+
     it('should work with file extensions', () => {
       assert(!isMatch('a.txt', 'a/**/*.txt'));
       assert(isMatch('a/x/y.txt', 'a/**/*.txt'));
