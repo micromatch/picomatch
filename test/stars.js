@@ -13,6 +13,16 @@ describe('stars', () => {
   });
 
   describe('single stars', () => {
+    it('should match strings that start with a newline or a carriage return', () => {
+      assert(isMatch('\n', '*'));
+      assert(isMatch('\r', '*'));
+      assert(isMatch('\r\n', '*'));
+      assert(isMatch('\nfoo', '*'));
+      assert(isMatch('foo\nbar', '*'));
+      assert(isMatch('foo/\nbar', '*/*'));
+      assert(!isMatch('', '*'));
+    });
+
     it('should match anything except slashes and leading dots', () => {
       assert(!isMatch('a/b/c/z.js', '*.js'));
       assert(!isMatch('a/b/z.js', '*.js'));
