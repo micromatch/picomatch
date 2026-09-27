@@ -2,7 +2,8 @@
 
 const assert = require('assert');
 const match = require('./support/match');
-const { isMatch } = require('..');
+const picomatch = require('..');
+const { isMatch } = picomatch;
 
 describe('options', () => {
   describe('options.matchBase', () => {
@@ -34,6 +35,71 @@ describe('options', () => {
   });
 
   describe('options.flags', () => {
+    for (const flags of ['g', 'y', 'gy']) {
+      describe(`reusing matchers with '${flags}'`, () => {
+        it('should match the same filename on every call', () => {
+          const matcher = picomatch('*.js', { flags });
+          assert.deepStrictEqual([matcher('foo.js'), matcher('foo.js'), matcher('foo.js')], [true, true, true]);
+        });
+
+        it('should match every filename in a list', () => {
+          assert.deepStrictEqual(match(['foo.js', 'bar.js', 'baz.js'], '*.js', { flags }), ['foo.js', 'bar.js', 'baz.js']);
+        });
+
+        it('should match basenames on every call', () => {
+          const matcher = picomatch('*.js', { flags, matchBase: true });
+          assert.deepStrictEqual([matcher('src/foo.js'), matcher('src/bar.js')], [true, true]);
+        });
+
+        it('should retain captures on later calls', () => {
+          const matcher = picomatch('*.js', { flags, capture: true });
+          matcher('foo.js');
+          const result = matcher('bar.js', true);
+          assert(result.isMatch);
+          assert.strictEqual(result.match[1], 'bar');
+        });
+
+        it('should keep ignoring files on every call', () => {
+          const matcher = picomatch('*', { flags, ignore: '*.js' });
+          assert.deepStrictEqual([matcher('foo.js'), matcher('foo.js'), matcher('foo.js')], [false, false, false]);
+        });
+
+        it('should reuse each matcher in an array of patterns', () => {
+          const matcher = picomatch(['*.js', '*.md'], { flags });
+          assert.deepStrictEqual([matcher('foo.js'), matcher('bar.js'), matcher('foo.md'), matcher('bar.md')], [true, true, true, true]);
+        });
+
+        it('should match after a literal-pattern shortcut', () => {
+          const matcher = picomatch('*.js', { flags });
+          assert.deepStrictEqual([matcher('foo.js'), matcher('*.js'), matcher('bar.js')], [true, true, true]);
+        });
+
+        it('should match when format invokes the matcher recursively', () => {
+          let formatting = false;
+          const matcher = picomatch('*.js', {
+            flags,
+            format(input) {
+              if (!formatting) {
+                formatting = true;
+                assert(matcher('inner.js'));
+                formatting = false;
+              }
+              return input;
+            }
+          });
+          assert(matcher('outer.js'));
+        });
+
+        it('should preserve lastIndex behavior in raw regex helpers', () => {
+          const regex = picomatch.makeRe('*.js', { flags });
+          assert(regex.test('foo.js'));
+          assert.strictEqual(picomatch.test('foo.js', regex).isMatch, false);
+          assert(picomatch.matchBase('src/foo.js', regex));
+          assert.strictEqual(picomatch.matchBase('src/foo.js', regex), false);
+        });
+      });
+    }
+
     it('should be case-sensitive by default', () => {
       assert.deepStrictEqual(match(['a/b/d/e.md'], 'a/b/D/*.md', { windows: true }), [], 'should not match a dirname');
       assert.deepStrictEqual(match(['a/b/c/e.md'], 'A/b/*/E.md', { windows: true }), [], 'should not match a basename');
