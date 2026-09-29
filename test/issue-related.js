@@ -73,6 +73,21 @@ describe('issue-related tests', () => {
     assert(!isMatch('test/utils', 'test(/utils/**)/file'));
   });
 
+  it('should not treat an unescaped character class as a literal filename (picomatch/issues#71)', () => {
+    // `[1-5]` is a class of one digit, not the five-character name `[1-5]`.
+    // `isMatch` used to short-circuit when the input string equalled the
+    // pattern, so this returned true even though makeRe('[1-5]') does not match.
+    assert(!isMatch('[1-5]', '[1-5]'));
+    assert(!isMatch('[0-9]', '[0-9]'));
+    assert(!isMatch('[a-c]', '[a-c]'));
+    assert(isMatch('1', '[1-5]'));
+    assert(isMatch('3', '[1-5]'));
+    assert(!isMatch('6', '[1-5]'));
+    assert(isMatch('[1-5]', '\\[1-5\\]'));
+    assert(isMatch('[1-5]', '[1-5]', { literalBrackets: true }));
+    assert(isMatch('[1-5]', '[1-5]', { nobracket: true }));
+  });
+
   it('should treat a leading `**` followed by a literal as a single star (picomatch/issues#99)', () => {
     // `**` only acts as a globstar when it is the sole content of a path segment.
     // When it is adjacent to other characters in the same segment (here `.thing.js`),
