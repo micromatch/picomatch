@@ -62,6 +62,40 @@ describe('issue-related tests', () => {
     assert(isMatch('foo.js', '**/foo.js', { dot: true }));
   });
 
+  it('picomatch issue#107 - should exclude root files with a leading globstar in an extglob', () => {
+    const options = { dot: true };
+    assert(!isMatch('CON.md', '!(**/*.md)', options));
+    assert(!isMatch('dir/CON.md', '!(**/*.md)', options));
+    assert(!isMatch('dir/sub/CON.md', '!(**/*.md)', options));
+    assert(isMatch('CON.txt', '!(**/*.md)', options));
+    assert(isMatch('dir/CON.txt', '!(**/*.md)', options));
+  });
+
+  it('picomatch issue#107 - should match root files with a leading globstar in a capture group', () => {
+    const options = { dot: true };
+    assert(isMatch('CON.md', '(**/*.md)', options));
+    assert(isMatch('dir/CON.md', '(**/*.md)', options));
+    assert(isMatch('dir/sub/CON.md', '(**/*.md)', options));
+    assert(!isMatch('CON.txt', '(**/*.md)', options));
+    assert(!isMatch('dir/CON.txt', '(**/*.md)', options));
+  });
+
+  it('picomatch issue#107 - should preserve a path prefix before grouped globstars', () => {
+    assert(isMatch('root/CON.md', 'root/(**/*.md)'));
+    assert(isMatch('root/dir/CON.md', 'root/(**/*.md)'));
+    assert(!isMatch('other/CON.md', 'root/(**/*.md)'));
+    assert(!isMatch('root/CON.txt', 'root/(**/*.md)'));
+  });
+
+  it('picomatch issue#107 - should preserve ungrouped and disabled globstar behavior', () => {
+    assert(isMatch('CON.md', '**/*.md', { dot: true }));
+    assert(!isMatch('CON.md', '!(*.md)', { dot: true }));
+    assert(!isMatch('CON.md', '(**/*.md)', { noglobstar: true }));
+    assert(isMatch('dir/CON.md', '(**/*.md)', { noglobstar: true }));
+    assert(isMatch('CON.md', '!(**/*.md)', { noglobstar: true }));
+    assert(!isMatch('dir/CON.md', '!(**/*.md)', { noglobstar: true }));
+  });
+
   it('picomatch issue#142 - should match trailing globstars in parens', () => {
     assert(isMatch('test/utils', 'test(/utils/**)'));
     assert(isMatch('test/utils', 'test?(/utils/**)'));
