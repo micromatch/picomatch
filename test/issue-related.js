@@ -73,6 +73,18 @@ describe('issue-related tests', () => {
     assert(!isMatch('test/utils', 'test(/utils/**)/file'));
   });
 
+  it('picomatch issue#147 - should match globstars before a pipe in parens', () => {
+    assert(isMatch('feature/test/test', '(feature/**|feature*)'));
+    assert(isMatch('feature/test/test', '(feature*|feature/**)'));
+    assert(isMatch('feature', '(feature/**|other)'));
+    assert(isMatch('feature', '(other|feature/**)'));
+    assert(isMatch('a/b/c', '@(a/**|b)'));
+    assert(isMatch('a/b/c', '@(b|a/**)'));
+    assert(!isMatch('a/b/c', '!(a/**|b)'));
+    assert(!isMatch('a/b/c', '!(b|a/**)'));
+    assert(!isMatch('feature/.git/x', '(feature/**|other)'));
+  });
+
   it('should treat a leading `**` followed by a literal as a single star (picomatch/issues#99)', () => {
     // `**` only acts as a globstar when it is the sole content of a path segment.
     // When it is adjacent to other characters in the same segment (here `.thing.js`),
