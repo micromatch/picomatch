@@ -2,13 +2,76 @@
 
 const assert = require('assert');
 const match = require('./support/match');
-const { isMatch } = require('..');
+const picomatch = require('..');
+const { isMatch } = picomatch;
 
 const equal = (actual, expected, msg) => {
   assert.deepStrictEqual([].concat(actual).sort(), [].concat(expected).sort(), msg);
 };
 
 describe('options.format', () => {
+
+  for (const option of ['basename', 'matchBase']) {
+    describe(`with ${option}`, () => {
+      it('should match the formatted basename', () => {
+        const opts = { [option]: true, format: str => str.toLowerCase() };
+
+        assert(isMatch('SRC/FILE.JS', '*.js', opts));
+        assert(!isMatch('SRC/FILE.JS', '*.JS', opts));
+        assert(!isMatch('SRC/FILE.TXT', '*.js', opts));
+      });
+
+      it('should format the path before extracting its basename', () => {
+        const opts = { [option]: true, format: str => str.replace(/:/g, '/') };
+
+        assert(isMatch('src:file.js', 'file.js', opts));
+        assert(!isMatch('src:file.js', 'src*', opts));
+      });
+
+      it('should not match an empty formatted basename', () => {
+        const opts = { [option]: true, format: str => str.replace(/^\.\//, '') };
+
+        for (const pattern of ['*', 'undefined']) {
+          const result = picomatch(pattern, opts)('./', true);
+
+          assert.strictEqual(result.isMatch, false);
+          assert.strictEqual(result.match, false);
+          assert.strictEqual(result.input, './');
+          assert.strictEqual(result.output, '');
+          assert(!isMatch('', pattern, opts));
+        }
+
+        assert(isMatch('src/undefined', 'undefined', opts));
+      });
+
+      it('should match ignored patterns against the formatted basename', () => {
+        const opts = { [option]: true, format: str => str.toLowerCase(), ignore: '*.js' };
+
+        assert(!isMatch('SRC/FILE.JS', '*', opts));
+        assert(isMatch('SRC/FILE.TXT', '*', opts));
+      });
+
+      it('should format once and preserve the input and output in match results', () => {
+        const inputs = [];
+        const matches = [];
+        const matcher = picomatch('*.js', {
+          [option]: true,
+          format: str => {
+            inputs.push(str);
+            return str.toLowerCase();
+          },
+          onMatch: result => matches.push(result)
+        });
+        const result = matcher('SRC/FILE.JS', true);
+
+        assert.strictEqual(result.isMatch, true);
+        assert.strictEqual(result.input, 'SRC/FILE.JS');
+        assert.strictEqual(result.output, 'src/file.js');
+        assert.deepStrictEqual(inputs, ['SRC/FILE.JS']);
+        assert.deepStrictEqual(matches, [result]);
+      });
+    });
+  }
 
   // see https://github.com/isaacs/minimatch/issues/30
   it('should match the string returned by options.format', () => {
