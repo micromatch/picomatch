@@ -11,7 +11,9 @@ const repeat = n => '\\'.repeat(n);
 describe('handling of potential regex exploits', () => {
   it('should support long escape sequences', () => {
     if (process.platform !== 'win32') {
-      assert(isMatch('\\A', `${repeat(65500)}A`), 'within the limits, and valid match');
+      // Each escape pair represents one literal backslash.
+      assert(isMatch(`${repeat(32750)}A`, `${repeat(65500)}A`), 'within the limits, and valid match');
+      assert(!isMatch('\\A', `${repeat(65500)}A`), 'must not collapse literal backslashes');
     }
     assert(isMatch('A', `!${repeat(65500)}A`), 'within the limits, and valid match');
     assert(isMatch('A', `!(${repeat(65500)}A)`), 'within the limits, and valid match');
