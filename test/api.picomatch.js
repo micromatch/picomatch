@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('assert');
+const vm = require('vm');
 const picomatch = require('..');
 const { isMatch } = picomatch;
 
@@ -10,6 +11,38 @@ const assertTokens = (actual, expected) => {
 };
 
 describe('picomatch', () => {
+  describe('matchBase', () => {
+    it('should match basenames using a RegExp from another realm', () => {
+      const regex = vm.runInNewContext('/^foo\\.js$/i');
+      assert.strictEqual(regex instanceof RegExp, false);
+      assert.strictEqual(picomatch.matchBase('src/FOO.js', regex), true);
+      assert.strictEqual(picomatch.matchBase('src/bar.js', regex), false);
+      assert.strictEqual(picomatch.matchBase('foo.js/bar.js', regex), false);
+    });
+
+    it('should respect Windows paths with a RegExp from another realm', () => {
+      const regex = vm.runInNewContext('/^foo\\.js$/');
+      assert.strictEqual(picomatch.matchBase('src\\foo.js', regex, { windows: true }), true);
+      assert.strictEqual(picomatch.matchBase('src\\bar.js', regex, { windows: true }), false);
+    });
+
+    it('should continue to support local regular expressions and glob strings', () => {
+      assert.strictEqual(picomatch.matchBase('src/foo.js', /^foo\.js$/), true);
+      assert.strictEqual(picomatch.matchBase('src/bar.js', /^foo\.js$/), false);
+      assert.strictEqual(picomatch.matchBase('src/foo.js', '*.js'), true);
+      assert.strictEqual(picomatch.matchBase('src/foo.ts', '*.js'), false);
+    });
+
+    it('should reject tagged objects without RegExp methods', () => {
+      const fake = { [Symbol.toStringTag]: 'RegExp' };
+      assert.throws(() => picomatch.matchBase('foo.js', fake), /Expected a non-empty string/);
+      fake.test = () => true;
+      assert.throws(() => picomatch.matchBase('foo.js', fake), /Expected a non-empty string/);
+      assert.throws(() => picomatch.matchBase('foo.js', {}), /Expected a non-empty string/);
+      assert.throws(() => picomatch.matchBase('foo.js', null), /Expected a non-empty string/);
+    });
+  });
+
   describe('validation', () => {
     it('should throw an error when invalid arguments are given', () => {
       assert.throws(() => isMatch('foo', ''), /Expected pattern to be a non-empty string/);
