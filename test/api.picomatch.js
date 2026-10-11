@@ -18,6 +18,84 @@ describe('picomatch', () => {
   });
 
   describe('multiple patterns', () => {
+    it('should return details for the first matching pattern', () => {
+      const matcher = picomatch(['*.js', '*.ts', '*']);
+      const result = matcher('index.ts', true);
+
+      assert.deepStrictEqual(result, picomatch('*.ts')('index.ts', true));
+      assert.strictEqual(matcher('index.ts'), true);
+      assert.strictEqual(matcher('index.ts', false), true);
+    });
+
+    it('should return the last result when no patterns match', () => {
+      const matcher = picomatch(['*.js', '*.ts']);
+
+      assert.deepStrictEqual(matcher('README.md', true), picomatch('*.ts')('README.md', true));
+      assert.strictEqual(matcher('README.md'), false);
+    });
+
+    it('should return the same details for single-pattern arrays', () => {
+      for (const input of ['index.js', 'README.md', '']) {
+        assert.deepStrictEqual(picomatch(['*.js'])(input, true), picomatch('*.js')(input, true));
+      }
+    });
+
+    it('should keep empty arrays unmatched', () => {
+      const matcher = picomatch([]);
+
+      assert.strictEqual(matcher('index.js'), false);
+      assert.strictEqual(matcher('index.js', true), false);
+    });
+
+    it('should preserve captures and formatted paths in matching details', () => {
+      const options = { capture: true, format: input => input.toLowerCase() };
+      const result = picomatch(['*.js', '*.ts'], options)('INDEX.TS', true);
+
+      assert.deepStrictEqual(result, picomatch('*.ts', options)('INDEX.TS', true));
+      assert.strictEqual(result.input, 'INDEX.TS');
+      assert.strictEqual(result.output, 'index.ts');
+      assert.strictEqual(result.match[1], 'index');
+    });
+
+    it('should preserve callback order and stop after the first match', () => {
+      const results = [];
+      const matches = [];
+      const matcher = picomatch(['*.js', '*.ts', '*'], {
+        onResult: result => results.push(result),
+        onMatch: result => matches.push(result)
+      });
+      const result = matcher('index.ts', true);
+
+      assert.deepStrictEqual(results.map(item => item.glob), ['*.js', '*.ts']);
+      assert.deepStrictEqual(results.map(item => item.isMatch), [false, true]);
+      assert.deepStrictEqual(matches, [result]);
+      assert.strictEqual(results[1], result);
+    });
+
+    it('should return unmatched details for ignored files', () => {
+      const ignored = [];
+      const matches = [];
+      const options = {
+        ignore: '*.js',
+        onIgnore: result => ignored.push(result),
+        onMatch: result => matches.push(result)
+      };
+      const result = picomatch(['*.js', '*'], options)('index.js', true);
+
+      assert.strictEqual(result.isMatch, false);
+      assert.strictEqual(result.glob, '*');
+      assert.deepStrictEqual(ignored.map(item => item.glob), ['*.js', '*']);
+      assert.deepStrictEqual(matches, []);
+      assert.strictEqual(ignored[1], result);
+      assert.strictEqual(picomatch(['*.js', '*'], { ignore: '*.js' })('index.js'), false);
+    });
+
+    it('should support result objects through the posix entry point', () => {
+      const posix = require('../posix');
+
+      assert.deepStrictEqual(posix(['*.js', '*.ts'])('index.ts', true), posix('*.ts')('index.ts', true));
+    });
+
     it('should return true when any of the patterns match', () => {
       assert(isMatch('.', ['.', 'foo']));
       assert(isMatch('a', ['a', 'foo']));
