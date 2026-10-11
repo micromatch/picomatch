@@ -111,6 +111,8 @@ console.log(isMatch('a/b.js')); //=> false
 
 Creates a matcher function from one or more glob patterns. The returned function takes a string to match as its first argument, and returns true if the string is a match. The returned matcher function also takes a boolean as the second argument that, when true, returns an object with additional information.
 
+For an array of patterns, this is the first matching result, or the last result if none match. An empty array returns false.
+
 **Params**
 
 * `globs` **{String|Array}**: One or more glob patterns.
