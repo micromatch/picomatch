@@ -359,6 +359,67 @@ describe('picomatch', () => {
       assert.deepStrictEqual(scan('a/b/*/c', { tokens: true }).parts, ['a', 'b', '*', 'c']);
     });
 
+    it('should populate tokens for patterns without path separators', () => {
+      for (const pattern of ['foo', '*', '*.js', '!foo', '!*.js']) {
+        const state = scan(pattern, { tokens: true });
+        const value = pattern.startsWith('!') ? pattern.slice(1) : pattern;
+
+        assert.strictEqual(state.tokens.length, 1);
+        assert.strictEqual(state.tokens[0].value, value);
+        assert.strictEqual(state.tokens[0].depth, 1);
+        assert.strictEqual(state.tokens[0].negated === true, pattern.startsWith('!'));
+        assert.strictEqual(state.maxDepth, 1);
+      }
+    });
+
+    it('should give a standalone globstar infinite depth', () => {
+      for (const pattern of ['**', '!**']) {
+        const state = scan(pattern, { tokens: true });
+
+        assert.strictEqual(state.tokens.length, 1);
+        assert.strictEqual(state.tokens[0].value, '**');
+        assert.strictEqual(state.tokens[0].depth, Infinity);
+        assert.strictEqual(state.tokens[0].negated === true, pattern.startsWith('!'));
+        assert.strictEqual(state.maxDepth, Infinity);
+      }
+    });
+
+    it('should populate the token immediately after a prefix', () => {
+      for (const prefix of ['./', '!./']) {
+        for (const pattern of ['foo', '*.js', '**']) {
+          const state = scan(prefix + pattern, { tokens: true });
+          const depth = pattern === '**' ? Infinity : 1;
+
+          assert.deepStrictEqual(state.tokens.map(token => token.value), [prefix, pattern]);
+          assert.deepStrictEqual(state.tokens.map(token => token.depth), [0, depth]);
+          assert.strictEqual(state.tokens[0].isPrefix, true);
+          assert.strictEqual(state.maxDepth, depth);
+        }
+      }
+    });
+
+    it('should populate the token after a leading slash', () => {
+      for (const pattern of ['foo', '*.js', '**']) {
+        const state = scan('/' + pattern, { tokens: true });
+        const depth = pattern === '**' ? Infinity : 1;
+
+        assert.deepStrictEqual(state.tokens.map(token => token.value), ['', pattern]);
+        assert.deepStrictEqual(state.tokens.map(token => token.depth), [1, depth]);
+        assert.strictEqual(state.maxDepth, 1 + depth);
+      }
+    });
+
+    it('should not count an empty final part as an additional token', () => {
+      assert.strictEqual(scan('', { tokens: true }).maxDepth, 0);
+      assert.strictEqual(scan('./', { tokens: true }).maxDepth, 0);
+      assert.strictEqual(scan('foo/', { tokens: true }).maxDepth, 1);
+      assert.strictEqual(scan('foo/bar/', { tokens: true }).maxDepth, 2);
+    });
+
+    it('should not try to populate a missing token after an escaped slash', () => {
+      assert.doesNotThrow(() => scan('foo\\/', { tokens: true }));
+    });
+
     it('should split only on unnested and unescaped path separators', () => {
       assertParts('/dev\\/@(tcp|udp)\\/*\\/*', ['', 'dev\\/@(tcp|udp)\\/*\\/*']);
       assertParts('!(!(bar)/baz)', ['!(!(bar)/baz)']);
