@@ -47,6 +47,21 @@ describe('braces', () => {
     assert(isMatch('a/c', 'a/{a..c}'));
   });
 
+  it('should escape the dots of ranges that fall back to literal matching', () => {
+    // `{01..03}` cannot be expressed as a character class, since `[01-03]`
+    // is an invalid range, so it falls back to matching literal text. The
+    // dots must not leak into the regex as wildcards.
+    assert(isMatch('01..03', '{01..03}'));
+    assert(!isMatch('01ab03', '{01..03}'));
+    assert(!isMatch('01XY03', '{01..03}'));
+    assert(!isMatch('01__03', '{01..03}'));
+
+    // A fallback range must not match across a path separator either.
+    assert(!isMatch('01/x03', '{01..03}'));
+    assert(isMatch('logs/01..03.txt', 'logs/{01..03}.txt'));
+    assert(!isMatch('logs/01ab03.txt', 'logs/{01..03}.txt'));
+  });
+
   it('should support Kleene stars', () => {
     assert(isMatch('ab', '{ab,c}*'));
     assert(isMatch('abab', '{ab,c}*'));
