@@ -47,6 +47,21 @@ describe('braces', () => {
     assert(isMatch('a/c', 'a/{a..c}'));
   });
 
+  it('should treat a range with no bounds as literal text', () => {
+    // `{..}` has no bounds, so it cannot form a character class. Expanding it
+    // to the empty class `[]` would make the whole pattern unmatchable.
+    assert(isMatch('{..}', '{..}'));
+    assert(isMatch('a{..}', '*{..}'));
+    assert(isMatch('x{..}', '?{..}'));
+    assert(isMatch('a{..}b', '*{..}b'));
+    assert(isMatch('{..}/x', '{..}/*'));
+
+    // The dots are literal, so they must not behave as regex wildcards.
+    assert(!isMatch('{.X}', '{..}'));
+    assert(!isMatch('a{.X}', '*{..}'));
+    assert(!isMatch('a{..}b', '*{..}'));
+  });
+
   it('should support Kleene stars', () => {
     assert(isMatch('ab', '{ab,c}*'));
     assert(isMatch('abab', '{ab,c}*'));
