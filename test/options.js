@@ -2,7 +2,8 @@
 
 const assert = require('assert');
 const match = require('./support/match');
-const { isMatch } = require('..');
+const picomatch = require('..');
+const { isMatch } = picomatch;
 
 describe('options', () => {
   describe('options.matchBase', () => {
@@ -44,6 +45,57 @@ describe('options', () => {
       assert.deepStrictEqual(match(['a/b/d/e.md'], 'a/b/D/*.md', { flags: 'i', windows: true }), ['a/b/d/e.md']);
       assert.deepStrictEqual(match(['a/b/c/e.md'], 'A/b/*/E.md', { flags: 'i', windows: true }), ['a/b/c/e.md']);
       assert.deepStrictEqual(match(['a/b/c/e.md'], 'A/b/C/*.MD', { flags: 'i', windows: true }), ['a/b/c/e.md']);
+    });
+
+    it('should reset stateful regex flags between matcher calls', () => {
+      for (const flags of ['g', 'y', 'gy']) {
+        const matcher = picomatch('*.js', { flags });
+        assert.deepStrictEqual(
+          [matcher('file.js'), matcher('file.js'), matcher('file.js')],
+          [true, true, true],
+          `flags: ${flags}`
+        );
+      }
+    });
+
+    it('should reset stateful regex flags for ignored patterns', () => {
+      for (const flags of ['g', 'y', 'gy']) {
+        const matcher = picomatch('*.js', { flags, ignore: '*.test.js' });
+        assert.deepStrictEqual(
+          [matcher('file.js'), matcher('file.js'), matcher('file.js')],
+          [true, true, true],
+          `flags: ${flags}`
+        );
+        assert.deepStrictEqual(
+          [matcher('file.test.js'), matcher('file.test.js'), matcher('file.test.js')],
+          [false, false, false],
+          `ignore flags: ${flags}`
+        );
+      }
+    });
+
+    it('should reset stateful regex flags for basename matching', () => {
+      for (const flags of ['g', 'y', 'gy']) {
+        const matcher = picomatch('*.js', { flags, matchBase: true });
+        assert.deepStrictEqual(
+          [matcher('a/file.js'), matcher('a/file.js'), matcher('a/file.js')],
+          [true, true, true],
+          `matchBase flags: ${flags}`
+        );
+      }
+    });
+
+    it('should preserve captures with stateful regex flags', () => {
+      for (const flags of ['g', 'y', 'gy']) {
+        const matcher = picomatch('*.js', { flags, capture: true });
+        const results = [matcher('file.js', true), matcher('file.js', true), matcher('file.js', true)];
+        assert(results.every(result => result.isMatch), `capture flags: ${flags}`);
+        assert.deepStrictEqual(
+          results.map(result => result.match),
+          results.map(result => results[0].match),
+          `capture results flags: ${flags}`
+        );
+      }
     });
   });
 
