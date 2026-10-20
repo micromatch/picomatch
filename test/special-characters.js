@@ -220,8 +220,9 @@ describe('special characters', () => {
       assert(!isMatch('my/folder (Work, Accts)', '/*'));
       assert(isMatch('my/folder (Work, Accts)', '*/*'));
       assert(isMatch('my/folder (Work, Accts)', '*/*,*'));
-      assert(isMatch('my/folder (Work, Accts)', '*/*(W*, *)*'));
-      assert(isMatch('my/folder/(Work, Accts)', '**/*(W*, *)*'));
+      // *(W*, *) is now literalized (glob star inside repeated extglob → ReDoS risk)
+      assert(!isMatch('my/folder (Work, Accts)', '*/*(W*, *)*'));
+      assert(!isMatch('my/folder/(Work, Accts)', '**/*(W*, *)*'));
       assert(!isMatch('my/folder/(Work, Accts)', '*/*(W*, *)*'));
       assert(isMatch('foo(bar)baz', 'foo*baz'));
     });

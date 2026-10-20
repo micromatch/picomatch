@@ -31,7 +31,9 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('foobar', '*(foo|bar)'));
     assert(isMatch('a', '(a|@(b|c)|d)'));
     assert(isMatch('fffooo', '*(*(f)*(o))'));
-    assert(isMatch('abc', '+(*)c'));
+    // +(*)c is now literalized (glob star inside repeated extglob → ReDoS risk)
+    assert(!isMatch('abc', '+(*)c'));
+    assert(isMatch('+(*)c', '+(*)c'));
   });
 
   it('should allow limited nested repeated extglobs when configured', () => {
@@ -142,6 +144,97 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('+(a|aa)x', '+(a|aa)@(x)'));
     assert(!isMatch('aaax', '+(a|aa)@(x)'));
   });
+  it('should literalize extglobs containing a glob star (CVE-2026-112366)', () => {
+    // Single-branch patterns with glob star
+    assert.strictEqual(
+      makeRe('+(*)').source,
+      '^(?:\\+\\(\\*\\))$'
+    );
+    assert.strictEqual(
+      makeRe('+(*a)').source,
+      '^(?:\\+\\(\\*a\\))$'
+    );
+    assert.strictEqual(
+      makeRe('+(a*)').source,
+      '^(?:\\+\\(a\\*\\))$'
+    );
+    assert.strictEqual(
+      makeRe('+(a*a)').source,
+      '^(?:\\+\\(a\\*a\\))$'
+    );
+
+    // Glob star in branch with trailing text
+    assert.strictEqual(
+      makeRe('+(*)a').source,
+      '^(?:\\+\\(\\*\\)a)$'
+    );
+
+    // Star-type extglob with glob star
+    assert.strictEqual(
+      makeRe('*(*)').source,
+      '^(?:\\*\\(\\*\\))$'
+    );
+    assert.strictEqual(
+      makeRe('*(*a)').source,
+      '^(?:\\*\\(\\*a\\))$'
+    );
+
+    // Multi-branch with glob star
+    assert.strictEqual(
+      makeRe('*(a*|b)').source,
+      '^(?:\\*\\(a\\*\\|b\\))$'
+    );
+
+    // Literalized patterns match themselves literally
+    assert(isMatch('+(*)a', '+(*)a'));
+    assert(!isMatch('fooa', '+(*)a'));
+    assert(isMatch('+(*a)', '+(*a)'));
+    assert(!isMatch('fooafooa', '+(*a)'));
+
+    // These must complete in constant time (no exponential backtracking)
+    const start = Date.now();
+    isMatch('a'.repeat(100) + '!', '+(*a)');
+    isMatch('a'.repeat(100) + '!', '+(*)a');
+    isMatch('a'.repeat(100) + '/', '+(a*)');
+    assert(Date.now() - start < 100, 'literalized patterns should be fast');
+  });
+
+  it('should literalize multi-branch extglobs with repetition overlap', () => {
+    // Multi-char prefix overlap: one branch repeats another
+    assert.strictEqual(
+      makeRe('+(ab|abab)').source,
+      '^(?:\\+\\(ab\\|abab\\))$'
+    );
+    assert.strictEqual(
+      makeRe('+(abc|abcabc)').source,
+      '^(?:\\+\\(abc\\|abcabc\\))$'
+    );
+
+    // Matches literal text only
+    assert(isMatch('+(ab|abab)', '+(ab|abab)'));
+    assert(!isMatch('ababab', '+(ab|abab)'));
+
+    // Non-repeating prefix overlap is preserved (not vulnerable)
+    assert.notStrictEqual(
+      makeRe('+(js|jsx)').source,
+      '^(?:\\+\\(js\\|jsx\\))$'
+    );
+    assert(isMatch('jsjsx', '+(js|jsx)'));
+
+    assert.notStrictEqual(
+      makeRe('+(foo|foobar)').source,
+      '^(?:\\+\\(foo\\|foobar\\))$'
+    );
+    assert(isMatch('foofoobar', '+(foo|foobar)'));
+  });
+
+  it('should not flag extglob quantifier * as a glob star', () => {
+    // *(f) — the * is an extglob quantifier, not a glob wildcard
+    assert(isMatch('fff', '*(f)'));
+    assert(isMatch('ffo', '*(f*(o))'));
+    assert(isMatch('fffooo', '*(*(f)*(o))'));
+  });
+
   it('should disable the safeguard when maxExtglobRecursion is false', () => {
     assert(
       /\(\?:a\|aa\)\+/.test(
