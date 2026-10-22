@@ -142,6 +142,30 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('+(a|aa)x', '+(a|aa)@(x)'));
     assert(!isMatch('aaax', '+(a|aa)@(x)'));
   });
+
+  it('should collapse single-branch repeated extglobs containing a star (GHSA-fc5q-39xc-vjpf)', () => {
+    for (const pattern of ['+(*)', '+(*a)', '*(*a)', '+(a*)', '+(a*b)', '*(*.js)']) {
+      assert(!/\)[+*]/.test(makeRe(pattern).source), `${pattern} should not nest quantifiers`);
+    }
+
+    const input = 'a'.repeat(50) + 'b';
+    for (const pattern of ['+(*a)', '*(*a)', '+(*a)c', 'x+(*a)']) {
+      const start = Date.now();
+      assert(!isMatch(input, pattern));
+      assert(Date.now() - start < 100, `${pattern} took too long`);
+    }
+
+    assert(isMatch('abc', '+(*)c'));
+    assert(isMatch('aaa', '+(*a)'));
+    assert(isMatch('a.a', '+(*a)'));
+    assert(!isMatch('ab', '+(*a)'));
+    assert(isMatch('', '*(*a)', { dot: true }) === isMatch('', '*(*a)', { dot: true, maxExtglobRecursion: false }));
+    assert(isMatch('axbayb', '+(a*b)'));
+    assert(!isMatch('axbay', '+(a*b)'));
+    assert(isMatch('foo.js', '*(*.js)'));
+    assert(!isMatch('foo.ts', '*(*.js)'));
+  });
+
   it('should disable the safeguard when maxExtglobRecursion is false', () => {
     assert(
       /\(\?:a\|aa\)\+/.test(
