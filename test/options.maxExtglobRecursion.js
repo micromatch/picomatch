@@ -142,6 +142,38 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('+(a|aa)x', '+(a|aa)@(x)'));
     assert(!isMatch('aaax', '+(a|aa)@(x)'));
   });
+  it('should literalize single-branch extglobs with a leading bare quantifier (CVE-2026-112366)', () => {
+    // `+(*a)`/`*(*a)` previously slipped past the risky-extglob check because
+    // it only inspected multi-branch bodies and fully-parenthesized nested
+    // extglobs. A single branch like `*a` (a bare, unanchored `*` followed by
+    // a literal) compiles to a nested-quantifier regex, e.g. `(?:[^/]*?a)+`,
+    // that is prone to catastrophic backtracking.
+    assert.strictEqual(
+      makeRe('+(*a)').source,
+      '^(?:\\+\\(\\*a\\))$'
+    );
+    assert.strictEqual(
+      makeRe('*(*a)').source,
+      '^(?:\\*\\(\\*a\\))$'
+    );
+    assert.strictEqual(
+      makeRe('+(a|*a)').source,
+      '^(?:\\+\\(a\\|\\*a\\))$'
+    );
+
+    assert(!isMatch('a'.repeat(30) + '!', '+(*a)'));
+    assert(!isMatch('a'.repeat(30) + '!', '*(*a)'));
+  });
+
+  it('should preserve non-risky leading/trailing quantifiers by default', () => {
+    // A bare quantifier alone, or one with a literal prefix anchoring where
+    // it starts, is not ambiguous in the same way and should keep working as
+    // a normal glob.
+    assert(isMatch('abc', '+(*)'));
+    assert(isMatch('abc', '+(a*)'));
+    assert(isMatch('aaa', '+(a*)'));
+  });
+
   it('should disable the safeguard when maxExtglobRecursion is false', () => {
     assert(
       /\(\?:a\|aa\)\+/.test(
