@@ -1,13 +1,13 @@
 {
-  "name": "picomatch",
-  "description": "Blazing fast and accurate glob matcher written in JavaScript, with no dependencies and full support for standard and extended Bash glob features, including braces, extglobs, POSIX brackets, and regular expressions.",
-  "version": "4.0.7",
-  "homepage": "https://github.com/micromatch/picomatch",
+  "name": "secured-picomatch",
+  "description": "Security-patched fork of picomatch 4.0.7 addressing CVE-2026-112366 in single-branch repeated extglobs.",
+  "version": "4.0.7-a",
+  "homepage": "https://github.com/ryotsu-kankichi/secured-picomatch#readme",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "funding": "https://github.com/sponsors/jonschlinkert",
-  "repository": "micromatch/picomatch",
+  "repository": "ryotsu-kankichi/secured-picomatch",
   "bugs": {
-    "url": "https://github.com/micromatch/picomatch/issues"
+    "url": "https://github.com/ryotsu-kankichi/secured-picomatch/issues"
   },
   "license": "MIT",
   "files": [
@@ -79,5 +79,16 @@
       "nanomatch",
       "picomatch"
     ]
+  },
+  "contributors": [
+    {
+      "name": "ryotsu-kankichi",
+      "email": "security.ryotsu.kankichi@gmail.com"
+    }
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest"
   }
 }

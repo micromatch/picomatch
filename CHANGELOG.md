@@ -32,6 +32,12 @@ Changelog entries are classified using the following labels _(from [keep-a-chang
 
 </details>
 
+## 4.0.7-a (2026-10-28; secured-picomatch fork)
+
+### Security
+
+* Addressed [CVE-2026-112366](https://nvd.nist.gov/vuln/detail/CVE-2026-112366) by removing redundant outer repetition from single-branch wildcard extglobs, including `+(*a)`, `+(a*)`, `+(*)`, and `+(@(*a))`. Escaped and quoted stars remain literal. Complex single-branch wildcard forms that cannot be safely collapsed are treated literally by default, rather than compiled into nested quantifiers. Captured substrings can change when redundant repetition is removed; the capture groups remain present. The existing `maxExtglobRecursion: false` option explicitly disables this protection.
+
 ## 4.0.7 (2026-08-24)
 
 ### Fixed

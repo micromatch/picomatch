@@ -2,6 +2,8 @@
 
 const assert = require('assert');
 const { isMatch, makeRe } = require('..');
+const picomatch = require('..');
+const { spawnSync } = require('child_process');
 
 describe('options.maxExtglobRecursion', () => {
   it('should literalize risky repeated extglobs by default', () => {
@@ -142,6 +144,92 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('+(a|aa)x', '+(a|aa)@(x)'));
     assert(!isMatch('aaax', '+(a|aa)@(x)'));
   });
+
+  it('should remove redundant repetition from single-branch wildcard extglobs', () => {
+    for (const pattern of ['+(*)', '*(*)', '+(*a)', '*(*a)', '+(a*)', '*(a*)', '+(a*b)', '+(*[ab])', '+(@(*a))']) {
+      assert(!/\)[+*]/.test(makeRe(pattern).source), pattern);
+    }
+
+    assert.strictEqual(makeRe('+(*a)').source, '^(?:(?=.)(?:[^/]*?a))$');
+    assert.strictEqual(makeRe('*(*a)').source, '^(?:(?=.)(?:[^/]*?a)?)$');
+    assert(isMatch('abc', '+(*)c'));
+    assert(isMatch('axbayb', '+(a*b)'));
+    assert(isMatch('foo.js', '*(*.js)'));
+    assert(!isMatch('axbay', '+(a*b)'));
+  });
+
+  it('should preserve matching semantics when collapsing single-branch wildcard extglobs', () => {
+    const patterns = ['+(*)', '*(*)', '+(*a)', '*(*a)', '+(a*)', '*(a*)', '+(a*b)', '+(*[ab])', '+(@(*a))', '+(**)', '+(**a)', 'x+(*a)b'];
+    const inputs = [''];
+    let level = [''];
+
+    for (let length = 1; length <= 4; length++) {
+      level = level.reduce((strings, prefix) => strings.concat(['a', 'b', '.', '/', '*'].map(ch => prefix + ch)), []);
+      inputs.push(...level);
+    }
+
+    for (const options of [{}, { dot: true }, { windows: true }, { bash: true }, { capture: true }]) {
+      for (const pattern of patterns) {
+        const actual = picomatch(pattern, options);
+        const original = picomatch(pattern, { ...options, maxExtglobRecursion: false });
+        for (const input of inputs) {
+          assert.strictEqual(actual(input), original(input), JSON.stringify({ pattern, input, options }));
+        }
+      }
+    }
+  });
+
+  it('should preserve escaped, quoted, and bracketed stars as literals', () => {
+    for (const pattern of ['+(a\\*b)', '+("*a")', '+([*]a)']) {
+      assert.strictEqual(makeRe(pattern).source, makeRe(pattern, { maxExtglobRecursion: false }).source);
+    }
+    assert(isMatch('*a*a', '+("*a")'));
+    assert(isMatch('a*ba*b', '+(a\\*b)'));
+  });
+
+  it('should literalize single-branch wildcards that cannot be safely collapsed', () => {
+    for (const pattern of ['+(?(*a))', '+(*a/b)', '+(*{a,b})']) {
+      assert(isMatch(pattern, pattern));
+      assert(!/\)[+*]/.test(makeRe(pattern).source), pattern);
+    }
+  });
+
+  it('should finish CVE-2026-112366 attack cases within a bounded subprocess', function() {
+    this.timeout(10000);
+    const cases = [
+      ['+(*a)', 'a'.repeat(80) + '!'],
+      ['*(*a)', 'a'.repeat(80) + '!'],
+      ['+(a*)', 'a'.repeat(80) + '/'],
+      ['*(a*)', 'a'.repeat(80) + '/'],
+      ['+(*)', 'a'.repeat(80) + '/'],
+      ['*(*)', 'a'.repeat(80) + '/'],
+      ['+(*)b', 'a'.repeat(80) + '!'],
+      ['*(*)b', 'a'.repeat(80) + '!'],
+      ['+(*a)c', 'a'.repeat(80) + '!'],
+      ['+(a*b)', 'ab'.repeat(40) + '!'],
+      ['+(**)', 'a'.repeat(80) + '/.'],
+      ['+(**a)', 'a'.repeat(80) + '!'],
+      ['+(@(*a))', 'a'.repeat(80) + '!'],
+      ['+(?(*a))', 'a'.repeat(80) + '!']
+    ];
+    const script = `
+      const assert = require('assert');
+      const pm = require(${JSON.stringify(require.resolve('..'))});
+      for (const options of [{}, { windows: true }, { capture: true }]) {
+        for (const [pattern, input] of ${JSON.stringify(cases)}) {
+          assert.strictEqual(pm.isMatch(input, pattern, options), false, pattern);
+        }
+      }
+    `;
+    const result = spawnSync(process.execPath, ['-e', script], { encoding: 'utf8', timeout: 5000, windowsHide: true });
+    assert.ifError(result.error);
+    assert.strictEqual(result.status, 0, result.stderr);
+  });
+
+  it('should allow the existing explicit safeguard opt-out', () => {
+    assert(/\)[+*]/.test(makeRe('+(*a)', { maxExtglobRecursion: false }).source));
+  });
+
   it('should disable the safeguard when maxExtglobRecursion is false', () => {
     assert(
       /\(\?:a\|aa\)\+/.test(
