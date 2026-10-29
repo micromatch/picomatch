@@ -288,16 +288,52 @@ describe('picomatch', () => {
       assert.strictEqual(base('path/foo/bar.js'), 'path/foo/bar.js');
     });
 
-    it('should not return glob when noext is true', () => {
+    it('should still detect plain globs when noext is true (issue #242)', () => {
       assert.deepStrictEqual(scan('./foo/bar/*.js', { noext: true }), {
         input: './foo/bar/*.js',
         prefix: './',
         start: 2,
-        base: 'foo/bar/*.js',
-        glob: '',
+        base: 'foo/bar',
+        glob: '*.js',
         isBrace: false,
         isBracket: false,
-        isGlob: false,
+        isGlob: true,
+        isGlobstar: false,
+        isExtglob: false,
+        negated: false,
+        negatedExtglob: false
+      });
+    });
+
+    it('should report plain *.js as a glob when noext is true (issue #242)', () => {
+      assert.deepStrictEqual(scan('*.js', { noext: true }), {
+        input: '*.js',
+        prefix: '',
+        start: 0,
+        base: '',
+        glob: '*.js',
+        isBrace: false,
+        isBracket: false,
+        isGlob: true,
+        isGlobstar: false,
+        isExtglob: false,
+        negated: false,
+        negatedExtglob: false
+      });
+    });
+
+    it('should clear isExtglob but keep paren-based isGlob when noext is true', () => {
+      // With noext, +(a) is not an extglob; `(` still marks the pattern as a glob
+      // unless noparen is also set.
+      assert.deepStrictEqual(scan('+(a)', { noext: true }), {
+        input: '+(a)',
+        prefix: '',
+        start: 0,
+        base: '',
+        glob: '+(a)',
+        isBrace: false,
+        isBracket: false,
+        isGlob: true,
         isGlobstar: false,
         isExtglob: false,
         negated: false,
