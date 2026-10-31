@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('assert');
+const { execFileSync } = require('child_process');
 const { isMatch, makeRe } = require('..');
 
 describe('options.maxExtglobRecursion', () => {
@@ -118,7 +119,60 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('+(a|aa)x', '+(a|aa)@(x)'));
     assert(!isMatch('aaax', '+(a|aa)@(x)'));
   });
+
+  it('should collapse single-branch star repetition (CVE-2026-112366)', () => {
+    for (const pattern of ['+(*)', '+(*a)', '*(*a)', '+(a*)', '+(a*b)', '*(*.js)']) {
+      assert(!/\)[+*]/.test(makeRe(pattern).source), pattern);
+    }
+
+    // Keep a regression from hanging the whole suite: the old expressions
+    // backtrack exponentially against this non-matching input.
+    execFileSync(process.execPath, ['-e', `
+      const assert = require('assert');
+      const { isMatch } = require(${JSON.stringify(require.resolve('..'))});
+      for (const pattern of ['+(*a)', '*(*a)', '+(*a)c', 'x+(*a)']) {
+        for (const options of [{}, { capture: true }]) {
+          assert(!isMatch('a'.repeat(50) + 'b', pattern, options));
+        }
+      }
+    `], { timeout: 2000 });
+  });
+
+  it('should preserve simple repeated-star matching', () => {
+    const patterns = ['+(*)', '+(*a)', '*(*a)', '+(a*)', '+(a*b)', '*(*.js)', 'x+(*a)y', '+(*)c'];
+    const inputs = ['', 'a', 'aa', 'ab', 'a.a', '.a', 'a/b', 'abc', 'axbayb', 'foo.js', 'foo.ts', 'xaay'];
+
+    for (const options of [{}, { dot: true }, { windows: true }, { bash: true }]) {
+      for (const pattern of patterns) {
+        for (const input of inputs) {
+          assert.deepStrictEqual(
+            makeRe(pattern, options).exec(input),
+            makeRe(pattern, { ...options, maxExtglobRecursion: false }).exec(input),
+            JSON.stringify({ pattern, input, options })
+          );
+        }
+      }
+    }
+  });
+
+  it('should use the existing literal fallback when repetition captures cannot be preserved', () => {
+    const pattern = '+(*a)';
+    const regex = makeRe(pattern, { capture: true });
+    assert.deepStrictEqual(Array.from(regex.exec(pattern)), [pattern]);
+    assert(!regex.test('aaa'));
+    assert(/\)\+/.test(makeRe(pattern, { capture: true, maxExtglobRecursion: false }).source));
+  });
+
+  it('should leave quoted stars, escaped literals, paths and other syntax unchanged', () => {
+    for (const pattern of ['+("*a")', '+(\\*a)', '+(*a/b)', '+(*[ab])', '+(a?*)']) {
+      assert.strictEqual(makeRe(pattern).source, makeRe(pattern, { maxExtglobRecursion: false }).source, pattern);
+    }
+    assert(isMatch('*a*a', '+("*a")'));
+    assert(isMatch('*a*a', '+(\\*a)'));
+  });
+
   it('should disable the safeguard when maxExtglobRecursion is false', () => {
+    assert(/\)\+/.test(makeRe('+(*a)', { maxExtglobRecursion: false }).source));
     assert(
       /\(\?:a\|aa\)\+/.test(
         makeRe('+(a|aa)', { maxExtglobRecursion: false }).source
