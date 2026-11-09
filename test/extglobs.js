@@ -95,6 +95,16 @@ describe('extglobs', () => {
 
       assert(!isMatch('c/z/v', 'c/!(z)/v'));
       assert(isMatch('c/a/v', 'c/!(z)/v'));
+      assert(isMatch('c/za/v', 'c/!(z)/v'));
+      assert(isMatch('c/zz/v', 'c/!(z)/v'));
+      assert(isMatch('c/az/v', 'c/!(z)/v'));
+      assert(isMatch('ab/b', '!(a)/b'));
+      assert(isMatch('aa/b', '!(a)/b'));
+      assert(!isMatch('a/b', '!(a)/b'));
+      assert(isMatch('ab/b', '!(a|b)/b'));
+      assert(!isMatch('b/b', '!(a|b)/b'));
+      assert(!isMatch('foo.ts/x', '!(foo).ts/x'));
+      assert(isMatch('bar.ts/x', '!(foo).ts/x'));
 
       assert(isMatch('a/a', '!(b/a)'));
       assert(!isMatch('b/a', '!(b/a)'));
