@@ -13,6 +13,17 @@ describe('dotfiles', () => {
       assert.deepStrictEqual(match(['a/b', 'a/.b', '.a/b', '.a/.b'], '**'), ['a/b']);
       assert.deepStrictEqual(match(['a/b/c/.dotfile'], '*.*'), []);
     });
+
+    it('should not match dotfiles with a negated bracket at the start of a segment:', () => {
+      assert(!isMatch('.env', '[!_]*'));
+      assert(!isMatch('.env', '[^_]*'));
+      assert(!isMatch('src/.env', 'src/[!_]*'));
+      assert(!isMatch('src/.env', '**/[!_]*'));
+      assert(isMatch('env', '[!_]*'));
+      assert(isMatch('src/main.scss', 'src/[!_]*'));
+      assert(isMatch('a.c', 'a[!b]c'));
+      assert(isMatch('.env', '[!_]*', { dot: true }));
+    });
   });
 
   describe('leading dot', () => {
