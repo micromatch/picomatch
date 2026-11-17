@@ -80,7 +80,7 @@ describe('mandatory repeated-extglob safety', () => {
   });
 
   it('proves assertions and preserves parallel/nullable-path ambiguity', () => {
-    for (const source of ['(?:a)+', '(?:a*)*', 'a|aa', 'ab|abab', 'a(?:a)?', '(?=(?:a+)+b)a', '(?!(?:a|aa)+b)a', 's|[^\\x00-\\x7f]']) {
+    for (const source of ['(?:a)+', '(?:a*)*', 'a|aa', 'ab|abab', 'a(?:a)?', '(?=(?:a+)+b)a', '(?!(?:a|aa)+b)a', '(?=a+b)a', '(?!a+b)a', 's|[^\\x00-\\x7f]']) {
       assert.strictEqual(safe(source), false, source);
     }
     for (const source of ['foo|bar', 'ab|a', 'f(?:o)*', '(?=.)a', '[^/]', '[a-z]']) {

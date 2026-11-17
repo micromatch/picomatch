@@ -568,8 +568,8 @@ bounded ambiguity check to the generated repeated body after token rewrites.
 A position automaton retains parallel edges and nullable-path multiplicity; its
 square automaton looks for distinct accepting paths for the same input. ASCII
 case folding and Unicode ignore-case aliases are overapproximated so changing
-flags through `compileRe` cannot invalidate the proof. Assertions must pass their
-own check before being overapproximated as empty transitions. Final output is
+flags through `compileRe` cannot invalidate the proof. Assertions must be bounded and pass their
+own ambiguity check before being overapproximated as empty transitions. Final output is
 checked again when raw regex quantifiers can wrap a validated extglob.
 
 A single ordinary star with fixed ASCII text can absorb concatenated copies of
