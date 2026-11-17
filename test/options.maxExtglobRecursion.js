@@ -155,3 +155,50 @@ describe('options.maxExtglobRecursion', () => {
     );
   });
 });
+
+describe('CVE-2026-112366 single-branch star repetition', () => {
+  it('collapses the inner star while preserving existing matches', () => {
+    const patterns = ['+(*)', '*(*)', '+(*a)', '*(*a)', '+(a*)', '*(a*)',
+      '+(a*b)', '*(a*b)', '+(a?*)', 'x+(*a)y', '+(*)c'];
+    const inputs = ['', 'a', 'aa', 'ab', 'aba', 'abcabc', 'foo.js',
+      '.env', 'a/a', 'xaby', 'xay'];
+
+    for (const pattern of patterns) {
+      assert(!/\)[+*]/.test(makeRe(pattern).source), pattern);
+
+      for (const options of [{}, { dot: true }, { windows: true }, { bash: true }]) {
+        for (const input of inputs) {
+          assert.strictEqual(
+            isMatch(input, pattern, options),
+            isMatch(input, pattern, { ...options, maxExtglobRecursion: false }),
+            JSON.stringify({ pattern, input, options })
+          );
+        }
+      }
+    }
+  });
+
+  it('keeps non-matching malicious inputs bounded in a subprocess', () => {
+    const { execFileSync } = require('child_process');
+    const patterns = ['+(*)', '*(*)', '+(*a)', '*(*a)',
+      '+(a*)', '*(a*)', '+(a?*)', 'x+(*a)y'];
+    const code = 'const assert=require("assert");' +
+      'const pm=require(' + JSON.stringify(require.resolve('..')) + ');' +
+      'const pats=' + JSON.stringify(patterns) + ';' +
+      'for(const p of pats){ assert(!pm.isMatch("a".repeat(48)+"/",p)); }';
+    execFileSync(process.execPath, ['-e', code], { timeout: 2000 });
+  });
+
+  it('uses a literal fallback for capture and honors explicit opt-out', () => {
+    const pattern = '+(*a)';
+    const safe = makeRe(pattern, { capture: true });
+    assert.deepStrictEqual(Array.from(safe.exec(pattern)), [pattern]);
+    assert(!safe.test('aaa'));
+    assert(/\)[+*]/.test(makeRe(pattern, { maxExtglobRecursion: false }).source));
+
+    for (const unusual of ['+(*[ab])', '+(a*/b)', '+(" *a")']) {
+      assert.strictEqual(makeRe(unusual).source,
+        makeRe(unusual, { maxExtglobRecursion: false }).source);
+    }
+  });
+});
