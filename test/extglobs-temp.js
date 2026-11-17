@@ -259,24 +259,24 @@ describe('extglobs', () => {
       assert(!isMatch('x', '!(x)*', { windows: true }));
       assert(!isMatch('xx', '!(x)*', { windows: true }));
 
-      assert(isMatch('bar', '*(!(f))', { windows: true }));
-      assert(!isMatch('f', '*(!(f))', { windows: true }));
-      assert(isMatch('fa', '*(!(f))', { windows: true }));
-      assert(isMatch('fb', '*(!(f))', { windows: true }));
-      assert(isMatch('ff', '*(!(f))', { windows: true }));
-      assert(isMatch('fff', '*(!(f))', { windows: true }));
-      assert(isMatch('fo', '*(!(f))', { windows: true }));
-      assert(isMatch('foo', '*(!(f))', { windows: true }));
-      assert(!isMatch('foo/bar', '*(!(f))', { windows: true }));
-      assert(isMatch('foobar', '*(!(f))', { windows: true }));
-      assert(isMatch('foot', '*(!(f))', { windows: true }));
-      assert(isMatch('foox', '*(!(f))', { windows: true }));
-      assert(isMatch('o', '*(!(f))', { windows: true }));
-      assert(isMatch('of', '*(!(f))', { windows: true }));
-      assert(isMatch('ooo', '*(!(f))', { windows: true }));
-      assert(isMatch('ox', '*(!(f))', { windows: true }));
-      assert(isMatch('x', '*(!(f))', { windows: true }));
-      assert(isMatch('xx', '*(!(f))', { windows: true }));
+      assert.throws(() => isMatch('bar', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('f', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('fa', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('fb', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('ff', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('fff', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('fo', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foo', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foo/bar', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foobar', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foot', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foox', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('o', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('of', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('ooo', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('ox', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('x', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('xx', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
 
       assert(!isMatch('bar', '*((foo))', { windows: true }));
       assert(!isMatch('f', '*((foo))', { windows: true }));
@@ -297,24 +297,24 @@ describe('extglobs', () => {
       assert(!isMatch('x', '*((foo))', { windows: true }));
       assert(!isMatch('xx', '*((foo))', { windows: true }));
 
-      assert(isMatch('bar', '+(!(f))', { windows: true }));
-      assert(!isMatch('f', '+(!(f))', { windows: true }));
-      assert(isMatch('fa', '+(!(f))', { windows: true }));
-      assert(isMatch('fb', '+(!(f))', { windows: true }));
-      assert(isMatch('ff', '+(!(f))', { windows: true }));
-      assert(isMatch('fff', '+(!(f))', { windows: true }));
-      assert(isMatch('fo', '+(!(f))', { windows: true }));
-      assert(isMatch('foo', '+(!(f))', { windows: true }));
-      assert(!isMatch('foo/bar', '+(!(f))', { windows: true }));
-      assert(isMatch('foobar', '+(!(f))', { windows: true }));
-      assert(isMatch('foot', '+(!(f))', { windows: true }));
-      assert(isMatch('foox', '+(!(f))', { windows: true }));
-      assert(isMatch('o', '+(!(f))', { windows: true }));
-      assert(isMatch('of', '+(!(f))', { windows: true }));
-      assert(isMatch('ooo', '+(!(f))', { windows: true }));
-      assert(isMatch('ox', '+(!(f))', { windows: true }));
-      assert(isMatch('x', '+(!(f))', { windows: true }));
-      assert(isMatch('xx', '+(!(f))', { windows: true }));
+      assert.throws(() => isMatch('bar', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('f', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('fa', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('fb', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('ff', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('fff', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('fo', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foo', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foo/bar', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foobar', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foot', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foox', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('o', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('of', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('ooo', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('ox', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('x', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('xx', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
 
       assert(isMatch('bar', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('f', '@(!(z*)|*x)', { windows: true }));
@@ -828,10 +828,10 @@ describe('extglobs', () => {
       assert(isMatch('baz', '!(foo)b*', { windows: true }));
       assert(!isMatch('foobar', '!(foo)b*', { windows: true }));
 
-      assert(!isMatch('foo', '*(!(foo))', { windows: true }));
-      assert(isMatch('bar', '*(!(foo))', { windows: true }));
-      assert(isMatch('baz', '*(!(foo))', { windows: true }));
-      assert(isMatch('foobar', '*(!(foo))', { windows: true }));
+      assert.throws(() => isMatch('foo', '*(!(foo))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('bar', '*(!(foo))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('baz', '*(!(foo))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foobar', '*(!(foo))', { windows: true }), /Unsafe repeated extglob/);
 
       // Bash 4.3 says this should match `foo` and `foobar`, which makes no sense
       assert(!isMatch('foo', '!(foo)*', { windows: true }));
@@ -1187,27 +1187,27 @@ describe('extglobs', () => {
 
     it('should support exclusions', () => {
       assert(!isMatch('f', '!(f)', { windows: true }));
-      assert(!isMatch('f', '*(!(f))', { windows: true }));
-      assert(!isMatch('f', '+(!(f))', { windows: true }));
+      assert.throws(() => isMatch('f', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('f', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
       assert(!isMatch('foo', '!(foo)', { windows: true }));
       assert(!isMatch('foob', '!(foo)b*', { windows: true }));
       assert(!isMatch('mad.moo.cow', '!(*.*).!(*.*)', { windows: true }));
       assert(!isMatch('mucca.pazza', 'mu!(*(c))?.pa!(*(z))?', { windows: true }));
       assert(!isMatch('zoot', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('fff', '!(f)', { windows: true }));
-      assert(isMatch('fff', '*(!(f))', { windows: true }));
-      assert(isMatch('fff', '+(!(f))', { windows: true }));
+      assert.throws(() => isMatch('fff', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('fff', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
       assert(isMatch('foo', '!(f)', { windows: true }));
       assert(isMatch('foo', '!(x)', { windows: true }));
       assert(isMatch('foo', '!(x)*', { windows: true }));
-      assert(isMatch('foo', '*(!(f))', { windows: true }));
-      assert(isMatch('foo', '+(!(f))', { windows: true }));
+      assert.throws(() => isMatch('foo', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('foo', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
       assert(isMatch('foobar', '!(foo)', { windows: true }));
       assert(isMatch('foot', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('foox', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('ooo', '!(f)', { windows: true }));
-      assert(isMatch('ooo', '*(!(f))', { windows: true }));
-      assert(isMatch('ooo', '+(!(f))', { windows: true }));
+      assert.throws(() => isMatch('ooo', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('ooo', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
       assert(isMatch('zoox', '@(!(z*)|*x)', { windows: true }));
     });
   });

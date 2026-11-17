@@ -1194,7 +1194,7 @@ describe('extglobs (bash)', () => {
   });
 
   it('"abef" should not match "*(a+|b)"', () => {
-    assert(!isMatch('abef', '*(a+|b)', { bash: true, windows: true }));
+    assert.throws(() => isMatch('abef', '*(a+|b)', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"abef" should not match "*?(a)bc"', () => {
@@ -1562,7 +1562,7 @@ describe('extglobs (bash)', () => {
   });
 
   it('"bar" should match "*(!(foo))"', () => {
-    assert(isMatch('bar', '*(!(foo))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('bar', '*(!(foo))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"baz" should match "!(foo)*"', () => {
@@ -1574,7 +1574,7 @@ describe('extglobs (bash)', () => {
   });
 
   it('"baz" should match "*(!(foo))"', () => {
-    assert(isMatch('baz', '*(!(foo))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('baz', '*(!(foo))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"bb" should match "!(a!(b))"', () => {
@@ -1914,11 +1914,11 @@ describe('extglobs (bash)', () => {
   });
 
   it('"f" should not match "*(!(f))"', () => {
-    assert(!isMatch('f', '*(!(f))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('f', '*(!(f))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"f" should not match "+(!(f))"', () => {
-    assert(!isMatch('f', '+(!(f))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('f', '+(!(f))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"f.a" should not match "!(*.a|*.b|*.c)"', () => {
@@ -1970,11 +1970,11 @@ describe('extglobs (bash)', () => {
   });
 
   it('"fff" should match "*(!(f))"', () => {
-    assert(isMatch('fff', '*(!(f))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('fff', '*(!(f))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"fff" should match "+(!(f))"', () => {
-    assert(isMatch('fff', '+(!(f))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('fff', '+(!(f))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"fffooofoooooffoofffooofff" should match "*(*(f)*(o))"', () => {
@@ -2062,11 +2062,11 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foo" should match "*(!(f))"', () => {
-    assert(isMatch('foo', '*(!(f))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('foo', '*(!(f))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"foo" should not match "*(!(foo))"', () => {
-    assert(!isMatch('foo', '*(!(foo))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('foo', '*(!(foo))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"foo" should not match "*(@(a))a@(c)"', () => {
@@ -2102,7 +2102,7 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foo" should match "+(!(f))"', () => {
-    assert(isMatch('foo', '+(!(f))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('foo', '+(!(f))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"foo" should not match "??"', () => {
@@ -2266,7 +2266,7 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foobar" should match "*(!(foo))"', () => {
-    assert(isMatch('foobar', '*(!(foo))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('foobar', '*(!(foo))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"foobar" should match "*ob*a*r*"', () => {
@@ -2450,11 +2450,11 @@ describe('extglobs (bash)', () => {
   });
 
   it('"ooo" should match "*(!(f))"', () => {
-    assert(isMatch('ooo', '*(!(f))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('ooo', '*(!(f))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"ooo" should match "+(!(f))"', () => {
-    assert(isMatch('ooo', '+(!(f))', { bash: true, windows: true }));
+    assert.throws(() => isMatch('ooo', '+(!(f))', { bash: true, windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"oxfoxfox" should not match "*(oxf+(ox))"', () => {

@@ -1189,7 +1189,7 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"abef" should not match "*(a+|b)"', () => {
-    assert(!isMatch('abef', '*(a+|b)', { windows: true }));
+    assert.throws(() => isMatch('abef', '*(a+|b)', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"abef" should not match "*?(a)bc"', () => {
@@ -1549,7 +1549,7 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"bar" should match "*(!(foo))"', () => {
-    assert(isMatch('bar', '*(!(foo))', { windows: true }));
+    assert.throws(() => isMatch('bar', '*(!(foo))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"baz" should match "!(foo)*"', () => {
@@ -1561,7 +1561,7 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"baz" should match "*(!(foo))"', () => {
-    assert(isMatch('baz', '*(!(foo))', { windows: true }));
+    assert.throws(() => isMatch('baz', '*(!(foo))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"bb" should match "!(a!(b))"', () => {
@@ -1901,11 +1901,11 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"f" should not match "*(!(f))"', () => {
-    assert(!isMatch('f', '*(!(f))', { windows: true }));
+    assert.throws(() => isMatch('f', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"f" should not match "+(!(f))"', () => {
-    assert(!isMatch('f', '+(!(f))', { windows: true }));
+    assert.throws(() => isMatch('f', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"f.a" should not match "!(*.a|*.b|*.c)"', () => {
@@ -1957,11 +1957,11 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"fff" should match "*(!(f))"', () => {
-    assert(isMatch('fff', '*(!(f))', { windows: true }));
+    assert.throws(() => isMatch('fff', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"fff" should match "+(!(f))"', () => {
-    assert(isMatch('fff', '+(!(f))', { windows: true }));
+    assert.throws(() => isMatch('fff', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"fffooofoooooffoofffooofff" should match "*(*(f)*(o))"', () => {
@@ -2049,11 +2049,11 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"foo" should match "*(!(f))"', () => {
-    assert(isMatch('foo', '*(!(f))', { windows: true }));
+    assert.throws(() => isMatch('foo', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"foo" should not match "*(!(foo))"', () => {
-    assert(!isMatch('foo', '*(!(foo))', { windows: true }));
+    assert.throws(() => isMatch('foo', '*(!(foo))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"foo" should not match "*(@(a))a@(c)"', () => {
@@ -2089,7 +2089,7 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"foo" should match "+(!(f))"', () => {
-    assert(isMatch('foo', '+(!(f))', { windows: true }));
+    assert.throws(() => isMatch('foo', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"foo" should not match "??"', () => {
@@ -2249,7 +2249,7 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"foobar" should match "*(!(foo))"', () => {
-    assert(isMatch('foobar', '*(!(foo))', { windows: true }));
+    assert.throws(() => isMatch('foobar', '*(!(foo))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"foobar" should match "*ob*a*r*"', () => {
@@ -2429,11 +2429,11 @@ describe('extglobs (minimatch)', () => {
   });
 
   it('"ooo" should match "*(!(f))"', () => {
-    assert(isMatch('ooo', '*(!(f))', { windows: true }));
+    assert.throws(() => isMatch('ooo', '*(!(f))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"ooo" should match "+(!(f))"', () => {
-    assert(isMatch('ooo', '+(!(f))', { windows: true }));
+    assert.throws(() => isMatch('ooo', '+(!(f))', { windows: true }), /Unsafe repeated extglob/);
   });
 
   it('"oxfoxfox" should not match "*(oxf+(ox))"', () => {
