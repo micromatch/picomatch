@@ -339,7 +339,7 @@ The following options may be used with the main `picomatch()` function or any of
 | `literalBrackets`     | `boolean`      | `undefined` | When `true`, brackets in the glob pattern will be escaped so that only literal brackets will be matched. |
 | `matchBase`           | `boolean`      | `false`     | Alias for `basename` |
 | `maxLength`           | `number`      | `65536`     | Limit the max length of the input string. An error is thrown if the input string is longer than this value. |
-| `maxExtglobRecursion` | `number\|boolean` | `0` | Limit nested quantified extglobs and other risky repeated extglob forms. When the limit is exceeded, the extglob is treated as a literal string instead of being compiled to regex. Set to `false` to disable this safeguard. |
+| `maxExtglobRecursion` | `number\|boolean` | `0` | Limit the legacy nested-extglob literalization heuristic. This option cannot disable the mandatory repeated-extglob ambiguity check; patterns without a bounded safety proof throw `SyntaxError`. |
 | `nobrace`             | `boolean`      | `false`     | Disable brace matching, so that `{a,b}` and `{1..3}` would be treated as literal characters. |
 | `nobracket`           | `boolean`      | `undefined` | Disable matching with regex brackets. |
 | `nocase`              | `boolean`      | `false`     | Make matching case-insensitive. Equivalent to the regex `i` flag. Note that this option is overridden by the `flags` option. |
@@ -554,9 +554,40 @@ console.log(pm.isMatch('foo.bar', '!(!(foo)).!(!(bar))')); // true
 console.log(pm.makeRe('+(a|aa)'));
 //=> /^(?:\+\(a\|aa\))$/
 
-// increase the limit to allow a small amount of nested quantified extglobs
-console.log(pm.isMatch('aaa', '+(+(a))', { maxExtglobRecursion: 1 })); // true
+// Safe, delimited nested repetition is supported.
+console.log(pm.isMatch('fooofoo', '*(f*(o))', { maxExtglobRecursion: 1 })); // true
+
+// Increasing or disabling the legacy limit cannot enable ambiguous repetition.
+// pm.makeRe('+(+(a))', {maxExtglobRecursion: false}); // throws SyntaxError
 ```
+
+#### Repeated-extglob security boundary
+
+To address CVE-2026-112366, string-pattern compilation applies a mandatory,
+bounded ambiguity check to the generated repeated body after token rewrites.
+A position automaton retains parallel edges and nullable-path multiplicity; its
+square automaton looks for distinct accepting paths for the same input. ASCII
+case folding and Unicode ignore-case aliases are overapproximated so changing
+flags through `compileRe` cannot invalidate the proof. Assertions must pass their
+own check before being overapproximated as empty transitions. Final output is
+checked again when raw regex quantifiers can wrap a validated extglob.
+
+A single ordinary star with fixed ASCII text can absorb concatenated copies of
+its branch, so `+(*a)` becomes one occurrence and `*(*a)` becomes an optional
+occurrence. This rewrite excludes capture mode (the inner star capture denotes
+the last iteration) and Bash patterns whose literal dots can change dot-segment
+semantics. One-character alternatives are combined into a character class.
+
+Existing safe glob, brace, class, POSIX and nested-extglob behavior remains.
+Existing legacy literalization remains where applicable. **New behavior:**
+ambiguous or unproven repetitions throw `SyntaxError`, including nested nullable
+negations, recursion-limit bypasses and capture-dependent wildcard repetition.
+Callers accepting external patterns should handle this error. Tests that formerly
+expected matching through those unsafe expressions now assert rejection; no tests
+are skipped. The proof has explicit source, nesting, position and operation
+limits and fails closed when any is exceeded. Raw caller-authored `RegExp`,
+`toRegex`, modified parser states and `prepend` regex source remain trusted regex
+APIs; this change does not make arbitrary regular expressions safe.
 
 #### POSIX brackets
 

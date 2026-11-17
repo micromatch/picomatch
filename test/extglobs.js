@@ -319,7 +319,7 @@ describe('extglobs', () => {
 
     it('should support *(...) extglobs ending with statechar', () => {
       assert(!isMatch('ax', 'a*(b*)'));
-      assert(isMatch('ax', '*(a*|b)'));
+      assert.throws(() => isMatch('ax', '*(a*|b)'), /Unsafe repeated extglob/);
     });
 
     it('should support @(...) extglobs ending with statechar', () => {

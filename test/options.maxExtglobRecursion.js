@@ -34,18 +34,11 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('abc', '+(*)c'));
   });
 
-  it('should allow limited nested repeated extglobs when configured', () => {
-    assert.strictEqual(
-      makeRe('+(+(a))', { maxExtglobRecursion: 1 }).source,
-      '^(?:(?=.)(?:(?:a)+)+)$'
-    );
-    assert.strictEqual(
-      makeRe('*(+(a))', { maxExtglobRecursion: 1 }).source,
-      '^(?:(?=.)(?:(?:a)+)*)$'
-    );
-
-    assert(isMatch('aaa', '+(+(a))', { maxExtglobRecursion: 1 }));
-    assert(isMatch('aaa', '*(+(a))', { maxExtglobRecursion: 1 }));
+  it('must reject ambiguous nested repetition even when recursion is requested', () => {
+    for (const pattern of ['+(+(a))', '*(+(a))']) {
+      assert.throws(() => makeRe(pattern, { maxExtglobRecursion: 1 }), /Unsafe repeated extglob/);
+    }
+    assert(isMatch('fooofoo', '*(f*(o))', { maxExtglobRecursion: 1 }));
   });
 
   it('should still block ambiguous repeated alternation when recursion is allowed', () => {
@@ -142,16 +135,10 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('+(a|aa)x', '+(a|aa)@(x)'));
     assert(!isMatch('aaax', '+(a|aa)@(x)'));
   });
-  it('should disable the safeguard when maxExtglobRecursion is false', () => {
-    assert(
-      /\(\?:a\|aa\)\+/.test(
-        makeRe('+(a|aa)', { maxExtglobRecursion: false }).source
-      )
-    );
-    assert(
-      /\(\?:\(\?:a\)\+\)\+/.test(
-        makeRe('+(+(a))', { maxExtglobRecursion: false }).source
-      )
-    );
+  it('must not disable mandatory safety when maxExtglobRecursion is false', () => {
+    for (const pattern of ['+(a|aa)', '+(+(a))']) {
+      assert.throws(() => makeRe(pattern, { maxExtglobRecursion: false }), /Unsafe repeated extglob/);
+    }
+    assert(isMatch('foofoo', '+(foo)', { maxExtglobRecursion: false }));
   });
 });

@@ -220,9 +220,9 @@ describe('special characters', () => {
       assert(!isMatch('my/folder (Work, Accts)', '/*'));
       assert(isMatch('my/folder (Work, Accts)', '*/*'));
       assert(isMatch('my/folder (Work, Accts)', '*/*,*'));
-      assert(isMatch('my/folder (Work, Accts)', '*/*(W*, *)*'));
-      assert(isMatch('my/folder/(Work, Accts)', '**/*(W*, *)*'));
-      assert(!isMatch('my/folder/(Work, Accts)', '*/*(W*, *)*'));
+      assert.throws(() => isMatch('my/folder (Work, Accts)', '*/*(W*, *)*'), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('my/folder/(Work, Accts)', '**/*(W*, *)*'), /Unsafe repeated extglob/);
+      assert.throws(() => isMatch('my/folder/(Work, Accts)', '*/*(W*, *)*'), /Unsafe repeated extglob/);
       assert(isMatch('foo(bar)baz', 'foo*baz'));
     });
 
