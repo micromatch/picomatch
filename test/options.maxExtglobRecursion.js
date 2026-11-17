@@ -154,4 +154,61 @@ describe('options.maxExtglobRecursion', () => {
       )
     );
   });
+
+  describe('repeated extglobs with a top-level star', () => {
+    it('should drop the repeat when a single starred branch absorbs it', () => {
+      assert.strictEqual(makeRe('+(*)').source, '^(?:(?=.)(?:[^/]*?))$');
+      assert.strictEqual(makeRe('*(*)').source, '^(?:(?=.)(?:[^/]*?)?)$');
+      assert.strictEqual(makeRe('+(*a)').source, '^(?:(?=.)(?:[^/]*?a))$');
+      assert.strictEqual(makeRe('*(*a)').source, '^(?:(?=.)(?:[^/]*?a)?)$');
+      assert.strictEqual(makeRe('x*(*a)y').source, '^(?:x(?:[^/]*?a)?y)$');
+    });
+
+    it('should repeat only the star-free branches when the starred ones absorb the rest', () => {
+      assert.strictEqual(makeRe('+(*a|b)').source, '^(?:(?=.)(?:[^/]*?a|b)(?:b)*)$');
+      assert.strictEqual(makeRe('*(a*|b)').source, '^(?:(?=.)(?:b)*(?:a[^/]*?)?)$');
+    });
+
+    it('should literalize starred branches that cannot absorb the repeat', () => {
+      assert.strictEqual(makeRe('+(a*|*b)').source, '^(?:\\+\\(a\\*\\|\\*b\\))$');
+      assert.strictEqual(makeRe('+(a*b|a)').source, '^(?:\\+\\(a\\*b\\|a\\))$');
+      assert.strictEqual(makeRe('+(a/*)').source, '^(?:\\+\\(a\\/\\*\\))$');
+    });
+
+    it('should match the same strings as before', () => {
+      assert(isMatch('abc', '+(*)'));
+      assert(isMatch('xa', '+(*a)'));
+      assert(isMatch('xaya', '+(*a)'));
+      assert(!isMatch('xab', '+(*a)'));
+      assert(!isMatch('', '*(*a)'));
+      assert(isMatch('ab', '+(*a|b)'));
+      assert(isMatch('xabb', '+(*a|b)'));
+      assert(!isMatch('xb', '+(*a|b)'));
+      assert(isMatch('ax', '*(a*|b)'));
+      assert(isMatch('bbax', '*(a*|b)'));
+      assert(!isMatch('bx', '*(a*|b)'));
+      assert(isMatch('x.js', '+(*.js|*.ts)'));
+      assert(!isMatch('a/b', '+(*)'));
+    });
+
+    it('should not backtrack catastrophically', () => {
+      const input = 'a'.repeat(5000) + '/';
+      for (const pattern of ['+(*)', '*(*)', '+(*a)', '*(*a)', '+(*a*)', '+(*a|b)', '*(a*|b)']) {
+        const start = Date.now();
+        assert(!isMatch(input, pattern));
+        assert(Date.now() - start < 1000, pattern);
+      }
+    });
+
+    it('should keep the repeat when maxExtglobRecursion is false', () => {
+      assert.strictEqual(
+        makeRe('+(*a)', { maxExtglobRecursion: false }).source,
+        '^(?:(?=.)(?:[^/]*?a)+)$'
+      );
+      assert.strictEqual(
+        makeRe('+(*)', { maxExtglobRecursion: false }).source,
+        '^(?:(?=.)(?:[^/]*?)+)$'
+      );
+    });
+  });
 });
