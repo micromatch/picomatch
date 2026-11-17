@@ -34,7 +34,7 @@ describe('repeated wildcard safeguards', () => {
   });
 
   it('literalizes complex star branches that cannot safely be collapsed', () => {
-    for (const pattern of ['+(*a/b)', '+(*{a,b})', '+(@(*a))', '+(*a|b)', '+(@(*a)|b)']) {
+    for (const pattern of ['+(*a/b)', '+(*{a,b})', '+(@(*a))', '+(*a|b)', '+(@(*a)|b)', '+(*(a)a)', '+(a*(a))', '+(a+(a))']) {
       assert(isMatch(pattern, pattern), pattern);
       assert(!isMatch('a'.repeat(100) + '!', pattern), pattern);
     }
@@ -49,7 +49,7 @@ describe('repeated wildcard safeguards', () => {
 
   it('rejects adversarial non-matches within a bounded subprocess', () => {
     const modulePath = require.resolve('..');
-    const patterns = ['+(*)b', '+(*a)', '*(*a)', '+(*?a)', '+(ab|abab)', '+(*a|b)', '+(@(*a)|b)'];
+    const patterns = ['+(*)b', '+(*a)', '*(*a)', '+(*?a)', '+(ab|abab)', '+(*a|b)', '+(@(*a)|b)', '+(*(a)a)', '+(a*(a))', '+(a+(a))'];
     for (const pattern of patterns) {
       const code = `const pm = require(${JSON.stringify(modulePath)});
         const pattern = ${JSON.stringify(pattern)};
