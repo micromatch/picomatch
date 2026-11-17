@@ -575,8 +575,8 @@ checked again when raw regex quantifiers can wrap a validated extglob.
 A single ordinary star with fixed ASCII text can absorb concatenated copies of
 its branch, so `+(*a)` becomes one occurrence and `*(*a)` becomes an optional
 occurrence. This rewrite excludes capture mode (the inner star capture denotes
-the last iteration) and Bash patterns whose literal dots can change dot-segment
-semantics. One-character alternatives are combined into a character class.
+the last iteration), unanchored `contains` mode (match spans can differ), and Bash patterns whose literal dots can change dot-segment
+semantics. `compileRe` also rejects enabling `contains` on a rewritten state. One-character alternatives are combined into a character class.
 
 Existing safe glob, brace, class, POSIX and nested-extglob behavior remains.
 Existing legacy literalization remains where applicable. **New behavior:**

@@ -55,6 +55,15 @@ describe('mandatory repeated-extglob safety', () => {
     assert.deepStrictEqual(Array.from(pm.makeRe('+(foo|bar)', { capture: true }).exec('foobar')), ['foobar', 'foobar']);
   });
 
+  it('does not silently change unanchored match spans or truthy capture options', () => {
+    assert.throws(() => pm.makeRe('+(a*b)', { contains: true }), /Unsafe repeated extglob/);
+    assert.throws(() => pm.makeRe('+(*a)', { capture: 1 }), /Unsafe repeated extglob/);
+    assert.throws(() => pm.makeRe('+(*a)', { contains: 1 }), /Unsafe repeated extglob/);
+    const state = pm.parse('+(*a)');
+    assert.throws(() => pm.compileRe(state, { contains: true }), /Unsafe repeated extglob/);
+    assert.throws(() => pm.compileRe(state, { contains: true }, true), /Unsafe repeated extglob/);
+  });
+
   it('combines character alternatives before later flag changes can introduce ambiguity', () => {
     for (const options of [{ nocase: true }, { flags: 'i' }, { flags: 'iu' }]) {
       assert(pm.isMatch('AaAA', '+(a|A)', options));
