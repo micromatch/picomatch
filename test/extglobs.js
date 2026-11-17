@@ -319,7 +319,11 @@ describe('extglobs', () => {
 
     it('should support *(...) extglobs ending with statechar', () => {
       assert(!isMatch('ax', 'a*(b*)'));
-      assert(isMatch('ax', '*(a*|b)'));
+      // Repeating an alternative containing a wildcard star nests unbounded
+      // quantifiers. The default safeguard literalizes this unsafe pattern.
+      assert(!isMatch('ax', '*(a*|b)'));
+      assert(isMatch('*(a*|b)', '*(a*|b)'));
+      assert(isMatch('ax', '*(a*|b)', { maxExtglobRecursion: false }));
     });
 
     it('should support @(...) extglobs ending with statechar', () => {
