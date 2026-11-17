@@ -196,9 +196,120 @@ describe('CVE-2026-112366 single-branch star repetition', () => {
     assert(!safe.test('aaa'));
     assert(/\)[+*]/.test(makeRe(pattern, { maxExtglobRecursion: false }).source));
 
-    for (const unusual of ['+(*[ab])', '+(a*/b)', '+(" *a")']) {
-      assert.strictEqual(makeRe(unusual).source,
-        makeRe(unusual, { maxExtglobRecursion: false }).source);
+    for (const simpleClass of ['+(*[ab])', '+(a*[ab])', '+(*[a-z])']) {
+      assert(!/\)[+*]/.test(makeRe(simpleClass).source));
     }
+    assert(isMatch('aaa', '+(*[ab])'));
+    assert(isMatch('aa', '+(a*[ab])'));
+    assert(isMatch('+(a*/b)', '+(a*/b)'));
+    assert(!isMatch('a/b', '+(a*/b)'));
+    assert.strictEqual(
+      makeRe('+(" *a")').source,
+      makeRe('+(" *a")', { maxExtglobRecursion: false }).source
+    );
+  });
+});
+
+describe('CVE-2026-112366 repeated star alternatives', () => {
+  it('preserves matching for simple prefix/suffix stars and literals', () => {
+    const patterns = [
+      '+(*a|b)', '*(*a|b)', '+(a*|b)', '*(a*|b)',
+      '+(*a|b|c)', '*(a*|b|c)', 'x+(a*|b)y', 'a/+(*a|b)'
+    ];
+    const inputs = [
+      '', 'a', 'b', 'c', 'aa', 'ab', 'ba', 'bb', 'ax',
+      'bax', 'abc', 'a/b', 'a/.', 'xaby', 'xbby', 'a/ba'
+    ];
+    const optionsList = [
+      {}, { dot: true }, { windows: true }, { bash: true },
+      { nocase: true }, { contains: true }, { strictSlashes: true }
+    ];
+
+    for (const pattern of patterns) {
+      for (const options of optionsList) {
+        for (const input of inputs) {
+          assert.strictEqual(
+            isMatch(input, pattern, options),
+            isMatch(input, pattern, { ...options, maxExtglobRecursion: false }),
+            JSON.stringify({ pattern, input, options })
+          );
+        }
+      }
+    }
+    assert(isMatch('ax', '*(a*|b)'));
+    assert(isMatch('bbbax', '+(a*|b)'));
+  });
+
+  it('bounds repeated alternatives with embedded stars', () => {
+    const { execFileSync } = require('child_process');
+    const patterns = [
+      '+(*a|b)', '+(a*|b)', '*(a*|b)',
+      '+(*a|b|c)', '+(a*|b|c)', '+(*[ab]|c)'
+    ];
+    const code = 'const assert=require("assert");' +
+      'const pm=require(' + JSON.stringify(require.resolve('..')) + ');' +
+      'const patterns=' + JSON.stringify(patterns) + ';' +
+      'for(const pattern of patterns){' +
+      '  assert(!pm.isMatch("a".repeat(128)+"/",pattern));' +
+      '  assert(!pm.isMatch("b".repeat(128)+"/",pattern));' +
+      '}';
+    execFileSync(process.execPath, ['-e', code], { timeout: 2000 });
+  });
+
+  it('fails closed for complex stars and respects escaped stars', () => {
+    const unsafe = '+(a*|bc)';
+    assert(isMatch(unsafe, unsafe));
+    assert(!isMatch('aa', unsafe));
+    assert(isMatch('aa', unsafe, { maxExtglobRecursion: false }));
+    const captured = makeRe('+(a*|b)', { capture: true });
+    assert(captured.test('+(a*|b)'));
+    assert(!captured.test('ax'));
+    assert(isMatch('ax', '+(a*|b)', { capture: true, maxExtglobRecursion: false }));
+    const escaped = '+(a\\*|b)';
+    assert.strictEqual(
+      makeRe(escaped).source,
+      makeRe(escaped, { maxExtglobRecursion: false }).source
+    );
+  });
+});
+
+describe('CVE-2026-112366 simple bracket-class stars', () => {
+  it('retains character-class and literal-bracket options', () => {
+    const patterns = [
+      '+(*[ab])', '+(a*[ab])', '+(*[a-z])',
+      '+(*[a-z]|b)', '+(a*[ab]|b)'
+    ];
+    const strings = [
+      '', 'a', 'b', 'aa', 'ab', 'bb', 'ba', 'ax',
+      'aba', 'a[ab]', '[a-z]', 'a[a-z]', 'b[ab]',
+      'a/.', 'a/b', '+(*[ab])'
+    ];
+    const opts = [
+      {}, { dot: true }, { windows: true }, { bash: true },
+      { nobracket: true }, { literalBrackets: true },
+      { literalBrackets: false }
+    ];
+
+    for (const pattern of patterns) {
+      for (const options of opts) {
+        for (const str of strings) {
+          assert.strictEqual(
+            isMatch(str, pattern, options),
+            isMatch(str, pattern, { ...options, maxExtglobRecursion: false }),
+            JSON.stringify({ pattern, options, str })
+          );
+        }
+      }
+    }
+  });
+
+  it('bounds repeated class stars on nonmatching inputs', () => {
+    const { execFileSync } = require('child_process');
+    const patterns = ['+(*[ab])', '+(a*[ab])', '+(*[a-z]|b)', '+(a*[ab]|b)'];
+    const code = 'const assert=require("assert");' +
+      'const pm=require(' + JSON.stringify(require.resolve('..')) + ');' +
+      'const pats=' + JSON.stringify(patterns) + ';' +
+      'for(const pat of pats) assert(!pm.isMatch("a".repeat(128)+"/",pat));';
+    execFileSync(process.execPath, ['-e', code], { timeout: 2000 });
   });
 });
