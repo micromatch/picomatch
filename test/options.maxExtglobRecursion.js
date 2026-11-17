@@ -26,6 +26,23 @@ describe('options.maxExtglobRecursion', () => {
     assert(!isMatch('a'.repeat(12) + '!', '+(+(a))'));
   });
 
+  it('flattens repeated filename wildcards without changing which names match', () => {
+    const names = ['report', 'report-jan', 'report-janreport-feb', 'notes', 'report-one/two'];
+    for (const name of names) {
+      assert.strictEqual(isMatch(name, '+(report-*)'), isMatch(name, 'report-*'));
+    }
+    assert(isMatch('pre.txt', 'pre*(report-*).txt'));
+    assert(isMatch('prereport-jan.txt', 'pre*(report-*).txt'));
+    assert(!makeRe('+(report-*)').source.includes(')+'));
+  });
+
+  it('escapes a compound single branch as literal text in Unicode mode', () => {
+    const pattern = '+(report-*/summary\\\\draft)';
+    assert(makeRe(pattern, { flags: 'u' }).test(pattern));
+    assert(!isMatch('report-jan', pattern));
+    assert(isMatch('reports', '*(r*|a)'));
+  });
+
   it('should preserve non-risky extglobs by default', () => {
     assert(isMatch('abcabc', '+(abc)'));
     assert(isMatch('foobar', '*(foo|bar)'));
