@@ -142,6 +142,30 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('+(a|aa)x', '+(a|aa)@(x)'));
     assert(!isMatch('aaax', '+(a|aa)@(x)'));
   });
+  it('should drop the redundant repetition from star-led repeated extglobs', () => {
+    // Regression: `+(*a)` compiled to `(?:[^/]*?a)+`, which backtracks
+    // exponentially. A star-led branch already absorbs earlier repetitions, so
+    // `+(...)` closes like `@(...)` and `*(...)` like `?(...)` with the same matches.
+    assert.strictEqual(makeRe('+(*a)').source, '^(?:(?=.)(?:[^/]*?a))$');
+    assert.strictEqual(makeRe('*(*a)').source, '^(?:(?=.)(?:[^/]*?a)?)$');
+    assert.strictEqual(
+      makeRe('+(*a|*b)').source,
+      '^(?:(?=.)(?:[^/]*?a|[^/]*?b))$'
+    );
+
+    assert(isMatch('aaa', '+(*a)'));
+    assert(isMatch('xbxa', '+(*a|*b)'));
+    assert(isMatch('foo.js', '*(*.js|*.ts)'));
+    assert(!isMatch('a/a', '+(*a)'));
+    assert(!isMatch('a'.repeat(64) + '!', '+(*a)'));
+    assert(!isMatch('a'.repeat(64) + '!', '*(*a)'));
+  });
+
+  it('should keep the repetition when a star-led branch can match a slash', () => {
+    assert.strictEqual(makeRe('+(*/a)').source, '^(?:(?=.)(?:[^/]*?\\/a)+)$');
+    assert(isMatch('x/ay/a', '+(*/a)'));
+  });
+
   it('should disable the safeguard when maxExtglobRecursion is false', () => {
     assert(
       /\(\?:a\|aa\)\+/.test(
@@ -151,6 +175,11 @@ describe('options.maxExtglobRecursion', () => {
     assert(
       /\(\?:\(\?:a\)\+\)\+/.test(
         makeRe('+(+(a))', { maxExtglobRecursion: false }).source
+      )
+    );
+    assert(
+      /\(\?:\[\^\/\]\*\?a\)\+/.test(
+        makeRe('+(*a)', { maxExtglobRecursion: false }).source
       )
     );
   });
