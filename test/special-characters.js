@@ -220,8 +220,11 @@ describe('special characters', () => {
       assert(!isMatch('my/folder (Work, Accts)', '/*'));
       assert(isMatch('my/folder (Work, Accts)', '*/*'));
       assert(isMatch('my/folder (Work, Accts)', '*/*,*'));
-      assert(isMatch('my/folder (Work, Accts)', '*/*(W*, *)*'));
-      assert(isMatch('my/folder/(Work, Accts)', '**/*(W*, *)*'));
+      // Repeated wildcard extglobs are guarded; bracket the literal parentheses.
+      assert(!isMatch('my/folder (Work, Accts)', '*/*(W*, *)*'));
+      assert(isMatch('my/folder (Work, Accts)', '*/*[(]W*, *[)]*'));
+      assert(!isMatch('my/folder/(Work, Accts)', '**/*(W*, *)*'));
+      assert(isMatch('my/folder/(Work, Accts)', '**/*[(]W*, *[)]*'));
       assert(!isMatch('my/folder/(Work, Accts)', '*/*(W*, *)*'));
       assert(isMatch('foo(bar)baz', 'foo*baz'));
     });
