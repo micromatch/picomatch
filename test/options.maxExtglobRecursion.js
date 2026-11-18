@@ -200,6 +200,46 @@ describe('options.maxExtglobRecursion', () => {
       }
     });
 
+    it('should not backtrack catastrophically on a star inside a nested group', () => {
+      const input = 'a'.repeat(5000) + '/';
+      const patterns = [
+        '+(@(*))', '*(@(*))', '+(@(*a))', '+(@(*)|b)', '+(!(*))', '+(!(a))',
+        '*(!(a)|b)', '+(@(@(*)))', '+(!(@(*a)))', '+(*(a)a)', '+(@(*(a)))',
+        '+(@(+(*(a))))'
+      ];
+      for (const pattern of patterns) {
+        const start = Date.now();
+        isMatch(input, pattern);
+        assert(Date.now() - start < 1000, pattern);
+      }
+    });
+
+    it('should drop the repeat when a nested star or negation absorbs it', () => {
+      assert.strictEqual(makeRe('+(@(*))').source, '^(?:(?=.)(?:([^/]*?)))$');
+      assert.strictEqual(makeRe('*(@(*))').source, '^(?:(?=.)(?:([^/]*?))?)$');
+      assert.strictEqual(makeRe('+(@(*a))').source, '^(?:(?=.)(?:([^/]*?a)))$');
+      assert.strictEqual(makeRe('+(@(*)|b)').source, '^(?:(?=.)(?:b)*(?:([^/]*?)|b))$');
+      assert.strictEqual(makeRe('+(!(a))').source, '^(?:(?=.)(?:(?:(?!(?:a)$))[^/]*?))$');
+    });
+
+    it('should literalize a nested star run whose copies can overlap', () => {
+      assert.strictEqual(makeRe('+(*(a)a)').source, '^(?:\\+\\(\\*\\(a\\)a\\))$');
+      assert.strictEqual(makeRe('+(@(*(a)))').source, '^(?:\\+\\(@\\(\\*\\(a\\)\\)\\))$');
+      assert.strictEqual(makeRe('+(*(a)b)').source, '^(?:(?=.)(?:(?:a)*b)+)$');
+    });
+
+    it('should match the same strings as before with nested groups', () => {
+      assert(isMatch('abc', '+(@(*))'));
+      assert(isMatch('xa', '+(@(*a))'));
+      assert(!isMatch('xab', '+(@(*a))'));
+      assert(isMatch('bbb', '+(@(*)|b)'));
+      assert(isMatch('fff', '+(!(f))'));
+      assert(!isMatch('f', '+(!(f))'));
+      assert(isMatch('bar', '*(!(foo))'));
+      assert(!isMatch('foo', '*(!(foo))'));
+      assert(isMatch('aaab', '+(*(a)b)'));
+    });
+
     it('should keep the repeat when maxExtglobRecursion is false', () => {
       assert.strictEqual(
         makeRe('+(*a)', { maxExtglobRecursion: false }).source,
