@@ -319,7 +319,8 @@ describe('extglobs', () => {
 
     it('should support *(...) extglobs ending with statechar', () => {
       assert(!isMatch('ax', 'a*(b*)'));
-      assert(isMatch('ax', '*(a*|b)'));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('ax', '*(a*|b)'));
     });
 
     it('should support @(...) extglobs ending with statechar', () => {
@@ -526,7 +527,8 @@ describe('extglobs', () => {
 
     assert(!isMatch('abc', '+()c'));
     assert(!isMatch('abc', '+()x'));
-    assert(isMatch('abc', '+(*)c'));
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('abc', '+(*)c'));
     assert(!isMatch('abc', '+(*)x'));
     assert(!isMatch('abc', 'no-file+(a|b)stuff'));
     assert(!isMatch('abc', 'no-file+(a*(c)|b)stuff'));
@@ -763,10 +765,14 @@ describe('extglobs', () => {
     assert.deepStrictEqual(match(fixtures, 'a.*c'), ['a.c', 'a.xy.zc', 'a.zc']);
     assert.deepStrictEqual(match(fixtures, 'a*c'), ['a c', 'a.c', 'a.xy.zc', 'a.zc', 'a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axy zc', 'axy.zc', 'axyzc']);
     assert.deepStrictEqual(match(fixtures, 'a[\\w]+c'), ['a123c', 'a1c', 'abbbbc', 'abbbc', 'abbc', 'abc', 'axyzc'], 'Should match word characters');
-    assert.deepStrictEqual(match(fixtures, 'a[\\W]+c'), ['a c', 'a.c'], 'Should match non-word characters');
+    // `[\W]+` compiles to `(?:\[\W\]|[\W])+`, and `[` is itself a non-word
+    // character, so input like `a[!][!][!]...` backtracks exponentially
+    // (see test/redos.js). The pattern is now matched as literal text.
+    assert.deepStrictEqual(match(fixtures, 'a[\\W]+c'), [], 'Should not compile an exponential regex');
     assert.deepStrictEqual(match(fixtures, 'a[\\d]+c'), ['a123c', 'a1c'], 'Should match numbers');
     assert.deepStrictEqual(match(['foo@#$%123ASD #$$%^&', 'foo!@#$asdfl;', '123'], '[\\d]+'), ['123']);
-    assert.deepStrictEqual(match(['a123c', 'abbbc'], 'a[\\D]+c'), ['abbbc'], 'Should match non-numbers');
+    // Same as `[\W]+` above: `[` is a non-digit. Literal match now.
+    assert.deepStrictEqual(match(['a123c', 'abbbc'], 'a[\\D]+c'), [], 'Should not compile an exponential regex');
     assert.deepStrictEqual(match(['foo', ' foo '], '(f|o)+\\b'), ['foo'], 'Should match word boundaries');
   });
 });

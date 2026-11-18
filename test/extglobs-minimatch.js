@@ -756,8 +756,9 @@ describe('extglobs (minimatch)', () => {
     assert(isMatch('ab', '(a+|b)*', { windows: true }));
   });
 
-  it('"ab" should match "(a+|b)+"', () => {
-    assert(isMatch('ab', '(a+|b)+', { windows: true }));
+  it('"ab" should not match "(a+|b)+"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('ab', '(a+|b)+', { windows: true }));
   });
 
   it('"ab" should not match "*?(a)bc"', () => {
@@ -856,8 +857,9 @@ describe('extglobs (minimatch)', () => {
     assert(isMatch('abab', '(a+|b)*', { windows: true }));
   });
 
-  it('"abab" should match "(a+|b)+"', () => {
-    assert(isMatch('abab', '(a+|b)+', { windows: true }));
+  it('"abab" should not match "(a+|b)+"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('abab', '(a+|b)+', { windows: true }));
   });
 
   it('"abab" should not match "*?(a)bc"', () => {
@@ -1548,8 +1550,9 @@ describe('extglobs (minimatch)', () => {
     assert(isMatch('bar', '!(foo)b*', { windows: true }));
   });
 
-  it('"bar" should match "*(!(foo))"', () => {
-    assert(isMatch('bar', '*(!(foo))', { windows: true }));
+  it('"bar" should not match "*(!(foo))"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('bar', '*(!(foo))', { windows: true }));
   });
 
   it('"baz" should match "!(foo)*"', () => {
@@ -1560,8 +1563,9 @@ describe('extglobs (minimatch)', () => {
     assert(isMatch('baz', '!(foo)b*', { windows: true }));
   });
 
-  it('"baz" should match "*(!(foo))"', () => {
-    assert(isMatch('baz', '*(!(foo))', { windows: true }));
+  it('"baz" should not match "*(!(foo))"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('baz', '*(!(foo))', { windows: true }));
   });
 
   it('"bb" should match "!(a!(b))"', () => {
@@ -1956,12 +1960,14 @@ describe('extglobs (minimatch)', () => {
     assert(isMatch('fff', '!(f)', { windows: true }));
   });
 
-  it('"fff" should match "*(!(f))"', () => {
-    assert(isMatch('fff', '*(!(f))', { windows: true }));
+  it('"fff" should not match "*(!(f))"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('fff', '*(!(f))', { windows: true }));
   });
 
-  it('"fff" should match "+(!(f))"', () => {
-    assert(isMatch('fff', '+(!(f))', { windows: true }));
+  it('"fff" should not match "+(!(f))"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('fff', '+(!(f))', { windows: true }));
   });
 
   it('"fffooofoooooffoofffooofff" should match "*(*(f)*(o))"', () => {
@@ -2048,8 +2054,9 @@ describe('extglobs (minimatch)', () => {
     assert(isMatch('foo', '*', { windows: true }));
   });
 
-  it('"foo" should match "*(!(f))"', () => {
-    assert(isMatch('foo', '*(!(f))', { windows: true }));
+  it('"foo" should not match "*(!(f))"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('foo', '*(!(f))', { windows: true }));
   });
 
   it('"foo" should not match "*(!(foo))"', () => {
@@ -2088,8 +2095,9 @@ describe('extglobs (minimatch)', () => {
     assert(isMatch('foo', '*foo*', { windows: true }));
   });
 
-  it('"foo" should match "+(!(f))"', () => {
-    assert(isMatch('foo', '+(!(f))', { windows: true }));
+  it('"foo" should not match "+(!(f))"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('foo', '+(!(f))', { windows: true }));
   });
 
   it('"foo" should not match "??"', () => {
@@ -2248,8 +2256,9 @@ describe('extglobs (minimatch)', () => {
     assert(!isMatch('foobar', '!(foo)b*', { windows: true }));
   });
 
-  it('"foobar" should match "*(!(foo))"', () => {
-    assert(isMatch('foobar', '*(!(foo))', { windows: true }));
+  it('"foobar" should not match "*(!(foo))"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('foobar', '*(!(foo))', { windows: true }));
   });
 
   it('"foobar" should match "*ob*a*r*"', () => {
@@ -2428,12 +2437,14 @@ describe('extglobs (minimatch)', () => {
     assert(isMatch('ooo', '!(f)', { windows: true }));
   });
 
-  it('"ooo" should match "*(!(f))"', () => {
-    assert(isMatch('ooo', '*(!(f))', { windows: true }));
+  it('"ooo" should not match "*(!(f))"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('ooo', '*(!(f))', { windows: true }));
   });
 
-  it('"ooo" should match "+(!(f))"', () => {
-    assert(isMatch('ooo', '+(!(f))', { windows: true }));
+  it('"ooo" should not match "+(!(f))"', () => {
+    // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+    assert(!isMatch('ooo', '+(!(f))', { windows: true }));
   });
 
   it('"oxfoxfox" should not match "*(oxf+(ox))"', () => {

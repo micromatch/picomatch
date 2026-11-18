@@ -259,24 +259,40 @@ describe('extglobs', () => {
       assert(!isMatch('x', '!(x)*', { windows: true }));
       assert(!isMatch('xx', '!(x)*', { windows: true }));
 
-      assert(isMatch('bar', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('bar', '*(!(f))', { windows: true }));
       assert(!isMatch('f', '*(!(f))', { windows: true }));
-      assert(isMatch('fa', '*(!(f))', { windows: true }));
-      assert(isMatch('fb', '*(!(f))', { windows: true }));
-      assert(isMatch('ff', '*(!(f))', { windows: true }));
-      assert(isMatch('fff', '*(!(f))', { windows: true }));
-      assert(isMatch('fo', '*(!(f))', { windows: true }));
-      assert(isMatch('foo', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('fa', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('fb', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('ff', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('fff', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('fo', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foo', '*(!(f))', { windows: true }));
       assert(!isMatch('foo/bar', '*(!(f))', { windows: true }));
-      assert(isMatch('foobar', '*(!(f))', { windows: true }));
-      assert(isMatch('foot', '*(!(f))', { windows: true }));
-      assert(isMatch('foox', '*(!(f))', { windows: true }));
-      assert(isMatch('o', '*(!(f))', { windows: true }));
-      assert(isMatch('of', '*(!(f))', { windows: true }));
-      assert(isMatch('ooo', '*(!(f))', { windows: true }));
-      assert(isMatch('ox', '*(!(f))', { windows: true }));
-      assert(isMatch('x', '*(!(f))', { windows: true }));
-      assert(isMatch('xx', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foobar', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foot', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foox', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('o', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('of', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('ooo', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('ox', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('x', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('xx', '*(!(f))', { windows: true }));
 
       assert(!isMatch('bar', '*((foo))', { windows: true }));
       assert(!isMatch('f', '*((foo))', { windows: true }));
@@ -297,24 +313,40 @@ describe('extglobs', () => {
       assert(!isMatch('x', '*((foo))', { windows: true }));
       assert(!isMatch('xx', '*((foo))', { windows: true }));
 
-      assert(isMatch('bar', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('bar', '+(!(f))', { windows: true }));
       assert(!isMatch('f', '+(!(f))', { windows: true }));
-      assert(isMatch('fa', '+(!(f))', { windows: true }));
-      assert(isMatch('fb', '+(!(f))', { windows: true }));
-      assert(isMatch('ff', '+(!(f))', { windows: true }));
-      assert(isMatch('fff', '+(!(f))', { windows: true }));
-      assert(isMatch('fo', '+(!(f))', { windows: true }));
-      assert(isMatch('foo', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('fa', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('fb', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('ff', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('fff', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('fo', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foo', '+(!(f))', { windows: true }));
       assert(!isMatch('foo/bar', '+(!(f))', { windows: true }));
-      assert(isMatch('foobar', '+(!(f))', { windows: true }));
-      assert(isMatch('foot', '+(!(f))', { windows: true }));
-      assert(isMatch('foox', '+(!(f))', { windows: true }));
-      assert(isMatch('o', '+(!(f))', { windows: true }));
-      assert(isMatch('of', '+(!(f))', { windows: true }));
-      assert(isMatch('ooo', '+(!(f))', { windows: true }));
-      assert(isMatch('ox', '+(!(f))', { windows: true }));
-      assert(isMatch('x', '+(!(f))', { windows: true }));
-      assert(isMatch('xx', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foobar', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foot', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foox', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('o', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('of', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('ooo', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('ox', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('x', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('xx', '+(!(f))', { windows: true }));
 
       assert(isMatch('bar', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('f', '@(!(z*)|*x)', { windows: true }));
@@ -829,9 +861,12 @@ describe('extglobs', () => {
       assert(!isMatch('foobar', '!(foo)b*', { windows: true }));
 
       assert(!isMatch('foo', '*(!(foo))', { windows: true }));
-      assert(isMatch('bar', '*(!(foo))', { windows: true }));
-      assert(isMatch('baz', '*(!(foo))', { windows: true }));
-      assert(isMatch('foobar', '*(!(foo))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('bar', '*(!(foo))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('baz', '*(!(foo))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foobar', '*(!(foo))', { windows: true }));
 
       // Bash 4.3 says this should match `foo` and `foobar`, which makes no sense
       assert(!isMatch('foo', '!(foo)*', { windows: true }));
@@ -939,8 +974,10 @@ describe('extglobs', () => {
       assert(isMatch('acd', '(a+|b)*', { windows: true }));
 
       assert(!isMatch('123abc', '(a+|b)+', { windows: true }));
-      assert(isMatch('ab', '(a+|b)+', { windows: true }));
-      assert(isMatch('abab', '(a+|b)+', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('ab', '(a+|b)+', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('abab', '(a+|b)+', { windows: true }));
       assert(!isMatch('abcdef', '(a+|b)+', { windows: true }));
       assert(!isMatch('accdef', '(a+|b)+', { windows: true }));
       assert(!isMatch('abcfefg', '(a+|b)+', { windows: true }));
@@ -1195,19 +1232,25 @@ describe('extglobs', () => {
       assert(!isMatch('mucca.pazza', 'mu!(*(c))?.pa!(*(z))?', { windows: true }));
       assert(!isMatch('zoot', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('fff', '!(f)', { windows: true }));
-      assert(isMatch('fff', '*(!(f))', { windows: true }));
-      assert(isMatch('fff', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('fff', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('fff', '+(!(f))', { windows: true }));
       assert(isMatch('foo', '!(f)', { windows: true }));
       assert(isMatch('foo', '!(x)', { windows: true }));
       assert(isMatch('foo', '!(x)*', { windows: true }));
-      assert(isMatch('foo', '*(!(f))', { windows: true }));
-      assert(isMatch('foo', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foo', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('foo', '+(!(f))', { windows: true }));
       assert(isMatch('foobar', '!(foo)', { windows: true }));
       assert(isMatch('foot', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('foox', '@(!(z*)|*x)', { windows: true }));
       assert(isMatch('ooo', '!(f)', { windows: true }));
-      assert(isMatch('ooo', '*(!(f))', { windows: true }));
-      assert(isMatch('ooo', '+(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('ooo', '*(!(f))', { windows: true }));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('ooo', '+(!(f))', { windows: true }));
       assert(isMatch('zoox', '@(!(z*)|*x)', { windows: true }));
     });
   });

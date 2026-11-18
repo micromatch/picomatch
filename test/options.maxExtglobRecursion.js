@@ -31,21 +31,49 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('foobar', '*(foo|bar)'));
     assert(isMatch('a', '(a|@(b|c)|d)'));
     assert(isMatch('fffooo', '*(*(f)*(o))'));
-    assert(isMatch('abc', '+(*)c'));
+  });
+
+  it('should literalize extglobs whose regex backtracks exponentially', () => {
+    // `+(*)c` compiles to a repeated group of a repeated wildcard, so every
+    // way of splitting the text between the two loops is tried on failure.
+    // See test/redos.js.
+    assert(!isMatch('abc', '+(*)c'));
+    assert(isMatch('+(*)c', '+(*)c'));
   });
 
   it('should allow limited nested repeated extglobs when configured', () => {
     assert.strictEqual(
+      makeRe('+(+(a)b)', { maxExtglobRecursion: 1 }).source,
+      '^(?:(?=.)(?:(?:a)+b)+)$'
+    );
+    assert.strictEqual(
+      makeRe('*(+(a)b)', { maxExtglobRecursion: 1 }).source,
+      '^(?:(?=.)(?:(?:a)+b)*)$'
+    );
+
+    assert(isMatch('aabab', '+(+(a)b)', { maxExtglobRecursion: 1 }));
+    assert(isMatch('aabab', '*(+(a)b)', { maxExtglobRecursion: 1 }));
+  });
+
+  it('should still literalize nested repeats that backtrack exponentially when recursion is allowed', () => {
+    // `+(+(a))` and `*(+(a))` would compile to the classic `(a+)+` and `(a+)*`.
+    assert.strictEqual(
       makeRe('+(+(a))', { maxExtglobRecursion: 1 }).source,
-      '^(?:(?=.)(?:(?:a)+)+)$'
+      '^(?:\\+\\(\\+\\(a\\)\\))$'
     );
     assert.strictEqual(
       makeRe('*(+(a))', { maxExtglobRecursion: 1 }).source,
-      '^(?:(?=.)(?:(?:a)+)*)$'
+      '^(?:\\*\\(\\+\\(a\\)\\))$'
     );
+    assert(!isMatch('a'.repeat(30) + '!', '+(+(a))', { maxExtglobRecursion: 1 }));
+  });
 
-    assert(isMatch('aaa', '+(+(a))', { maxExtglobRecursion: 1 }));
-    assert(isMatch('aaa', '*(+(a))', { maxExtglobRecursion: 1 }));
+  it('should skip the exponential backtracking check when maxExtglobRecursion is false', () => {
+    assert.strictEqual(
+      makeRe('+(+(a))', { maxExtglobRecursion: false }).source,
+      '^(?:(?=.)(?:(?:a)+)+)$'
+    );
+    assert(isMatch('aaa', '+(+(a))', { maxExtglobRecursion: false }));
   });
 
   it('should still block ambiguous repeated alternation when recursion is allowed', () => {

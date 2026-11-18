@@ -220,8 +220,10 @@ describe('special characters', () => {
       assert(!isMatch('my/folder (Work, Accts)', '/*'));
       assert(isMatch('my/folder (Work, Accts)', '*/*'));
       assert(isMatch('my/folder (Work, Accts)', '*/*,*'));
-      assert(isMatch('my/folder (Work, Accts)', '*/*(W*, *)*'));
-      assert(isMatch('my/folder/(Work, Accts)', '**/*(W*, *)*'));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('my/folder (Work, Accts)', '*/*(W*, *)*'));
+      // exponential backtracking (ReDoS): now matched as literal text, see test/redos.js
+      assert(!isMatch('my/folder/(Work, Accts)', '**/*(W*, *)*'));
       assert(!isMatch('my/folder/(Work, Accts)', '*/*(W*, *)*'));
       assert(isMatch('foo(bar)baz', 'foo*baz'));
     });
