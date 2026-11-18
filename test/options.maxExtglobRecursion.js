@@ -142,6 +142,73 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('+(a|aa)x', '+(a|aa)@(x)'));
     assert(!isMatch('aaax', '+(a|aa)@(x)'));
   });
+  it('should match a single-branch repeated extglob with a wildcard star in one pass', () => {
+    assert.strictEqual(makeRe('+(*a)').source, '^(?:(?=.)(?:[^/]*?a))$');
+    assert.strictEqual(makeRe('*(*a)').source, '^(?:(?=.)(?:[^/]*?a)?)$');
+    assert.strictEqual(makeRe('+(*)').source, '^(?:(?=.)(?:[^/]*?))$');
+    assert.strictEqual(makeRe('+(a*b)').source, '^(?:(?=.)(?:a[^/]*?b))$');
+    assert.strictEqual(makeRe('+(*.js)').source, '^(?:(?=.)(?:[^/]*?\\.js))$');
+    assert.strictEqual(makeRe('x/+(*a)/y').source, '^(?:x\\/(?:[^/]*?a)\\/y)$');
+    assert.strictEqual(
+      makeRe('+(*a)', { capture: true }).source,
+      '^(?:(?=.)((?:([^/]*?)a)))$'
+    );
+
+    assert(!isMatch('a'.repeat(28) + 'b', '+(*a)'));
+    assert(!isMatch('a'.repeat(28) + 'b', '*(*a)'));
+    assert(!isMatch('ab'.repeat(28) + 'c', '+(a*b)'));
+    assert(!isMatch('a'.repeat(28) + '/', '+(*)'));
+  });
+
+  it('should match the same strings as the repeated form did', () => {
+    assert(isMatch('a', '+(*a)'));
+    assert(isMatch('ba', '+(*a)'));
+    assert(isMatch('abba', '+(*a)'));
+    assert(!isMatch('ab', '+(*a)'));
+    assert(!isMatch('b/a', '+(*a)'));
+
+    assert(isMatch('a', '*(*a)'));
+    assert(isMatch('aba', '*(*a)'));
+    assert(!isMatch('ab', '*(*a)'));
+    assert(isMatch('x', 'x*(*a)'));
+    assert(isMatch('xba', 'x*(*a)'));
+    assert(!isMatch('xab', 'x*(*a)'));
+
+    assert(isMatch('ab', '+(a*b)'));
+    assert(isMatch('abab', '+(a*b)'));
+    assert(isMatch('axbayb', '+(a*b)'));
+    assert(!isMatch('aba', '+(a*b)'));
+
+    assert(isMatch('a.js', '+(*.js)'));
+    assert(isMatch('a.js.js', '+(*.js)'));
+    assert(!isMatch('a.jsx', '+(*.js)'));
+
+    assert(isMatch('x/a/y', 'x/+(*a)/y'));
+    assert(isMatch('x/baba/y', 'x/+(*a)/y'));
+    assert(!isMatch('x/ab/y', 'x/+(*a)/y'));
+  });
+
+  it('should literalize a single-branch repeated extglob that mixes a wildcard star with other syntax', () => {
+    assert.strictEqual(makeRe('+(*[ab])').source, '^(?:\\+\\(\\*\\[ab\\]\\))$');
+    assert.strictEqual(makeRe('+(*/*)').source, '^(?:\\+\\(\\*\\/\\*\\))$');
+    assert.strictEqual(makeRe('+(*(a)*)').source, '^(?:\\+\\(\\*\\(a\\)\\*\\))$');
+
+    assert(!isMatch('a'.repeat(28) + 'c', '+(*[ab])'));
+    assert(!isMatch('a/'.repeat(14) + 'a!', '+(*/*)'));
+  });
+
+  it('should leave a nested star extglob to the star sequence rewrite', () => {
+    assert.strictEqual(makeRe('+(*(a))').source, '^(?:(?=.)a*)$');
+    assert(isMatch('fffooo', '*(*(f)*(o))'));
+  });
+
+  it('should keep the repetition of a wildcard star when maxExtglobRecursion is false', () => {
+    assert.strictEqual(
+      makeRe('+(*a)', { maxExtglobRecursion: false }).source,
+      '^(?:(?=.)(?:[^/]*?a)+)$'
+    );
+  });
+
   it('should disable the safeguard when maxExtglobRecursion is false', () => {
     assert(
       /\(\?:a\|aa\)\+/.test(
