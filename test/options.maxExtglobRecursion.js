@@ -31,7 +31,9 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('foobar', '*(foo|bar)'));
     assert(isMatch('a', '(a|@(b|c)|d)'));
     assert(isMatch('fffooo', '*(*(f)*(o))'));
-    assert(isMatch('abc', '+(*)c'));
+    // Repeated wildcards use the literal safeguard (GHSA-fc5q-39xc-vjpf).
+    assert(!isMatch('abc', '+(*)c'));
+    assert(isMatch('+(*)c', '+(*)c'));
   });
 
   it('should allow limited nested repeated extglobs when configured', () => {
