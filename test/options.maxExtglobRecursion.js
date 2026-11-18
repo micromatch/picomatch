@@ -224,7 +224,7 @@ describe('options.maxExtglobRecursion', () => {
 
     it('should literalize a nested star run whose copies can overlap', () => {
       assert.strictEqual(makeRe('+(*(a)a)').source, '^(?:\\+\\(\\*\\(a\\)a\\))$');
-      assert.strictEqual(makeRe('+(@(*(a)))').source, '^(?:\\+\\(@\\(\\*\\(a\\)\\)\\))$');
+      assert.strictEqual(makeRe('+(@(*(a)a))').source, '^(?:\\+\\(@\\(\\*\\(a\\)a\\)\\))$');
       assert.strictEqual(makeRe('+(*(a)b)').source, '^(?:(?=.)(?:(?:a)*b)+)$');
     });
 
@@ -238,6 +238,41 @@ describe('options.maxExtglobRecursion', () => {
       assert(isMatch('bar', '*(!(foo))'));
       assert(!isMatch('foo', '*(!(foo))'));
       assert(isMatch('aaab', '+(*(a)b)'));
+    });
+
+    it('should not backtrack catastrophically on a hidden repeat or an ambiguous alternation', () => {
+      const inputs = ['a'.repeat(90) + '!', 'b'.repeat(90) + '!', 'aba'.repeat(30) + '!', 'abc'.repeat(30) + '!'];
+      const patterns = [
+        '+(@(+([ab])))', '+([ab]|b)', '*(@([ab])|b)', '+(a|b|ab)', '*(@([ab]|ab[ab])|b)',
+        '+(*(ab)c|abc)', '+(@(*(ab?)[ab])|b)', '+(a*([ab]))', '*(ab*(ab))'
+      ];
+      for (const pattern of patterns) {
+        const start = Date.now();
+        for (const input of inputs) isMatch(input, pattern);
+        assert(Date.now() - start < 1000, pattern);
+      }
+    });
+
+    it('should treat a whole-branch @() like its own branches', () => {
+      assert.strictEqual(makeRe('+(@(*(a)))').source, makeRe('+(*(a))').source);
+      assert.strictEqual(makeRe('+(@(a|b)|c)').source, '^(?:(?=.)(?:(a|b)|c)+)$');
+    });
+
+    it('should literalize a repeat hidden in @() and an ambiguous alternation', () => {
+      assert.strictEqual(makeRe('+(@(+([ab])))').source, makeRe('+(@(+([ab])))', { maxExtglobRecursion: 0 }).source);
+      assert.strictEqual(makeRe('+([ab]|b)').source, '^(?:\\+\\(\\[ab\\]\\|b\\))$');
+      assert.strictEqual(makeRe('+(a|b|ab)').source, '^(?:\\+\\(a\\|b\\|ab\\))$');
+      assert.strictEqual(makeRe('*(b|B)', { nocase: true }).source, '^(?:\\*\\(b\\|B\\))$');
+      assert.strictEqual(makeRe('+(*(ab)c|abc)').source, '^(?:\\+\\(\\*\\(ab\\)c\\|abc\\))$');
+    });
+
+    it('should leave unambiguous alternations alone', () => {
+      assert.strictEqual(makeRe('+(js|ts|jsx)').source, '^(?:(?=.)(?:js|ts|jsx)+)$');
+      assert.strictEqual(makeRe('+(a|ab)').source, '^(?:(?=.)(?:a|ab)+)$');
+      assert.strictEqual(makeRe('*(b|B)').source, '^(?:(?=.)(?:b|B)*)$');
+      assert(isMatch('jstsjsx', '+(js|ts|jsx)'));
+      assert.strictEqual(makeRe('+(*(a)b|c)').source, '^(?:(?=.)(?:(?:a)*b|c)+)$');
+      assert.strictEqual(makeRe('*(f*(o))').source, '^(?:(?=.)(?:f(?:o)*)*)$');
     });
 
     it('should keep the repeat when maxExtglobRecursion is false', () => {
