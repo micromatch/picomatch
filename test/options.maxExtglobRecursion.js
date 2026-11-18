@@ -305,6 +305,27 @@ describe('options.maxExtglobRecursion', () => {
       assert.strictEqual(makeRe('+([ab]|c)').source, '^(?:(?=.)(?:(?:\\[ab\\]|[ab])|c)+)$');
     });
 
+    it('should not let a plus after a glob group quantify a risky group', () => {
+      const inputs = ['b'.repeat(90) + '!', 'a'.repeat(90) + '!', 'a'.repeat(90) + '/'];
+      const patterns = ['!(a)+(?(c))', '?(!(a)+(?(b)|c))', '!(a)+', '@(a|a)+', '{a,a}+', '@(!(a)+)'];
+      for (const pattern of patterns) {
+        const start = Date.now();
+        for (const input of inputs) isMatch(input, pattern);
+        assert(Date.now() - start < 1000, pattern);
+      }
+      assert.strictEqual(makeRe('!(a)+').source, '^(?:(?=.)(?:(?!(?:a))[^/]*?)\\+)$');
+      assert(isMatch('b+', '!(a)+'));
+      assert(isMatch('a+', '{a,a}+'));
+      assert(isMatch('a+', '@(a|a)+'));
+    });
+
+    it('should keep the quantifier after a safe group and a regex group', () => {
+      assert(isMatch('jsts', '@(js|ts)+'));
+      assert(isMatch('abcab', '{ab,c}+'));
+      assert(isMatch('abac', '(a|b)+c'));
+      assert.strictEqual(makeRe('(a|a)+b').source, '^(?:(a|a)+b)$');
+    });
+
     it('should keep the repeat when maxExtglobRecursion is false', () => {
       assert.strictEqual(
         makeRe('+(*a)', { maxExtglobRecursion: false }).source,
