@@ -27,6 +27,19 @@ describe('braces', () => {
     assert(isMatch('a {a.c} b', 'a {a.c} b'));
   });
 
+  it('should keep pipes literal inside single-set braces', () => {
+    assert(isMatch('x{a|b}y', 'x{a|b}y'));
+    assert(!isMatch('xay', 'x{a|b}y'));
+    assert(!isMatch('b}y', 'x{a|b}y'));
+    assert(!isMatch('x{a', 'x{a|b}y'));
+    assert(!isMatch('b}', '{a|b}'));
+    assert(!isMatch('b}z', 'x{a|b}*'));
+    assert(isMatch('x{a|b}z', 'x{a|b}*'));
+    assert(!isMatch('c}dy', 'x{a{b|c}d,e}y'));
+    assert(isMatch('xa{b|c}dy', 'x{a{b|c}d,e}y'));
+    assert(!isMatch('fixture}/a.js', '**/test/**/{helper|fixture}/**/*'));
+  });
+
   it('should match literal braces when escaped', () => {
     assert(isMatch('a {1,2}', 'a \\{1,2\\}'));
     assert(isMatch('a {a..b}', 'a \\{a..b\\}'));
