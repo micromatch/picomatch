@@ -1562,7 +1562,8 @@ describe('extglobs (bash)', () => {
   });
 
   it('"bar" should match "*(!(foo))"', () => {
-    assert(isMatch('bar', '*(!(foo))', { bash: true, windows: true }));
+    assert(!isMatch('bar', '*(!(foo))', { bash: true, windows: true }));
+    assert(isMatch('bar', '*(!(foo))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"baz" should match "!(foo)*"', () => {
@@ -1574,7 +1575,8 @@ describe('extglobs (bash)', () => {
   });
 
   it('"baz" should match "*(!(foo))"', () => {
-    assert(isMatch('baz', '*(!(foo))', { bash: true, windows: true }));
+    assert(!isMatch('baz', '*(!(foo))', { bash: true, windows: true }));
+    assert(isMatch('baz', '*(!(foo))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"bb" should match "!(a!(b))"', () => {
@@ -1898,7 +1900,8 @@ describe('extglobs (bash)', () => {
   });
 
   it('"egzefffgzbcdij" should match "*(b+(c)d|e*(f)g?|?(h)i@(j|k))"', () => {
-    assert(isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', { bash: true, windows: true }));
+    assert(!isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', { bash: true, windows: true }));
+    assert(isMatch('egzefffgzbcdij', '*(b+(c)d|e*(f)g?|?(h)i@(j|k))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"f" should not match "!(f!(o))"', () => {
@@ -1970,11 +1973,13 @@ describe('extglobs (bash)', () => {
   });
 
   it('"fff" should match "*(!(f))"', () => {
-    assert(isMatch('fff', '*(!(f))', { bash: true, windows: true }));
+    assert(!isMatch('fff', '*(!(f))', { bash: true, windows: true }));
+    assert(isMatch('fff', '*(!(f))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"fff" should match "+(!(f))"', () => {
-    assert(isMatch('fff', '+(!(f))', { bash: true, windows: true }));
+    assert(!isMatch('fff', '+(!(f))', { bash: true, windows: true }));
+    assert(isMatch('fff', '+(!(f))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"fffooofoooooffoofffooofff" should match "*(*(f)*(o))"', () => {
@@ -1982,7 +1987,8 @@ describe('extglobs (bash)', () => {
   });
 
   it('"ffo" should match "*(f*(o))"', () => {
-    assert(isMatch('ffo', '*(f*(o))', { bash: true, windows: true }));
+    assert(!isMatch('ffo', '*(f*(o))', { bash: true, windows: true }));
+    assert(isMatch('ffo', '*(f*(o))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"file.C" should not match "*.c?(c)"', () => {
@@ -2010,7 +2016,8 @@ describe('extglobs (bash)', () => {
   });
 
   it('"fofo" should match "*(f*(o))"', () => {
-    assert(isMatch('fofo', '*(f*(o))', { bash: true, windows: true }));
+    assert(!isMatch('fofo', '*(f*(o))', { bash: true, windows: true }));
+    assert(isMatch('fofo', '*(f*(o))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"fofoofoofofoo" should match "*(fo|foo)"', () => {
@@ -2062,7 +2069,8 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foo" should match "*(!(f))"', () => {
-    assert(isMatch('foo', '*(!(f))', { bash: true, windows: true }));
+    assert(!isMatch('foo', '*(!(f))', { bash: true, windows: true }));
+    assert(isMatch('foo', '*(!(f))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"foo" should not match "*(!(foo))"', () => {
@@ -2102,7 +2110,8 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foo" should match "+(!(f))"', () => {
-    assert(isMatch('foo', '+(!(f))', { bash: true, windows: true }));
+    assert(!isMatch('foo', '+(!(f))', { bash: true, windows: true }));
+    assert(isMatch('foo', '+(!(f))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"foo" should not match "??"', () => {
@@ -2266,7 +2275,8 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foobar" should match "*(!(foo))"', () => {
-    assert(isMatch('foobar', '*(!(foo))', { bash: true, windows: true }));
+    assert(!isMatch('foobar', '*(!(foo))', { bash: true, windows: true }));
+    assert(isMatch('foobar', '*(!(foo))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"foobar" should match "*ob*a*r*"', () => {
@@ -2290,23 +2300,28 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foofoofo" should match "@(foo|f|fo)*(f|of+(o))"', () => {
-    assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { bash: true, windows: true }));
+    assert(!isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { bash: true, windows: true }));
+    assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"foofoofo" should match "@(foo|f|fo)*(f|of+(o))"', () => {
-    assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { bash: true, windows: true }));
+    assert(!isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { bash: true, windows: true }));
+    assert(isMatch('foofoofo', '@(foo|f|fo)*(f|of+(o))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"fooofoofofooo" should match "*(f*(o))"', () => {
-    assert(isMatch('fooofoofofooo', '*(f*(o))', { bash: true, windows: true }));
+    assert(!isMatch('fooofoofofooo', '*(f*(o))', { bash: true, windows: true }));
+    assert(isMatch('fooofoofofooo', '*(f*(o))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"foooofo" should match "*(f*(o))"', () => {
-    assert(isMatch('foooofo', '*(f*(o))', { bash: true, windows: true }));
+    assert(!isMatch('foooofo', '*(f*(o))', { bash: true, windows: true }));
+    assert(isMatch('foooofo', '*(f*(o))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"foooofof" should match "*(f*(o))"', () => {
-    assert(isMatch('foooofof', '*(f*(o))', { bash: true, windows: true }));
+    assert(!isMatch('foooofof', '*(f*(o))', { bash: true, windows: true }));
+    assert(isMatch('foooofof', '*(f*(o))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"foooofof" should not match "*(f+(o))"', () => {
@@ -2318,11 +2333,13 @@ describe('extglobs (bash)', () => {
   });
 
   it('"foooxfooxfoxfooox" should match "*(f*(o)x)"', () => {
-    assert(isMatch('foooxfooxfoxfooox', '*(f*(o)x)', { bash: true, windows: true }));
+    assert(!isMatch('foooxfooxfoxfooox', '*(f*(o)x)', { bash: true, windows: true }));
+    assert(isMatch('foooxfooxfoxfooox', '*(f*(o)x)', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"foooxfooxfxfooox" should match "*(f*(o)x)"', () => {
-    assert(isMatch('foooxfooxfxfooox', '*(f*(o)x)', { bash: true, windows: true }));
+    assert(!isMatch('foooxfooxfxfooox', '*(f*(o)x)', { bash: true, windows: true }));
+    assert(isMatch('foooxfooxfxfooox', '*(f*(o)x)', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"foooxfooxofoxfooox" should not match "*(f*(o)x)"', () => {
@@ -2406,11 +2423,13 @@ describe('extglobs (bash)', () => {
   });
 
   it('"ofoofo" should match "*(of+(o))"', () => {
-    assert(isMatch('ofoofo', '*(of+(o))', { bash: true, windows: true }));
+    assert(!isMatch('ofoofo', '*(of+(o))', { bash: true, windows: true }));
+    assert(isMatch('ofoofo', '*(of+(o))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"ofoofo" should match "*(of+(o)|f)"', () => {
-    assert(isMatch('ofoofo', '*(of+(o)|f)', { bash: true, windows: true }));
+    assert(!isMatch('ofoofo', '*(of+(o)|f)', { bash: true, windows: true }));
+    assert(isMatch('ofoofo', '*(of+(o)|f)', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"ofooofoofofooo" should not match "*(f*(o))"', () => {
@@ -2418,11 +2437,13 @@ describe('extglobs (bash)', () => {
   });
 
   it('"ofoooxoofxo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(!isMatch('ofoooxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(isMatch('ofoooxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"ofoooxoofxoofoooxoofxo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(!isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(isMatch('ofoooxoofxoofoooxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"ofoooxoofxoofoooxoofxofo" should not match "*(*(of*(o)x)o)"', () => {
@@ -2430,19 +2451,23 @@ describe('extglobs (bash)', () => {
   });
 
   it('"ofoooxoofxoofoooxoofxoo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(!isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(isMatch('ofoooxoofxoofoooxoofxoo', '*(*(of*(o)x)o)', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"ofoooxoofxoofoooxoofxooofxofxo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(!isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(isMatch('ofoooxoofxoofoooxoofxooofxofxo', '*(*(of*(o)x)o)', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"ofxoofxo" should match "*(*(of*(o)x)o)"', () => {
-    assert(isMatch('ofxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(!isMatch('ofxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true }));
+    assert(isMatch('ofxoofxo', '*(*(of*(o)x)o)', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"oofooofo" should match "*(of|oof+(o))"', () => {
-    assert(isMatch('oofooofo', '*(of|oof+(o))', { bash: true, windows: true }));
+    assert(!isMatch('oofooofo', '*(of|oof+(o))', { bash: true, windows: true }));
+    assert(isMatch('oofooofo', '*(of|oof+(o))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"ooo" should match "!(f)"', () => {
@@ -2450,11 +2475,13 @@ describe('extglobs (bash)', () => {
   });
 
   it('"ooo" should match "*(!(f))"', () => {
-    assert(isMatch('ooo', '*(!(f))', { bash: true, windows: true }));
+    assert(!isMatch('ooo', '*(!(f))', { bash: true, windows: true }));
+    assert(isMatch('ooo', '*(!(f))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"ooo" should match "+(!(f))"', () => {
-    assert(isMatch('ooo', '+(!(f))', { bash: true, windows: true }));
+    assert(!isMatch('ooo', '+(!(f))', { bash: true, windows: true }));
+    assert(isMatch('ooo', '+(!(f))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"oxfoxfox" should not match "*(oxf+(ox))"', () => {
@@ -2462,7 +2489,8 @@ describe('extglobs (bash)', () => {
   });
 
   it('"oxfoxoxfox" should match "*(oxf+(ox))"', () => {
-    assert(isMatch('oxfoxoxfox', '*(oxf+(ox))', { bash: true, windows: true }));
+    assert(!isMatch('oxfoxoxfox', '*(oxf+(ox))', { bash: true, windows: true }));
+    assert(isMatch('oxfoxoxfox', '*(oxf+(ox))', { bash: true, windows: true, maxExtglobRecursion: false }));
   });
 
   it('"para" should match "para*([0-9])"', () => {
