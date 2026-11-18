@@ -319,7 +319,9 @@ describe('extglobs', () => {
 
     it('should support *(...) extglobs ending with statechar', () => {
       assert(!isMatch('ax', 'a*(b*)'));
-      assert(isMatch('ax', '*(a*|b)'));
+      assert(!isMatch('ax', '*(a*|b)'));
+      assert(isMatch('*(a*|b)', '*(a*|b)'));
+      assert(isMatch('ax', '*(a*|b)', { maxExtglobRecursion: false }));
     });
 
     it('should support @(...) extglobs ending with statechar', () => {
@@ -526,7 +528,9 @@ describe('extglobs', () => {
 
     assert(!isMatch('abc', '+()c'));
     assert(!isMatch('abc', '+()x'));
-    assert(isMatch('abc', '+(*)c'));
+    assert(!isMatch('abc', '+(*)c'));
+    assert(isMatch('+(*)c', '+(*)c'));
+    assert(isMatch('abc', '+(*)c', { maxExtglobRecursion: false }));
     assert(!isMatch('abc', '+(*)x'));
     assert(!isMatch('abc', 'no-file+(a|b)stuff'));
     assert(!isMatch('abc', 'no-file+(a*(c)|b)stuff'));

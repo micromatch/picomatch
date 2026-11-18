@@ -31,7 +31,7 @@ describe('options.maxExtglobRecursion', () => {
     assert(isMatch('foobar', '*(foo|bar)'));
     assert(isMatch('a', '(a|@(b|c)|d)'));
     assert(isMatch('fffooo', '*(*(f)*(o))'));
-    assert(isMatch('abc', '+(*)c'));
+    assert(isMatch('abc', '+(a|b)c'));
   });
 
   it('should allow limited nested repeated extglobs when configured', () => {
