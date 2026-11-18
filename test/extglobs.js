@@ -317,9 +317,10 @@ describe('extglobs', () => {
       assert(isMatch('ax', '?(a*|b)'));
     });
 
-    it('should support *(...) extglobs ending with statechar', () => {
+    it('should literalize repeated extglobs containing wildcard stars', () => {
       assert(!isMatch('ax', 'a*(b*)'));
-      assert(isMatch('ax', '*(a*|b)'));
+      assert(!isMatch('ax', '*(a*|b)'));
+      assert(isMatch('*(a*|b)', '*(a*|b)'));
     });
 
     it('should support @(...) extglobs ending with statechar', () => {
@@ -526,7 +527,9 @@ describe('extglobs', () => {
 
     assert(!isMatch('abc', '+()c'));
     assert(!isMatch('abc', '+()x'));
-    assert(isMatch('abc', '+(*)c'));
+    // Repeated wildcards use the literal safeguard (GHSA-fc5q-39xc-vjpf).
+    assert(!isMatch('abc', '+(*)c'));
+    assert(isMatch('+(*)c', '+(*)c'));
     assert(!isMatch('abc', '+(*)x'));
     assert(!isMatch('abc', 'no-file+(a|b)stuff'));
     assert(!isMatch('abc', 'no-file+(a*(c)|b)stuff'));
