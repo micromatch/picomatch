@@ -336,5 +336,52 @@ describe('options.maxExtglobRecursion', () => {
         '^(?:(?=.)(?:[^/]*?)+)$'
       );
     });
+
+    it('should keep spaces when flattening @() alternatives', () => {
+      assert(isMatch(' red', '+(@(red| red))'));
+      assert(isMatch('red red', '+(@(red| red))'));
+    });
+
+    it('should rewrite the branches of a flattened @() group', () => {
+      assert(isMatch('txt', '+(@(log*|txt))'));
+      assert(isMatch('txtlogx', '+(@(log*|txt))'));
+    });
+
+    it('should build the rewrite from the current star tokens', () => {
+      assert(!isMatch('dir/log', '+(***log)'));
+      assert(isMatch('xlog', '+(***log)'));
+    });
+
+    it('should keep the capture layout of a rewritten repeat', () => {
+      const exec = (pattern, input) => [...makeRe(pattern, { capture: true }).exec(input)];
+      assert.deepStrictEqual(exec('+(x*|[ab])', 'xyz'), ['xyz', 'xyz', 'yz', undefined]);
+      assert.deepStrictEqual(exec('+(x*|[ab])', 'ab'), ['ab', 'ab', undefined, 'b']);
+      assert.deepStrictEqual(exec('+(*a|b)', 'xab'), ['xab', 'xab', undefined]);
+      assert.deepStrictEqual(exec('+(*a|b)', 'xa'), ['xa', 'xa', 'x']);
+    });
+
+    it('should not read a regex quantifier as a glob wildcard', () => {
+      const opts = { regex: true, literalBrackets: false };
+      assert(!makeRe('+([a]*|b)', opts).test('aba'));
+      assert(makeRe('+([a]*|b)', opts).test('+([a]*|b)'));
+      assert(makeRe('+([a]|b)', opts).test('aba'));
+    });
+
+    it('should match its own text, backslashes included, when literal', () => {
+      assert(makeRe('+(log\\w|cache)').test('+(log\\w|cache)'));
+      assert(!makeRe('+(log\\w|cache)').test('+(logw|cache)'));
+    });
+
+    it('should bound the work on a wide alternation', () => {
+      const alts = Array.from({ length: 4096 }, (_, i) => `a${i.toString(36)}`).join('|');
+      const start = Date.now();
+      makeRe(`+(@(${alts})x|y)`, { maxExtglobRecursion: 0 });
+      assert(Date.now() - start < 2000);
+    });
+
+    it('should keep a plus after a captured star literal', () => {
+      assert(!/\(\[\^\/\]\*\?\)\+/.test(makeRe('@(a*+(?(x)))', { capture: true }).source));
+      assert(makeRe('+(a)*', { regex: true }).test('aab'));
+    });
   });
 });
