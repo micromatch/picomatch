@@ -275,6 +275,36 @@ describe('options.maxExtglobRecursion', () => {
       assert.strictEqual(makeRe('*(f*(o))').source, '^(?:(?=.)(?:f(?:o)*)*)$');
     });
 
+    it('should not backtrack catastrophically on syntax the check does not model', () => {
+      const inputs = ['a'.repeat(90) + '!', 'b'.repeat(90) + '!', 'ab'.repeat(45) + '!'];
+      const patterns = [
+        '+({a,a})', '+({a,b}|b)', '+(a|a{b,})', '+(a|"a")', '+(a|[[:alpha:]])', '+({a..b}|a)',
+        '+([a-b]{,a})', '+(\\w|a)', '+(\\x61|a)', '+(a+)', '+(a+|b)', '+((a|a))', '+((a)|a)'
+      ];
+      for (const pattern of patterns) {
+        const start = Date.now();
+        for (const input of inputs) isMatch(input, pattern);
+        assert(Date.now() - start < 1000, pattern);
+      }
+    });
+
+    it('should literalize a branch with a brace, quote, regex escape or bare plus', () => {
+      assert.strictEqual(makeRe('+({a,b})').source, '^(?:\\+\\(\\{a,b\\}\\))$');
+      assert.strictEqual(makeRe('+(a|"a")').source, '^(?:\\+\\(a\\|"a"\\))$');
+      assert.strictEqual(makeRe('+(a+)').source, '^(?:\\+\\(a\\+\\))$');
+      assert(isMatch('+({a,a})', '+({a,a})'));
+      assert(isMatch('+(a|"a")', '+(a|"a")'));
+    });
+
+    it('should leave groups, slashes, escaped symbols and plain brackets alone', () => {
+      assert(isMatch('foo', '*((foo))'));
+      assert(isMatch('b/a', '*(b/a)'));
+      assert(isMatch('*a*', '+(\\*|a)'));
+      assert(isMatch('a.c', '+([[:alpha:].])'));
+      assert(isMatch('abcx', '+(a|b[)*'));
+      assert.strictEqual(makeRe('+([ab]|c)').source, '^(?:(?=.)(?:(?:\\[ab\\]|[ab])|c)+)$');
+    });
+
     it('should keep the repeat when maxExtglobRecursion is false', () => {
       assert.strictEqual(
         makeRe('+(*a)', { maxExtglobRecursion: false }).source,
