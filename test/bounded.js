@@ -57,6 +57,14 @@ describe('bounded backtracking', () => {
       assert.strictEqual(result.output, 'false');
     });
 
+    it('should compile and answer a glob too large to classify', () => {
+      // Classifying is capped: past the cap the regex is treated as one that can backtrack.
+      const result = finishes('*a'.repeat(300), 'a'.repeat(500) + '//');
+      assert(!result.timedOut, 'a glob of 300 stars did not finish');
+      assert.strictEqual(result.output, 'false');
+      assert(isMatch('a'.repeat(500), '*a'.repeat(300)));
+    });
+
     it('should keep the source, flags and prototype of the regex', () => {
       for (const [glob] of risky) {
         const regex = makeRe(glob);
