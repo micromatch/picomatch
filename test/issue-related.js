@@ -73,6 +73,32 @@ describe('issue-related tests', () => {
     assert(!isMatch('test/utils', 'test(/utils/**)/file'));
   });
 
+  it('picomatch issue#217 - reusable matchers must not retain regex lastIndex', () => {
+    const picomatch = require('..');
+
+    const global = picomatch('*.js', { flags: 'g' });
+    assert(global('foo.js'));
+    assert(global('foo.js'));
+    assert(global('foo.js'));
+
+    const sticky = picomatch('*.js', { flags: 'y' });
+    assert(sticky('foo.js'));
+    assert(sticky('foo.js'));
+
+    const ignored = picomatch('*', { flags: 'g', ignore: '*.js' });
+    assert(!ignored('foo.js'));
+    assert(!ignored('foo.js'));
+    assert(!ignored('foo.js'));
+
+    const basename = picomatch('*.js', { flags: 'g', basename: true });
+    assert(basename('a/b/foo.js'));
+    assert(basename('a/b/foo.js'));
+
+    const re = /\.js$/g;
+    assert(picomatch.test('foo.js', re).isMatch);
+    assert(picomatch.test('foo.js', re).isMatch);
+  });
+
   it('should treat a leading `**` followed by a literal as a single star (picomatch/issues#99)', () => {
     // `**` only acts as a globstar when it is the sole content of a path segment.
     // When it is adjacent to other characters in the same segment (here `.thing.js`),
