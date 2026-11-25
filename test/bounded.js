@@ -108,6 +108,81 @@ describe('bounded backtracking', () => {
     });
   });
 
+  describe('what one regex may cost besides time', () => {
+    // Runs a script in a child process with this module's path as its first argument.
+    const child = (script, nodeOptions = []) => spawnSync(process.execPath, [...nodeOptions, '-e', script, require.resolve('..')], {
+      timeout: 20000,
+      encoding: 'utf8'
+    });
+
+    it('should answer a glob of thousands of characters', () => {
+      for (const n of [9000, 30000]) {
+        const isLong = picomatch('a'.repeat(n) + '*b*c*');
+        assert.strictEqual(isLong('a'.repeat(n) + 'bxx'), false);
+        assert.strictEqual(isLong('a'.repeat(n) + 'bxc'), true);
+      }
+    });
+
+    it('should leave a glob too deep for the stack to the regex', () => {
+      // A chain of optional groups, then groups nested inside each other.
+      const chain = makeRe('?(a)'.repeat(3000));
+      assert.strictEqual(chain.test('a'.repeat(3000)), true);
+      assert.strictEqual(chain.test('b'), false);
+      assert(isMatch('a', '('.repeat(3000) + 'a' + ')'.repeat(3000)));
+    });
+
+    it('should keep deciding after a name takes the DFA past its state limit', function() {
+      this.timeout(30000);
+      // More than 4,000 states of this glob are reachable, and the long name reaches them.
+      const script = 'const re = require(process.argv[1]).makeRe("+(*a)??????????????");'
+        + 'let name = "", r = 1;'
+        + 'for (let i = 0; i < 9000; i++) { r = (Math.imul(r, 1664525) + 1013904223) >>> 0; name += (r >>> 30) & 1 ? "a" : "b"; }'
+        + 'const out = [re.test(name + "a".repeat(15)), re.restarts() > 0, re.states() <= 4000];'
+        + 'out.push(re.test("a".repeat(42) + "/"), re.test("a".repeat(60) + "/"));'
+        + 'process.stdout.write(JSON.stringify(out));';
+      const result = child(script);
+      assert(!result.error, 'the near miss after the long name did not finish');
+      assert.strictEqual(result.stdout, '[true,true,true,false,false]');
+    });
+
+    it('should give the same answers with a table of a few states', () => {
+      const { globRegExp } = require('../lib/bounded/glob-regexp');
+      let inputs = [''];
+      for (let length = 0, level = ['']; length < 6; length++) {
+        level = [].concat(...level.map(s => ['a', 'b', '.', '/'].map(c => s + c)));
+        inputs = inputs.concat(level);
+      }
+      let restarts = 0;
+      for (const glob of ['+(*a)', '*(*a)', '+(a|*a)', '+(!(a))', '*a*a*b', '**/+(*.)+(a|b).+(a|b)?(x)', '*(!(*a*)*b)']) {
+        const plain = picomatch.makeRe(glob);
+        for (const maxStates of [2, 3, 7]) {
+          const regex = globRegExp(plain.source, plain.flags, { dfa: 'always', maxStates });
+          for (const input of inputs) {
+            assert.strictEqual(regex.test(input), RegExp.prototype.test.call(plain, input), `${glob} on ${JSON.stringify(input)} with ${maxStates} states`);
+          }
+          assert(regex.states() <= maxStates, `${glob} holds ${regex.states()} states`);
+          restarts += regex.restarts();
+        }
+      }
+      assert(restarts > 1000, `only ${restarts} restarts`);
+    });
+
+    it('should not keep the terms of a regex that is gone', function() {
+      this.timeout(30000);
+      const script = 'const pm = require(process.argv[1]);'
+        + 'const heap = () => { global.gc(); return process.memoryUsage().heapUsed / 1e6; };'
+        + 'for (let i = 0; i < 1000; i++) pm.makeRe("+(*v" + i + ")").test("xxxxxx/");'
+        + 'const before = heap();'
+        + 'for (let i = 0; i < 10000; i++) pm.makeRe("+(*w" + i + ")").test("xxxxxx/");'
+        + 'process.stdout.write((heap() - before).toFixed(1));';
+      const result = child(script, ['--expose-gc']);
+      assert(!result.error, 'did not finish');
+      const grown = Number(result.stdout);
+      assert(result.stdout !== '' && Number.isFinite(grown), `no number: ${result.stdout} ${result.stderr.slice(-200)}`);
+      assert(grown < 10, `the heap grew ${grown} MB over 10,000 globs`);
+    });
+  });
+
   describe('regexes that are left alone', () => {
     it('should return a plain RegExp for flags other than "i"', () => {
       const regex = makeRe('+(*a)', { flags: 'g' });
