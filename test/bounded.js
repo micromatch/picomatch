@@ -65,6 +65,18 @@ describe('bounded backtracking', () => {
       assert(isMatch('a'.repeat(500), '*a'.repeat(300)));
     });
 
+    it('should finish on a chain of optional groups, which has no loop', () => {
+      // No loop, so the regex is linear, and still a prefix has about 2 to the 52nd readings.
+      const glob = '?(a)'.repeat(55);
+      const result = finishes(glob, 'a'.repeat(144));
+      assert(!result.timedOut, 'a chain of 55 optional groups did not finish');
+      assert.strictEqual(result.output, 'false');
+      assert(isMatch('a'.repeat(55), glob));
+      assert(!isMatch('a'.repeat(56), glob));
+      // A short chain has few readings and stays a plain RegExp.
+      assert.strictEqual(makeRe('?(a)?(a)?(a)').test, RegExp.prototype.test);
+    });
+
     it('should keep the source, flags and prototype of the regex', () => {
       for (const [glob] of risky) {
         const regex = makeRe(glob);
